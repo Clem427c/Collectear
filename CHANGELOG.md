@@ -1,5 +1,15 @@
 # Journal des versions
 
+## 0.3.0 – 26/10/2026
+- 5e boost « Portée » : le joueur attaque de plus loin (33 cartes : grenouilles, pieuvres, lianes, archers, mages…).
+- Échanges libres (plus de suggestion de même rareté) ; exploration sans aucune indication.
+- Compte à rebours 3-2-1-GO avec l'objectif et le compagnon, sons synthétisés (coups, saut, esquive,
+  tirs, coffres, cartes…), bouton son, vibrations sur Android, particules, flash rouge quand on est touché,
+  animation « Nouvelle carte ! ».
+- Lieux : sanctuaire (vaincre ses 4 gardiens pour réveiller l'autel), tour (pyramide de pierre à gravir
+  saut après saut, coffre au sommet), ruine (activer 3 pierres runiques pour l'ouvrir), coffre rare
+  (violet, loin du départ, meilleures chances de rareté).
+
 ## 0.2.0 – 26/10/2026
 Retours du premier playtest de Clem.
 - Terrain : deux cases voisines ne diffèrent jamais de plus d'un niveau, on ne peut plus être coincé.
