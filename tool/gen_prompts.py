@@ -17,7 +17,7 @@ STYLE = (
 )
 FLUX_SUFFIX = (
     ", a single character only, isolated on a plain pure white background, no text, no letters, "
-    "no frame, no border, no ground shadow, flat 2D illustration"
+    "no frame, no border, no shadow under the character, no cast shadow, no drop shadow, flat 2D illustration"
 )
 NEGATIVE = (
     "text, letters, watermark, logo, signature, card frame, border, realistic, photo, 3d render, "

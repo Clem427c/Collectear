@@ -12,11 +12,18 @@ Usage (depuis la racine du dépôt) :
   python tool/comfy_batch.py --variants 4         # 4 propositions par carte
   python tool/comfy_batch.py --url http://127.0.0.1:8188   # si ComfyUI n'est pas sur le port 8000
 
+Mode automatique (pour laisser tourner sans surveiller) :
+  python tool/comfy_batch.py --auto
+  → une image par carte, écrite directement dans art/raw/NNN.png, puis commit + push sur GitHub
+    toutes les 25 cartes et à la fin. Les cartes déjà présentes dans art/raw/ sont sautées.
+    Pour refaire une carte qui ne plaît pas : supprimer art/raw/NNN.png et relancer.
+
 Les images arrivent dans art/candidates/ (001_a.png, 001_b.png, …). Choisis la meilleure,
 renomme-la 001.png et place-la dans art/raw/. Les cartes déjà présentes dans art/raw/ sont sautées.
 Aucune dépendance : uniquement la bibliothèque standard de Python.
 """
 import argparse
+import subprocess
 import csv
 import json
 import time
@@ -87,7 +94,11 @@ def main():
     ap.add_argument("--to", dest="end", type=int, default=300)
     ap.add_argument("--variants", type=int, default=3)
     ap.add_argument("--url", default=None)
+    ap.add_argument("--auto", action="store_true", help="1 image par carte dans art/raw/ + push GitHub")
+    ap.add_argument("--no-push", action="store_true", help="en mode auto : ne pas pousser sur GitHub")
     args = ap.parse_args()
+    if args.auto:
+        return auto_mode(args)
 
     url = find_server([args.url] if args.url else ["http://127.0.0.1:8000", "http://127.0.0.1:8188"])
     print("ComfyUI trouvé :", url)
@@ -108,6 +119,50 @@ def main():
             generate(url, row["prompt"], seed=n * 1000 + v, prefix=f"collectear/{n:03d}_{letters[v]}", dest=dest)
             print(f"{dest.name}  {row['nom']}  ({time.time() - t0:.1f} s)")
     print("Terminé. Choisis tes images dans art/candidates/ et place-les dans art/raw/ (001.png…).")
+
+
+def git_push(message: str):
+    try:
+        subprocess.run(["git", "add", "art/raw"], cwd=ROOT, check=True)
+        diff = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=ROOT)
+        if diff.returncode == 0:
+            return
+        subprocess.run(["git", "commit", "-m", message], cwd=ROOT, check=True)
+        subprocess.run(["git", "pull", "--rebase", "origin", "main"], cwd=ROOT, check=True)
+        subprocess.run(["git", "push", "origin", "HEAD:main"], cwd=ROOT, check=True)
+        print("→ envoyé sur GitHub :", message)
+    except Exception as e:  # on continue la génération même si le push échoue
+        print("! push impossible pour l'instant :", e)
+
+
+def auto_mode(args):
+    url = find_server([args.url] if args.url else ["http://127.0.0.1:8000", "http://127.0.0.1:8188"])
+    print("ComfyUI trouvé :", url)
+    RAW.mkdir(parents=True, exist_ok=True)
+    rows = list(csv.DictReader(PROMPTS.open(encoding="utf-8"), delimiter=";"))
+    done = 0
+    for row in rows:
+        n = int(row["numero"])
+        if not args.start <= n <= args.end:
+            continue
+        dest = RAW / f"{n:03d}.png"
+        if any((RAW / f"{n:03d}.{ext}").exists() for ext in ("png", "jpg", "jpeg", "webp")):
+            continue
+        for attempt in range(3):  # quelques nouvelles tentatives si ComfyUI hoquette
+            try:
+                t0 = time.time()
+                generate(url, row["prompt"], seed=n * 1000, prefix=f"collectear/{n:03d}", dest=dest)
+                print(f"{dest.name}  {row['nom']}  ({time.time() - t0:.1f} s)")
+                break
+            except Exception as e:
+                print(f"! {n:03d} tentative {attempt + 1} échouée : {e}")
+                time.sleep(5)
+        done += 1
+        if done % 25 == 0 and not args.no_push:
+            git_push(f"Illustrations : {done} nouvelles cartes (génération auto FLUX)")
+    if not args.no_push:
+        git_push(f"Illustrations : génération auto FLUX ({done} cartes)")
+    print(f"Terminé : {done} carte(s) générée(s).")
 
 
 if __name__ == "__main__":
