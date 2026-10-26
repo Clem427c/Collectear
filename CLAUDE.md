@@ -26,5 +26,7 @@ Langue du projet : **français** (code commenté en français, messages de commi
 - Ajouter des tests pour toute logique de `lib/core/`.
 - Les règles chiffrées du gameplay sont dans `lib/core/config.dart` (une seule source).
 - Ne jamais committer de secrets (clés Supabase, keystore) : utiliser les Secrets GitHub.
+- Supabase : secrets GitHub `SUPABASE_URL` et `SUPABASE_PUBLISHABLE_KEY` (clé publique `sb_publishable_…`,
+  ou ancienne clé `anon` en `eyJ…`). À injecter au build via `--dart-define`. Activer le RLS sur toutes les tables.
 - Décisions de design non tranchées : implémenter une version provisoire, la marquer `PROVISOIRE`
   dans le code et la lister dans ROADMAP.md (section « Questions pour Clem »).
