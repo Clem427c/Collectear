@@ -15,6 +15,13 @@ STYLE = (
     "soft cel shading, vibrant saturated colors, big expressive eyes, simple readable silhouette, "
     "full body, centered, 3/4 front view, plain white background, original design"
 )
+# Héros : toujours cartoon, mais héroïque et impressionnant (pas « kawaii »).
+HERO_STYLE = (
+    "stylized cartoon hero character for a mobile game, heroic proportions about six heads tall, "
+    "adult, confident fierce expression, tough and impressive, dynamic battle-ready pose, detailed gear, "
+    "thick clean dark outlines, bold cel shading, vibrant saturated colors, strong readable silhouette, "
+    "full body, centered, 3/4 front view, plain white background, original design, not chibi, not childlike"
+)
 FLUX_SUFFIX = (
     ", a single character only, isolated on a plain pure white background, no text, no letters, "
     "no frame, no border, soft round shadow on the ground under the character, flat 2D illustration"
@@ -54,29 +61,49 @@ STAGE = {
 }
 
 ROLE_EN = {
-    "Vagabond": "wandering traveler with a bindle", "Vagabonde": "wandering traveler with a bindle",
-    "Apprenti": "young apprentice with a book", "Apprentie": "young apprentice with a book",
-    "Pêcheur": "fisher with a fishing rod", "Pêcheuse": "fisher with a fishing rod",
-    "Bûcheron": "lumberjack with an axe", "Bûcheronne": "lumberjack with an axe",
-    "Garde": "town guard with a spear and shield", "Éclaireur": "scout with a spyglass",
-    "Éclaireuse": "scout with a spyglass", "Forgeron": "blacksmith with a hammer",
-    "Forgeronne": "blacksmith with a hammer", "Berger": "shepherd with a crook", "Bergère": "shepherd with a crook",
-    "Cueilleur": "forager with a basket of herbs", "Cueilleuse": "forager with a basket of herbs",
-    "Marchand": "traveling merchant with a backpack", "Marchande": "traveling merchant with a backpack",
-    "Rôdeur": "hooded ranger", "Rôdeuse": "hooded ranger", "Mercenaire": "mercenary with a sword",
-    "Alchimiste": "alchemist with bubbling potions", "Duelliste": "duelist with a rapier",
-    "Pisteur": "tracker with a bow", "Pisteuse": "tracker with a bow", "Moine": "martial arts monk",
-    "Moniale": "martial arts monk", "Corsaire": "swashbuckling pirate", "Barde": "bard with a lute",
-    "Paladin": "paladin in shining armor", "Paladine": "paladin in shining armor",
-    "Mage des Cendres": "ash mage with smoky magic", "Maître-Lame": "blade master with two swords",
-    "Maîtresse-Lame": "blade master with two swords", "Druide": "druid with a leafy staff",
-    "Druidesse": "druid with a leafy staff", "Arcaniste": "arcanist with floating runes",
-    "Gardien des Ruines": "ancient ruins guardian with a stone shield",
-    "Gardienne des Ruines": "ancient ruins guardian with a stone shield",
-    "Chasseur de Primes": "bounty hunter with a crossbow", "Chasseuse de Primes": "bounty hunter with a crossbow",
-    "Chevaucheur de Wyverne": "wyvern rider with a lance", "Chevaucheuse de Wyverne": "wyvern rider with a lance",
+    "Vagabond": "grizzled wandering swordsman with a worn hooded cloak and a battered blade",
+    "Vagabonde": "grizzled wandering swordswoman with a worn hooded cloak and a battered blade",
+    "Apprenti": "determined young battle mage with a glowing spellbook and crackling hands",
+    "Apprentie": "determined young battle mage with a glowing spellbook and crackling hands",
+    "Pêcheur": "rugged deep-sea fisherman who hunts sharks, holding a huge harpoon, heavy net on the shoulder, scars, salt-stained coat",
+    "Pêcheuse": "rugged deep-sea fisherwoman who hunts sharks, holding a huge harpoon, heavy net on the shoulder, scars, salt-stained coat",
+    "Bûcheron": "burly lumberjack with a massive double-bladed axe and plaid shirt",
+    "Bûcheronne": "burly lumberjack with a massive double-bladed axe and plaid shirt",
+    "Garde": "armored town guard with a long spear and a big tower shield",
+    "Éclaireur": "agile scout with a short bow, spyglass and wind-swept scarf",
+    "Éclaireuse": "agile scout with a short bow, spyglass and wind-swept scarf",
+    "Forgeron": "muscular blacksmith with a huge glowing forge hammer and leather apron",
+    "Forgeronne": "muscular blacksmith with a huge glowing forge hammer and leather apron",
+    "Berger": "tough mountain shepherd with a heavy iron crook and wolf-fur cloak",
+    "Bergère": "tough mountain shepherd with a heavy iron crook and wolf-fur cloak",
+    "Cueilleur": "wilderness forager with a machete, herb satchel and camouflage cloak",
+    "Cueilleuse": "wilderness forager with a machete, herb satchel and camouflage cloak",
+    "Marchand": "shrewd traveling merchant with a loaded backpack and a hidden dagger",
+    "Marchande": "shrewd traveling merchant with a loaded backpack and a hidden dagger",
+    "Rôdeur": "hooded ranger drawing a longbow", "Rôdeuse": "hooded ranger drawing a longbow",
+    "Mercenaire": "battle-scarred mercenary with a greatsword on the shoulder",
+    "Alchimiste": "alchemist with a bandolier of explosive bubbling potions",
+    "Duelliste": "elegant duelist with a rapier in a fierce fencing stance",
+    "Pisteur": "fur-hooded tracker with a bow and hunting knife", "Pisteuse": "fur-hooded tracker with a bow and hunting knife",
+    "Moine": "martial arts monk in fighting stance with glowing fists",
+    "Moniale": "martial arts monk in fighting stance with glowing fists",
+    "Corsaire": "swashbuckling pirate captain with a cutlass and flintlock pistol",
+    "Barde": "battle bard with a lute on the back and a rapier in hand",
+    "Paladin": "paladin in shining heavy armor with a glowing warhammer",
+    "Paladine": "paladin in shining heavy armor with a glowing warhammer",
+    "Mage des Cendres": "ash mage conjuring swirling embers and smoke",
+    "Maître-Lame": "blade master wielding two katanas", "Maîtresse-Lame": "blade master wielding two katanas",
+    "Druide": "druid with an antler staff and armor made of bark and leaves",
+    "Druidesse": "druid with an antler staff and armor made of bark and leaves",
+    "Arcaniste": "arcanist surrounded by floating glowing runes",
+    "Gardien des Ruines": "ancient ruins guardian in stone armor with a massive shield",
+    "Gardienne des Ruines": "ancient ruins guardian in stone armor with a massive shield",
+    "Chasseur de Primes": "bounty hunter with a heavy crossbow and a long leather coat",
+    "Chasseuse de Primes": "bounty hunter with a heavy crossbow and a long leather coat",
+    "Chevaucheur de Wyverne": "wyvern rider in dragon-scale armor with a long lance",
+    "Chevaucheuse de Wyverne": "wyvern rider in dragon-scale armor with a long lance",
 }
-HERO_STAGE = {0: "humble everyday adventurer", 1: "seasoned adventurer", 2: "renowned hero"}
+HERO_STAGE = {0: "seasoned adventurer", 1: "battle-hardened veteran", 2: "renowned champion"}
 
 MANUAL = {
     # Légendaires
@@ -125,7 +152,7 @@ def describe(card):
     elif card["family"] == "hero":
         role = next((v for k, v in sorted(ROLE_EN.items(), key=lambda kv: -len(kv[0])) if k in name), "adventurer")
         gender = "female" if any(f in name for f in FEMININE) else "male"
-        subject = f"{gender} human {role}, {HERO_STAGE[r]}, chibi proportions"
+        subject = f"{gender} human {role}, {HERO_STAGE[r]}"
     else:
         stem = max((s for s in list(ANIMALS) + list(ELEMENTS) if name.startswith(s)), key=len)
         if stem in ANIMALS:
@@ -133,7 +160,8 @@ def describe(card):
         else:
             subject = f"small elemental creature made of {ELEMENTS[stem]}, {STAGE[r]}"
     accent = RARITY_ACCENT[r]
-    return f"{subject}, {accent} {STYLE}".replace("  ", " ")
+    style = HERO_STYLE if card["family"] == "hero" else STYLE
+    return f"{subject}, {accent} {style}".replace("  ", " ")
 
 
 def main():
