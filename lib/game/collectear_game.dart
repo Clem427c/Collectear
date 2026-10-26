@@ -68,7 +68,7 @@ class CollectearGame extends FlameGame with KeyboardEvents {
   bool _endNotified = false;
 
   @override
-  Color backgroundColor() => const Color(0xFF8FD18A);
+  Color backgroundColor() => const Color(0xFF4F9A58);
 
   @override
   Future<void> onLoad() async {
@@ -163,7 +163,7 @@ class CollectearGame extends FlameGame with KeyboardEvents {
     if (run.isOver && !_endNotified) {
       _endNotified = true;
       pauseEngine();
-      Future<void>.delayed(const Duration(milliseconds: 600), () => onRunEnd(run));
+      Future<void>.delayed(const Duration(milliseconds: 300), () => onRunEnd(run));
     }
   }
 

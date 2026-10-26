@@ -10,18 +10,19 @@ import 'collectear_game.dart';
 class TerrainComponent extends Component with HasGameReference<CollectearGame> {
   TerrainComponent() : super(priority: -100);
 
+  // Plus c'est haut, plus c'est clair : vallée sombre → sommet enneigé.
   static const _levelColors = [
-    Color(0xFF8FD18A), // 0 plaine
-    Color(0xFF6DBB72), // 1 colline
-    Color(0xFF4E9F5D), // 2 plateau
-    Color(0xFF9C8B78), // 3 roche
-    Color(0xFFE6E4F0), // 4 sommet
+    Color(0xFF4F9A58), // 0 vallée
+    Color(0xFF74BD6A), // 1 prairie
+    Color(0xFF9BD57E), // 2 plateau
+    Color(0xFFD9C79A), // 3 roche
+    Color(0xFFF4F2FA), // 4 sommet
   ];
 
   final _fills = [for (final c in _levelColors) Paint()..color = c];
-  final _cliff = Paint()..color = const Color(0x66000000);
-  final _sideEdge = Paint()..color = const Color(0x33000000);
-  final _highlight = Paint()..color = const Color(0x22FFFFFF);
+  final _cliff = Paint()..color = const Color(0xFF3B2F45);
+  final _sideEdge = Paint()..color = const Color(0x553B2F45);
+  final _highlight = Paint()..color = const Color(0x55FFFFFF);
   final _gridDot = Paint()..color = const Color(0x14000000);
 
   @override
@@ -50,7 +51,7 @@ class TerrainComponent extends Component with HasGameReference<CollectearGame> {
           }
           final below = terrain.levelAt(tx, ty + 1);
           if (below < level) {
-            final h = 5.0 + 3.0 * (level - below);
+            final h = 6.0 + 4.0 * (level - below);
             canvas.drawRect(Rect.fromLTWH(left, top + t - h, t, h), _cliff);
           }
           if (terrain.levelAt(tx - 1, ty) < level) {

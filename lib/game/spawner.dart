@@ -13,6 +13,7 @@ import 'enemy.dart';
 class Spawner extends Component with HasGameReference<CollectearGame> {
   static const int loadRadius = 2;
   static const int unloadRadius = 3;
+  static const int safeRadius = 7; // en cases
 
   final Map<(int, int), List<Component>> _loaded = {};
   final Set<String> consumed = {};
@@ -62,6 +63,8 @@ class Spawner extends Component with HasGameReference<CollectearGame> {
       final kind = rng.nextDouble() < 0.6 ? EnemyKind.melee : EnemyKind.ranged;
       final enemySeed = rng.nextInt(1 << 30);
       if (consumed.contains(id)) continue;
+      // Pas d'ennemi dans les premières cases autour du départ.
+      if (tx.abs() < safeRadius && ty.abs() < safeRadius) continue;
       out.add(Enemy(
         kind: kind,
         level: terrain.levelAt(tx, ty),
