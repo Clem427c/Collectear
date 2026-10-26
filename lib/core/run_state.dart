@@ -24,6 +24,7 @@ class RunRules {
   int get playerHitsToDie =>
       boost == Boost.resistance ? GameConfig.playerHitsToDieBoosted : GameConfig.playerHitsToDie;
   double get speedMultiplier => boost == Boost.speed ? GameConfig.speedBoostMultiplier : 1.0;
+  double get attackRange => boost == Boost.range ? GameConfig.attackRangeBoosted : GameConfig.attackRange;
 }
 
 /// État logique d'une run (indépendant du moteur, testé unitairement).

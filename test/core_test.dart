@@ -24,7 +24,7 @@ void main() {
 
     test('chaque carte a un boost, les 4 boosts sont présents', () {
       final pool = _pool();
-      expect(pool.cards.map((c) => c.boost).toSet().length, 4);
+      expect(pool.cards.map((c) => c.boost).toSet().length, Boost.values.length);
       final speedy = pool.cards.where((c) => c.name.startsWith('Hériss'));
       expect(speedy.every((c) => c.boost != Boost.speed), isTrue);
     });
@@ -130,6 +130,10 @@ void main() {
       expect(run.isOver, isFalse);
       run.addCard(pool.cards[2]);
       expect(run.endReason, RunEndReason.cardsCollected);
+    });
+
+    test('boost portée : attaque plus longue', () {
+      expect(const RunRules(boost: Boost.range).attackRange, greaterThan(const RunRules().attackRange));
     });
 
     test('boost dégâts : ennemis en 2 coups', () {

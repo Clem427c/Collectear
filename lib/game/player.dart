@@ -111,7 +111,7 @@ class Player extends PositionComponent with HasGameReference<CollectearGame> {
       if (enemy.level != level) continue;
       final toEnemy = enemy.position - position;
       final dist = toEnemy.length;
-      if (dist > GameConfig.attackRange + enemy.radius) continue;
+      if (dist > game.run.rules.attackRange + enemy.radius) continue;
       if (dist > 1 && toEnemy.normalized().dot(facing) < GameConfig.attackArcCos) continue;
       enemy.hit(toEnemy.length2 > 0 ? toEnemy.normalized() : facing);
     }
@@ -150,7 +150,7 @@ class Player extends PositionComponent with HasGameReference<CollectearGame> {
     if (_swing > 0) {
       final angle = math.atan2(facing.y, facing.x);
       canvas.drawArc(
-        Rect.fromCircle(center: body, radius: GameConfig.attackRange * 0.8),
+        Rect.fromCircle(center: body, radius: game.run.rules.attackRange * 0.8),
         angle - 1.1,
         2.2,
         false,

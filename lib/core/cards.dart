@@ -15,15 +15,16 @@ extension RarityInfo on Rarity {
 enum CardFamily { creature, hero }
 
 /// Boost apporté par une carte choisie comme compagnon de run.
-enum Boost { damage, speed, resistance, time }
+enum Boost { damage, speed, resistance, time, range }
 
 extension BoostInfo on Boost {
-  String get label => const ['Dégâts', 'Vitesse', 'Résistance', 'Temps'][index];
+  String get label => const ['Dégâts', 'Vitesse', 'Résistance', 'Temps', 'Portée'][index];
   String get description => const [
         'Un ennemi tombe en 2 coups au lieu de 3',
         'Déplacement plus rapide',
         '4 vies au lieu de 3',
         '+30 secondes au chrono',
+        'Attaque les ennemis de plus loin',
       ][index];
 }
 

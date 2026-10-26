@@ -270,12 +270,11 @@ class _TradesViewState extends State<_TradesView> {
             ),
           ),
         ]),
-        if (_give != null && _get != null && _give!.rarity != _get!.rarity)
-          const Padding(
-            padding: EdgeInsets.only(top: 8),
-            child: Text('Règle prévue : échanges entre cartes de même rareté.',
-                textAlign: TextAlign.center, style: TextStyle(color: AppColors.coral, fontSize: 12)),
-          ),
+        const Padding(
+          padding: EdgeInsets.only(top: 8),
+          child: Text('Échange libre : vous négociez entre joueurs, sans restriction de rareté.',
+              textAlign: TextAlign.center, style: TextStyle(color: Colors.white54, fontSize: 12)),
+        ),
         const SizedBox(height: 16),
         ChunkyButton(
           label: 'Envoyer la proposition',

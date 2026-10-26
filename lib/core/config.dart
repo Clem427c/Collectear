@@ -32,6 +32,7 @@ class GameConfig {
   static const double jumpHeight = 18; // décalage visuel
   static const double attackCooldown = 0.35;
   static const double attackRange = 40;
+  static const double attackRangeBoosted = 68; // boost Portée
   static const double attackArcCos = 0.2; // ~78° de chaque côté
   static const double dodgeDuration = 0.22;
   static const double dodgeSpeed = 360;

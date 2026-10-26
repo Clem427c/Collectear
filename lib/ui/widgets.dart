@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import '../core/cards.dart';
 import 'theme.dart';
 
-IconData boostIcon(Boost b) => const [Icons.bolt, Icons.directions_run, Icons.shield, Icons.timer][b.index];
+IconData boostIcon(Boost b) =>
+    const [Icons.bolt, Icons.directions_run, Icons.shield, Icons.timer, Icons.open_in_full][b.index];
 
 /// Dégradé de fond selon la rareté (style cartes de jeu mobile).
 LinearGradient rarityGradient(Rarity r) {

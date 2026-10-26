@@ -20,7 +20,6 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
 - [x] Premiers retours de playtest de Clem (blocage terrain, vies, interface)
 - [ ] Nouveaux retours de playtest → réglages (vitesses, densité d'ennemis, zoom)
 - [ ] Feedback : sons, vibrations, effets de coup, écran de début de run
-- [ ] Mini-carte ou boussole vers le coffre le plus proche
 
 ## Étape 2 – Boucle de jeu
 - [ ] Types de lieux du GDD : sanctuaire (vaincre les ennemis autour), tour, ruine, coffre rare
@@ -47,7 +46,10 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
 - Le compteur de 10 ennemis repart à zéro à chaque run.
 - Héros et créatures ne diffèrent que par le style visuel (héros = humanoïde, créature = non humanoïde).
 - 3 vies ; une vie rendue tous les 3 kills si on en a perdu au moins une.
+- Exploration 100 % libre : aucune boussole, mini-carte ni indication vers les lieux.
+- Échanges libres, négociés entre joueurs, sans restriction de rareté.
+- 5e boost « Portée » : attaque de plus loin (langues, tentacules, archers, mages…).
+- Combats entre amis : Clem a ses idées, on s'y attaque à la toute fin.
 
 ## Questions pour Clem
-- Combats entre amis : format à définir (écran de composition d'équipe prototypé).
-- Échanges : uniquement entre cartes de même rareté ? (proposé dans le prototype)
+(aucune pour l'instant)

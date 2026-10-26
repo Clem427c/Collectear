@@ -17,7 +17,7 @@
   "hp": 39,
   "atk": 14,
   "def": 8,
-  "boost": "time"
+  "boost": "range"
  },
  {
   "id": 3,
@@ -97,7 +97,7 @@
   "hp": 38,
   "atk": 14,
   "def": 8,
-  "boost": "damage"
+  "boost": "range"
  },
  {
   "id": 11,
@@ -107,7 +107,7 @@
   "hp": 48,
   "atk": 6,
   "def": 15,
-  "boost": "speed"
+  "boost": "range"
  },
  {
   "id": 12,
@@ -237,7 +237,7 @@
   "hp": 87,
   "atk": 7,
   "def": 6,
-  "boost": "time"
+  "boost": "range"
  },
  {
   "id": 25,
@@ -297,7 +297,7 @@
   "hp": 40,
   "atk": 14,
   "def": 7,
-  "boost": "time"
+  "boost": "range"
  },
  {
   "id": 31,
@@ -507,7 +507,7 @@
   "hp": 45,
   "atk": 6,
   "def": 15,
-  "boost": "speed"
+  "boost": "range"
  },
  {
   "id": 52,
@@ -657,7 +657,7 @@
   "hp": 39,
   "atk": 15,
   "def": 8,
-  "boost": "damage"
+  "boost": "range"
  },
  {
   "id": 67,
@@ -707,7 +707,7 @@
   "hp": 44,
   "atk": 5,
   "def": 15,
-  "boost": "time"
+  "boost": "range"
  },
  {
   "id": 72,
@@ -777,7 +777,7 @@
   "hp": 40,
   "atk": 15,
   "def": 8,
-  "boost": "time"
+  "boost": "range"
  },
  {
   "id": 79,
@@ -907,7 +907,7 @@
   "hp": 50,
   "atk": 6,
   "def": 14,
-  "boost": "damage"
+  "boost": "range"
  },
  {
   "id": 92,
@@ -977,7 +977,7 @@
   "hp": 38,
   "atk": 14,
   "def": 8,
-  "boost": "damage"
+  "boost": "range"
  },
  {
   "id": 99,
@@ -1057,7 +1057,7 @@
   "hp": 36,
   "atk": 16,
   "def": 8,
-  "boost": "damage"
+  "boost": "range"
  },
  {
   "id": 107,
@@ -1067,7 +1067,7 @@
   "hp": 46,
   "atk": 5,
   "def": 15,
-  "boost": "time"
+  "boost": "range"
  },
  {
   "id": 108,
@@ -1277,7 +1277,7 @@
   "hp": 100,
   "atk": 9,
   "def": 7,
-  "boost": "damage"
+  "boost": "range"
  },
  {
   "id": 129,
@@ -1537,7 +1537,7 @@
   "hp": 43,
   "atk": 19,
   "def": 10,
-  "boost": "damage"
+  "boost": "range"
  },
  {
   "id": 155,
@@ -1667,7 +1667,7 @@
   "hp": 55,
   "atk": 8,
   "def": 19,
-  "boost": "damage"
+  "boost": "range"
  },
  {
   "id": 168,
@@ -1677,7 +1677,7 @@
   "hp": 97,
   "atk": 9,
   "def": 7,
-  "boost": "time"
+  "boost": "range"
  },
  {
   "id": 169,
@@ -1707,7 +1707,7 @@
   "hp": 52,
   "atk": 7,
   "def": 20,
-  "boost": "time"
+  "boost": "range"
  },
  {
   "id": 172,
@@ -2027,7 +2027,7 @@
   "hp": 52,
   "atk": 7,
   "def": 19,
-  "boost": "damage"
+  "boost": "range"
  },
  {
   "id": 204,
@@ -2187,7 +2187,7 @@
   "hp": 77,
   "atk": 15,
   "def": 15,
-  "boost": "damage"
+  "boost": "range"
  },
  {
   "id": 220,
@@ -2227,7 +2227,7 @@
   "hp": 78,
   "atk": 15,
   "def": 16,
-  "boost": "time"
+  "boost": "range"
  },
  {
   "id": 224,
@@ -2247,7 +2247,7 @@
   "hp": 72,
   "atk": 9,
   "def": 22,
-  "boost": "time"
+  "boost": "range"
  },
  {
   "id": 226,
@@ -2307,7 +2307,7 @@
   "hp": 73,
   "atk": 14,
   "def": 15,
-  "boost": "speed"
+  "boost": "range"
  },
  {
   "id": 232,
@@ -2327,7 +2327,7 @@
   "hp": 63,
   "atk": 9,
   "def": 22,
-  "boost": "time"
+  "boost": "range"
  },
  {
   "id": 234,
@@ -2507,7 +2507,7 @@
   "hp": 71,
   "atk": 16,
   "def": 14,
-  "boost": "time"
+  "boost": "range"
  },
  {
   "id": 252,
@@ -2527,7 +2527,7 @@
   "hp": 68,
   "atk": 8,
   "def": 22,
-  "boost": "damage"
+  "boost": "range"
  },
  {
   "id": 254,
@@ -2577,7 +2577,7 @@
   "hp": 117,
   "atk": 12,
   "def": 10,
-  "boost": "speed"
+  "boost": "range"
  },
  {
   "id": 259,
@@ -2597,7 +2597,7 @@
   "hp": 62,
   "atk": 22,
   "def": 11,
-  "boost": "speed"
+  "boost": "range"
  },
  {
   "id": 261,
@@ -2657,7 +2657,7 @@
   "hp": 69,
   "atk": 28,
   "def": 14,
-  "boost": "time"
+  "boost": "range"
  },
  {
   "id": 267,
@@ -2707,7 +2707,7 @@
   "hp": 85,
   "atk": 11,
   "def": 27,
-  "boost": "speed"
+  "boost": "range"
  },
  {
   "id": 272,
@@ -2747,7 +2747,7 @@
   "hp": 84,
   "atk": 11,
   "def": 26,
-  "boost": "speed"
+  "boost": "range"
  },
  {
   "id": 276,
@@ -2867,7 +2867,7 @@
   "hp": 78,
   "atk": 11,
   "def": 28,
-  "boost": "damage"
+  "boost": "range"
  },
  {
   "id": 288,
@@ -2937,7 +2937,7 @@
   "hp": 82,
   "atk": 36,
   "def": 18,
-  "boost": "time"
+  "boost": "range"
  },
  {
   "id": 295,

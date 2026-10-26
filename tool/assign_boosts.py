@@ -1,6 +1,6 @@
 """Attribue un boost de compagnon fixe à chaque carte, d'après le sens de son nom.
 
-Boosts : damage (dégâts), speed (vitesse), resistance (résistance, +1 vie), time (+30 s).
+Boosts : damage (dégâts), speed (vitesse), resistance (+1 vie), time (+30 s), range (portée d'attaque).
 Usage : python3 tool/assign_boosts.py  → met à jour assets/data/cards.json
 """
 import json
@@ -36,6 +36,10 @@ STEMS = {
     "Grenouill": "time", "Têt": "time", "Hib": "time", "Cigal": "time",
 }
 
+# Portée (prioritaire) : langues, tentacules, lianes et ronces qui attrapent de loin.
+RANGE_STEMS = ["Grenouill", "Crap", "Pieuvr", "Lierr", "Ronc", "Trit", "Salam", "Libell", "Mouett"]
+RANGE_ROLES = ["Archère", "Chasseu", "Pêcheu", "Arcaniste", "Mage des Cendres", "Chevauch", "Dernier Mage"]
+
 # Rôles des héros → boost.
 ROLES = {
     "speed": ["Vagabond", "Éclaireu", "Pisteu", "Rôdeu", "Chevauch", "Corsaire", "Archère", "Voleur"],
@@ -51,9 +55,9 @@ ROLES = {
 MANUAL = {
     "Astrelune": "time", "Volcarion": "damage", "Abyssiel": "resistance", "Tempestor": "speed",
     "Sylvarche": "resistance", "Glacivore": "damage", "Chronoptère": "time", "Néantor": "damage",
-    "Pyralis": "damage", "Hydromance": "time", "Fulgurion": "speed", "Basaltor": "resistance",
+    "Pyralis": "damage", "Hydromance": "range", "Fulgurion": "speed", "Basaltor": "resistance",
     "Noctifère": "speed", "Cristalame": "damage", "Orageon": "speed", "Mirelune": "time",
-    "Sabrecorne": "damage", "Ronceroi": "resistance", "Cendrolithe": "resistance", "Aquilarc": "speed",
+    "Sabrecorne": "damage", "Ronceroi": "resistance", "Cendrolithe": "resistance", "Aquilarc": "range",
     "Vortexis": "speed", "Sépulcrin": "time", "Émeraudon": "resistance", "Marévore": "damage",
     "Solsticien": "time", "Givrespectre": "time",
 }
@@ -64,10 +68,14 @@ def boost_for(card):
     if name in MANUAL:
         return MANUAL[name]
     if card["family"] == "hero":
+        if any(k in name for k in RANGE_ROLES):
+            return "range"
         for boost, keys in ROLES.items():
             if any(k in name for k in keys):
                 return boost
         raise SystemExit(f"Rôle de héros inconnu : {name}")
+    if any(name.startswith(k) for k in RANGE_STEMS):
+        return "range"
     for stem in sorted(STEMS, key=len, reverse=True):
         if name.startswith(stem):
             return STEMS[stem]
