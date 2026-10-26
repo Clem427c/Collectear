@@ -81,14 +81,19 @@ class Enemy extends PositionComponent with HasGameReference<CollectearGame> {
     final toPlayer = player.position - position;
     final dist = toPlayer.length;
     final sameLevel = player.level == level;
-    final sees = sameLevel && dist < GameConfig.detectRadius;
+    // Période de grâce au début de la run : les ennemis ne repèrent pas encore le joueur.
+    final sees = sameLevel && dist < GameConfig.detectRadius && game.run.elapsed > GameConfig.startGrace;
 
     switch (_state) {
       case _State.patrol:
         _timer -= dt;
         if (_timer <= 0) _pickWander();
         _move(_wander * (_speed * 0.4) * dt);
-        if (sees) _state = _State.chase;
+        if (sees) {
+          _state = _State.chase;
+          // Laisse au joueur le temps de réagir avant le premier tir.
+          _timer = GameConfig.rangedCooldown * 0.75;
+        }
       case _State.chase:
         if (!sees) {
           _state = _State.patrol;

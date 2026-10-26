@@ -38,9 +38,10 @@ class GameConfig {
   static const double invincibleAfterHit = 1.0;
 
   // --- Ennemis ---
+  static const double startGrace = 4; // secondes sans agression au début de la run
   static const double meleeSpeed = 70;
   static const double rangedSpeed = 60;
-  static const double detectRadius = 6 * tileSize;
+  static const double detectRadius = 5 * tileSize;
   static const double meleeRange = 30;
   static const double meleeTelegraph = 0.5;
   static const double rangedPreferredDistance = 4.5 * tileSize;
