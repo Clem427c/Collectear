@@ -25,8 +25,8 @@ Conseil : générer d'abord 5–6 cartes de raretés différentes pour valider l
 3. C'est tout : la CI retire le fond blanc, recadre, redimensionne en 512×512 et intègre l'image au jeu.
    Les variantes (teinte, finitions Dorée/Cristal/Ombre, shiny) sont appliquées automatiquement par le jeu.
 
-Pour un bon détourage automatique : fond **blanc uni**, sans ombre portée au sol, personnage entouré
-d'un contour sombre fermé.
+Pour un bon détourage automatique : fond **blanc uni**, personnage entouré d'un contour sombre fermé.
+La petite ombre ronde au sol est voulue (choix de Clem) : elle est conservée par le détourage.
 
 ## Droit d'auteur
 Une image 100 % générée par IA est peu ou pas protégée. Retoucher chaque image (couleurs, détails,

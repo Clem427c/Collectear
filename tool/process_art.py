@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "art/raw"
 OUT = ROOT / "assets/cards"
 SIZE = 512
-TOLERANCE = 38  # écart maximal au blanc pour être considéré comme fond
+TOLERANCE = 14  # écart maximal au blanc pour être considéré comme fond (bas pour garder l'ombre au sol)
 
 
 def remove_background(img: Image.Image) -> Image.Image:
