@@ -7,19 +7,47 @@ class Terrain {
 
   final int seed;
   final Map<int, int> _cache = {};
+  final Map<int, int> _rawCache = {};
 
   /// Rayon (en cases) autour de l'origine forcé au niveau 0 pour un départ dégagé.
   static const int spawnClearRadius = 2;
 
+  static int _key(int tx, int ty) => ((tx & 0xFFFF) << 16) | (ty & 0xFFFF);
+
   /// Niveau de hauteur (0..maxLevel) de la case (tx, ty).
+  ///
+  /// Garantie : deux cases voisines (diagonales comprises) ne diffèrent jamais
+  /// de plus d'un niveau. Comme un saut fait monter d'un niveau et qu'on peut
+  /// toujours descendre, le joueur ne peut jamais se retrouver coincé.
   int levelAt(int tx, int ty) {
-    final key = ((tx & 0xFFFF) << 16) | (ty & 0xFFFF);
+    final key = _key(tx, ty);
     final cached = _cache[key];
     if (cached != null) return cached;
-    final level = _compute(tx, ty);
+    // Transformée de distance : L(p) = min sur q de raw(q) + distance(p, q).
+    // C'est le plus haut relief possible sous le relief brut qui monte d'au plus 1 par case.
+    var level = _raw(tx, ty);
+    for (var r = 1; r <= GameConfig.maxLevel && r < level; r++) {
+      for (var dy = -r; dy <= r; dy++) {
+        for (var dx = -r; dx <= r; dx++) {
+          if (dx.abs() != r && dy.abs() != r) continue; // seulement l'anneau de rayon r
+          final v = _raw(tx + dx, ty + dy) + r;
+          if (v < level) level = v;
+        }
+      }
+    }
     if (_cache.length > 60000) _cache.clear();
     _cache[key] = level;
     return level;
+  }
+
+  int _raw(int tx, int ty) {
+    final key = _key(tx, ty);
+    final cached = _rawCache[key];
+    if (cached != null) return cached;
+    final v = _compute(tx, ty);
+    if (_rawCache.length > 120000) _rawCache.clear();
+    _rawCache[key] = v;
+    return v;
   }
 
   int _compute(int tx, int ty) {

@@ -61,7 +61,7 @@ class CollectearGame extends FlameGame with KeyboardEvents {
 
   final Vector2 _keyboardMove = Vector2.zero();
   final ValueNotifier<HudData> hud = ValueNotifier(
-    const HudData(remaining: 120, hitsLeft: 2, maxHits: 2, killsTowardCard: 0, cards: 0, message: null),
+    const HudData(remaining: 120, hitsLeft: 3, maxHits: 3, killsTowardCard: 0, cards: 0, message: null),
   );
   String? _message;
   double _messageTime = 0;
@@ -206,7 +206,10 @@ class CollectearGame extends FlameGame with KeyboardEvents {
 
   void enemyKilled(Enemy enemy) {
     spawner.consumed.add(enemy.spawnId);
-    if (run.registerKill()) _giveCard();
+    final before = run.livesRegained;
+    final card = run.registerKill();
+    if (run.livesRegained > before) _toast('+1 vie !');
+    if (card) _giveCard();
   }
 
   void chestOpened(Chest chest) {

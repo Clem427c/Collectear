@@ -22,7 +22,7 @@ extension BoostInfo on Boost {
   String get description => const [
         'Un ennemi tombe en 2 coups au lieu de 3',
         'Déplacement plus rapide',
-        'Tu encaisses 3 coups au lieu de 2',
+        '4 vies au lieu de 3',
         '+30 secondes au chrono',
       ][index];
 }
@@ -36,6 +36,7 @@ class GameCard {
     required this.hp,
     required this.atk,
     required this.def,
+    required this.boost,
   });
 
   final int id;
@@ -46,9 +47,9 @@ class GameCard {
   final int atk;
   final int def;
 
-  /// PROVISOIRE : en attendant la décision de design (boost par espèce
-  /// ou par variante), le boost est déduit du numéro de la carte.
-  Boost get boost => Boost.values[id % Boost.values.length];
+  /// Boost fixe de la carte quand elle est compagnon (choisi selon son nom,
+  /// voir tool/assign_boosts.py).
+  final Boost boost;
 
   factory GameCard.fromJson(Map<String, dynamic> j) => GameCard(
         id: j['id'] as int,
@@ -58,6 +59,7 @@ class GameCard {
         hp: j['hp'] as int,
         atk: j['atk'] as int,
         def: j['def'] as int,
+        boost: Boost.values.byName(j['boost'] as String),
       );
 }
 

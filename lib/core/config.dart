@@ -21,8 +21,9 @@ class GameConfig {
   // --- Combat ---
   static const int enemyHitsToKill = 3;
   static const int enemyHitsToKillBoosted = 2;
-  static const int playerHitsToDie = 2;
-  static const int playerHitsToDieBoosted = 3;
+  static const int playerHitsToDie = 3; // 3 vies
+  static const int playerHitsToDieBoosted = 4; // boost résistance : +1 vie
+  static const int killsPerLifeRegen = 3; // 1 vie rendue tous les 3 kills (si une vie a été perdue)
 
   // --- Joueur ---
   static const double playerSpeed = 120; // unités / s

@@ -22,6 +22,13 @@ void main() {
       }
     });
 
+    test('chaque carte a un boost, les 4 boosts sont présents', () {
+      final pool = _pool();
+      expect(pool.cards.map((c) => c.boost).toSet().length, 4);
+      final speedy = pool.cards.where((c) => c.name.startsWith('Hériss'));
+      expect(speedy.every((c) => c.boost != Boost.speed), isTrue);
+    });
+
     test('la puissance augmente strictement avec la rareté', () {
       final pool = _pool();
       double power(GameCard c) => c.hp / 5 + c.atk + c.def;
@@ -71,17 +78,42 @@ void main() {
       expect(run.endReason, RunEndReason.timeUp);
     });
 
-    test('mort au 2e coup, au 3e avec résistance', () {
+    test('3 vies, 4 avec le boost résistance', () {
       final a = RunState(const RunRules());
+      expect(a.playerHit(), isFalse);
       expect(a.playerHit(), isFalse);
       expect(a.playerHit(), isTrue);
       expect(a.endReason, RunEndReason.death);
 
       final b = RunState(const RunRules(boost: Boost.resistance));
-      b.playerHit();
-      b.playerHit();
+      for (var i = 0; i < 3; i++) {
+        b.playerHit();
+      }
       expect(b.isOver, isFalse);
       expect(b.playerHit(), isTrue);
+    });
+
+    test('une vie rendue tous les 3 kills si une vie a été perdue', () {
+      final run = RunState(const RunRules());
+      // Aucun dégât : rien à rendre.
+      for (var i = 0; i < 3; i++) {
+        run.registerKill();
+      }
+      expect(run.hitsLeft, 3);
+      expect(run.livesRegained, 0);
+      run.playerHit();
+      run.playerHit();
+      expect(run.hitsLeft, 1);
+      run.registerKill();
+      run.registerKill();
+      expect(run.hitsLeft, 1);
+      run.registerKill(); // 6e kill
+      expect(run.hitsLeft, 2);
+      for (var i = 0; i < 3; i++) {
+        run.registerKill();
+      }
+      expect(run.hitsLeft, 3);
+      expect(run.livesRegained, 2);
     });
 
     test('une carte tous les 10 kills, fin à 3 cartes', () {
@@ -142,6 +174,20 @@ void main() {
         }
       }
       expect(levels.length, greaterThanOrEqualTo(3));
+    });
+
+    test('jamais coincé : deux cases voisines diffèrent d\'au plus 1 niveau', () {
+      for (final seed in [1, 42, 777, 2026, 99999]) {
+        final t = Terrain(seed);
+        for (var x = -80; x < 80; x++) {
+          for (var y = -80; y < 80; y++) {
+            final l = t.levelAt(x, y);
+            expect((l - t.levelAt(x + 1, y)).abs(), lessThanOrEqualTo(1));
+            expect((l - t.levelAt(x, y + 1)).abs(), lessThanOrEqualTo(1));
+            expect((l - t.levelAt(x + 1, y + 1)).abs(), lessThanOrEqualTo(1));
+          }
+        }
+      }
     });
 
     test('règles de hauteur : saut = +1 niveau max', () {

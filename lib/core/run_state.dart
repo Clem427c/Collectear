@@ -51,10 +51,18 @@ class RunState {
     }
   }
 
+  /// Nombre de vies rendues pendant la run.
+  int livesRegained = 0;
+
   /// Enregistre un ennemi tué. Renvoie true si ce kill débloque une carte.
+  /// Tous les 3 kills, une vie perdue est rendue.
   bool registerKill() {
     if (isOver) return false;
     kills++;
+    if (kills % GameConfig.killsPerLifeRegen == 0 && hitsTaken > 0) {
+      hitsTaken--;
+      livesRegained++;
+    }
     return kills % GameConfig.killsPerCard == 0;
   }
 
