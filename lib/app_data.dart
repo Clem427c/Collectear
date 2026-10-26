@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/services.dart';
 
 import 'core/cards.dart';
@@ -13,6 +15,7 @@ class AppData {
     final json = await rootBundle.loadString('assets/data/cards.json');
     final pool = CardPool.fromJsonString(json);
     final collection = await Collection.load();
+    await Illustrations.load();
     return AppData(pool, collection);
   }
 
@@ -31,4 +34,22 @@ class AppData {
     if (id == null || !collection.owned.containsKey(id)) return null;
     return pool.byId(id);
   }
+}
+
+/// Numéros des cartes qui ont une illustration (assets/cards/NNN.png, générés en CI
+/// à partir de art/raw/ par tool/process_art.py).
+class Illustrations {
+  Illustrations._();
+  static Set<int> available = {};
+
+  static Future<void> load() async {
+    try {
+      final json = await rootBundle.loadString('assets/cards/manifest.json');
+      available = (jsonDecode(json) as List).cast<int>().toSet();
+    } catch (_) {
+      available = {};
+    }
+  }
+
+  static String path(int id) => 'assets/cards/${id.toString().padLeft(3, '0')}.png';
 }

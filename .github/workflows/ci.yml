@@ -37,6 +37,11 @@ jobs:
           # flutter create ajoute un test d'exemple qui ne correspond pas à notre app
           git ls-files --error-unmatch test/widget_test.dart >/dev/null 2>&1 || rm -f test/widget_test.dart
 
+      - name: Illustrations (art/raw → assets/cards)
+        run: |
+          python3 -m pip install --quiet pillow || python3 -m pip install --quiet --break-system-packages pillow
+          python3 tool/process_art.py
+
       - name: Dépendances
         run: flutter pub get
 

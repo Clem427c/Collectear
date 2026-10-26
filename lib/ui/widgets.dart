@@ -4,6 +4,7 @@ import 'dart:math' as math;
 
 import '../core/cards.dart';
 import '../core/variants.dart';
+import '../app_data.dart';
 import 'theme.dart';
 
 IconData boostIcon(Boost b) =>
@@ -90,13 +91,18 @@ class CardView extends StatelessWidget {
                                       ? Colors.black.withValues(alpha: 0.18)
                                       : Colors.white.withValues(alpha: 0.04),
                                 ),
-                                child: Icon(
-                                  owned
-                                      ? (card.family == CardFamily.hero ? Icons.person : Icons.pets)
-                                      : Icons.question_mark,
-                                  size: w * 0.32,
-                                  color: owned ? Colors.white : Colors.white24,
-                                ),
+                                child: owned && Illustrations.available.contains(card.id)
+                                    ? Padding(
+                                        padding: EdgeInsets.all(w * 0.03),
+                                        child: Image.asset(Illustrations.path(card.id), fit: BoxFit.contain),
+                                      )
+                                    : Icon(
+                                        owned
+                                            ? (card.family == CardFamily.hero ? Icons.person : Icons.pets)
+                                            : Icons.question_mark,
+                                        size: w * 0.32,
+                                        color: owned ? Colors.white : Colors.white24,
+                                      ),
                               ),
                       ),
                     ),
@@ -359,7 +365,15 @@ class VariantEmblem extends StatelessWidget {
       child: CustomPaint(
         painter: _EmblemPainter(colors: _colors, pattern: variant.pattern, shiny: variant.shiny),
         child: Center(
-          child: Icon(
+          child: Illustrations.available.contains(card.id)
+              ? Padding(
+                  padding: EdgeInsets.all(size * 0.04),
+                  child: ColorFiltered(
+                    colorFilter: ColorFilter.matrix(variantMatrix(variant)),
+                    child: Image.asset(Illustrations.path(card.id), fit: BoxFit.contain),
+                  ),
+                )
+              : Icon(
             card.family == CardFamily.hero ? Icons.person : Icons.pets,
             size: size * 0.5,
             color: variant.finish == VariantFinish.shadow ? const Color(0xFFCBB8FF) : Colors.white,
@@ -447,4 +461,47 @@ class _EmblemPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _EmblemPainter old) =>
       old.colors != colors || old.pattern != pattern || old.shiny != shiny;
+}
+
+
+/// Matrice de couleur appliquée à l'illustration d'une variante :
+/// rotation de teinte (±70°) ou finition spéciale (dorée, cristal, ombre).
+List<double> variantMatrix(Variant v) {
+  switch (v.finish) {
+    case VariantFinish.golden:
+      return const [
+        0.50, 0.45, 0.15, 0, 30, //
+        0.40, 0.40, 0.12, 0, 15,
+        0.15, 0.15, 0.08, 0, 0,
+        0, 0, 0, 1, 0,
+      ];
+    case VariantFinish.crystal:
+      return const [
+        0.30, 0.40, 0.10, 0, 70, //
+        0.30, 0.45, 0.10, 0, 95,
+        0.30, 0.45, 0.20, 0, 120,
+        0, 0, 0, 0.92, 0,
+      ];
+    case VariantFinish.shadow:
+      return const [
+        0.20, 0.25, 0.08, 0, 15, //
+        0.12, 0.18, 0.06, 0, 0,
+        0.25, 0.30, 0.20, 0, 35,
+        0, 0, 0, 1, 0,
+      ];
+    case VariantFinish.normal:
+      return hueRotation(((v.hue / 360) * 2 - 1) * 70);
+  }
+}
+
+List<double> hueRotation(double degrees) {
+  final a = degrees * math.pi / 180;
+  final c = math.cos(a), s = math.sin(a);
+  const r = 0.213, g = 0.715, b = 0.072;
+  return [
+    r + c * (1 - r) - s * r, g - c * g - s * g, b - c * b + s * (1 - b), 0, 0, //
+    r - c * r + s * 0.143, g + c * (1 - g) + s * 0.140, b - c * b - s * 0.283, 0, 0,
+    r - c * r - s * (1 - r), g - c * g + s * g, b + c * (1 - b) + s * b, 0, 0,
+    0, 0, 0, 1, 0,
+  ];
 }

@@ -19,6 +19,10 @@ build/
 /macos/
 /windows/
 
+# Illustrations traitées en CI depuis art/raw/
+/assets/cards/*.png
+/assets/cards/manifest.json
+
 # Secrets
 .env
 *.jks
