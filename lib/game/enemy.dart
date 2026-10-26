@@ -6,7 +6,9 @@ import 'package:flame/components.dart';
 import '../core/config.dart';
 import '../core/terrain.dart';
 import 'collectear_game.dart';
+import 'effects.dart';
 import 'projectile.dart';
+import 'sfx.dart';
 
 enum EnemyKind { melee, ranged }
 
@@ -69,7 +71,7 @@ class Enemy extends PositionComponent with HasGameReference<CollectearGame> {
   @override
   void update(double dt) {
     super.update(dt);
-    if (game.run.isOver) return;
+    if (!game.active) return;
     _flash = math.max(0, _flash - dt);
 
     if (_knock.length2 > 1) {
@@ -145,6 +147,7 @@ class Enemy extends PositionComponent with HasGameReference<CollectearGame> {
     } else {
       final dir = (player.position - position);
       final aim = dir.length2 > 0 ? dir.normalized() : _aim;
+      Sfx.play('shoot', volume: 0.3);
       game.world.add(Projectile(position: position.clone(), velocity: aim * GameConfig.projectileSpeed, level: level));
       _state = _State.recover;
       _timer = 0.4;
@@ -173,6 +176,9 @@ class Enemy extends PositionComponent with HasGameReference<CollectearGame> {
   void hit(Vector2 direction) {
     hp--;
     _flash = 0.12;
+    Sfx.play('hit', volume: 0.5);
+    Sfx.haptic(HapticStrength.light);
+    game.world.add(Burst(position: position.clone(), color: const Color(0xFFFFFFFF), count: 6, speed: 90, life: 0.25));
     _knock.setFrom(direction * 260);
     if (_state == _State.telegraph) {
       _state = _State.recover;

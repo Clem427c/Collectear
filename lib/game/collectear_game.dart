@@ -13,6 +13,8 @@ import '../core/config.dart';
 import '../core/run_state.dart';
 import '../core/terrain.dart';
 import 'chest.dart';
+import 'effects.dart';
+import 'sfx.dart';
 import 'enemy.dart';
 import 'player.dart';
 import 'spawner.dart';
@@ -67,6 +69,20 @@ class CollectearGame extends FlameGame with KeyboardEvents {
   double _messageTime = 0;
   bool _endNotified = false;
 
+  /// Compte à rebours avant le départ (3, 2, 1, 0 = « GO », null = terminé).
+  final ValueNotifier<int?> countdown = ValueNotifier(3);
+  double _countdownTime = 0;
+  bool started = false;
+
+  /// Incrémenté à chaque coup reçu (flash rouge dans le HUD).
+  final ValueNotifier<int> hurtPulse = ValueNotifier(0);
+
+  /// Dernière carte obtenue (animation dans le HUD).
+  final ValueNotifier<GameCard?> cardEvent = ValueNotifier(null);
+
+  /// La run est en cours : après le compte à rebours et avant la fin.
+  bool get active => started && !run.isOver;
+
   @override
   Color backgroundColor() => const Color(0xFF4F9A58);
 
@@ -79,6 +95,8 @@ class CollectearGame extends FlameGame with KeyboardEvents {
     world.add(spawner);
     camera.follow(player);
     _addControls();
+    await Sfx.preload();
+    Sfx.play('tick');
   }
 
   @override
@@ -151,10 +169,26 @@ class CollectearGame extends FlameGame with KeyboardEvents {
     return KeyEventResult.handled;
   }
 
+  void _updateCountdown(double dt) {
+    _countdownTime += dt;
+    const step = 0.7;
+    final value = 3 - (_countdownTime / step).floor();
+    if (value <= 0 && !started) {
+      started = true;
+      countdown.value = 0;
+      Sfx.play('go');
+    } else if (value > 0 && value != countdown.value) {
+      countdown.value = value;
+      Sfx.play('tick');
+    }
+    if (started && _countdownTime > 3 * step + 0.6) countdown.value = null;
+  }
+
   @override
   void update(double dt) {
     super.update(dt);
-    run.tick(dt);
+    if (countdown.value != null) _updateCountdown(dt);
+    if (started) run.tick(dt);
     if (_messageTime > 0) {
       _messageTime -= dt;
       if (_messageTime <= 0) _message = null;
@@ -162,6 +196,7 @@ class CollectearGame extends FlameGame with KeyboardEvents {
     _pushHud();
     if (run.isOver && !_endNotified) {
       _endNotified = true;
+      Sfx.play('run_end');
       pauseEngine();
       Future<void>.delayed(const Duration(milliseconds: 300), () => onRunEnd(run));
     }
@@ -201,24 +236,38 @@ class CollectearGame extends FlameGame with KeyboardEvents {
   void _giveCard({double bonusLuck = 0}) {
     final card = pool.draw(_rng, luck: _luck + bonusLuck);
     run.addCard(card);
-    _toast('Carte obtenue : ${card.name} (${card.rarity.label})');
+    cardEvent.value = card;
+    Sfx.play('card');
+    Sfx.haptic(HapticStrength.heavy);
   }
 
   void enemyKilled(Enemy enemy) {
     spawner.consumed.add(enemy.spawnId);
     final before = run.livesRegained;
     final card = run.registerKill();
-    if (run.livesRegained > before) _toast('+1 vie !');
+    world.add(Burst(position: enemy.position.clone(), color: const Color(0xFFFFE066), count: 16, speed: 150));
+    Sfx.play('enemy_die', volume: 0.6);
+    if (run.livesRegained > before) {
+      world.add(FloatingText('+1 vie', position: player.position - Vector2(0, 22), color: const Color(0xFFFF8FA3)));
+      Sfx.play('life');
+      _toast('+1 vie !');
+    }
     if (card) _giveCard();
   }
 
   void chestOpened(Chest chest) {
     spawner.consumed.add(chest.spawnId);
+    world.add(Burst(position: chest.position.clone(), color: const Color(0xFFFFB627), count: 22, speed: 170, life: 0.7));
+    Sfx.play('chest');
     _giveCard(bonusLuck: 0.15);
   }
 
   void playerHit() {
     final dead = run.playerHit();
+    hurtPulse.value++;
+    Sfx.play('hurt');
+    Sfx.haptic(HapticStrength.heavy);
+    world.add(Burst(position: player.position.clone(), color: const Color(0xFFFF6B6B), count: 10, speed: 110));
     if (!dead) _toast('Aïe ! Encore ${run.hitsLeft} coup${run.hitsLeft > 1 ? 's' : ''} et c\'est fini');
   }
 

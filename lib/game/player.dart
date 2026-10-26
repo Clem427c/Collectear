@@ -7,6 +7,7 @@ import '../core/config.dart';
 import '../core/terrain.dart';
 import 'collectear_game.dart';
 import 'enemy.dart';
+import 'sfx.dart';
 
 class Player extends PositionComponent with HasGameReference<CollectearGame> {
   Player() : super(size: Vector2.all(22), anchor: Anchor.center, priority: 100);
@@ -45,7 +46,7 @@ class Player extends PositionComponent with HasGameReference<CollectearGame> {
   @override
   void update(double dt) {
     super.update(dt);
-    if (game.run.isOver) return;
+    if (!game.active) return;
 
     _attackCd = math.max(0, _attackCd - dt);
     _swing = math.max(0, _swing - dt);
@@ -91,22 +92,25 @@ class Player extends PositionComponent with HasGameReference<CollectearGame> {
   }
 
   void jump() {
-    if (airborne || game.run.isOver) return;
+    if (airborne || !game.active) return;
     _airTime = GameConfig.jumpDuration;
+    Sfx.play('jump', volume: 0.4);
   }
 
   void dodge() {
-    if (_dodgeCd > 0 || dodging || game.run.isOver) return;
+    if (_dodgeCd > 0 || dodging || !game.active) return;
     final input = game.moveInput;
     _dodgeDir.setFrom(input.length2 > 0.01 ? input.normalized() : facing);
     _dodgeTime = GameConfig.dodgeDuration;
     _dodgeCd = GameConfig.dodgeCooldown;
+    Sfx.play('dodge', volume: 0.4);
   }
 
   void attack() {
-    if (_attackCd > 0 || game.run.isOver) return;
+    if (_attackCd > 0 || !game.active) return;
     _attackCd = GameConfig.attackCooldown;
     _swing = 0.15;
+    Sfx.play('swing', volume: 0.35);
     for (final enemy in game.world.children.whereType<Enemy>().toList()) {
       if (enemy.level != level) continue;
       final toEnemy = enemy.position - position;
@@ -119,7 +123,7 @@ class Player extends PositionComponent with HasGameReference<CollectearGame> {
 
   /// Le joueur reçoit un coup (ignoré pendant l'esquive et l'invincibilité).
   void takeHit() {
-    if (_invincible > 0 || dodging || game.run.isOver) return;
+    if (_invincible > 0 || dodging || !game.active) return;
     _invincible = GameConfig.invincibleAfterHit;
     game.playerHit();
   }

@@ -26,7 +26,7 @@ class Chest extends PositionComponent with HasGameReference<CollectearGame> {
   void update(double dt) {
     super.update(dt);
     _t += dt;
-    if (game.run.isOver) return;
+    if (!game.active) return;
     final p = game.player;
     if (!p.airborne && p.level == level && p.position.distanceTo(position) < 20) {
       removeFromParent();

@@ -20,7 +20,7 @@ class Projectile extends PositionComponent with HasGameReference<CollectearGame>
   @override
   void update(double dt) {
     super.update(dt);
-    if (game.run.isOver) return;
+    if (!game.active) return;
     position.add(velocity * dt);
     _life -= dt;
     if (_life <= 0 || game.terrain.levelAtWorld(position.x, position.y) > level) {
