@@ -1,5 +1,12 @@
 # Journal des versions
 
+## 0.4.0 – 26/10/2026
+- Variantes procédurales : chaque carte obtenue a sa teinte, son motif (rayures, taches, anneaux, étoiles),
+  parfois un éclat Shiny (1/40) ou une finition Dorée (1/100), Cristal ou Ombre (1/150), et des stats à ±4 %
+  (sans jamais dépasser la rareté supérieure). Le bestiaire montre tous ses exemplaires.
+- Illustrations : fiche de style (docs/STYLE_ILLUSTRATIONS.md), 300 prompts (docs/prompts_illustrations.csv),
+  traitement automatique des images déposées dans art/raw/ (détourage, recadrage, 512×512) et teinte des variantes.
+
 ## 0.3.0 – 26/10/2026
 - 5e boost « Portée » : le joueur attaque de plus loin (33 cartes : grenouilles, pieuvres, lianes, archers, mages…).
 - Échanges libres (plus de suggestion de même rareté) ; exploration sans aucune indication.

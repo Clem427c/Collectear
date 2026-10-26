@@ -24,8 +24,9 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
 
 ## Étape 2 – Boucle de jeu
 - [x] Types de lieux du GDD : sanctuaire (4 gardiens), tour (pyramide à gravir), ruine (3 runes), coffre rare (loin du départ)
-- [ ] Variantes procédurales des cartes (teinte, motifs, shiny) + stats légèrement variées
-- [ ] Fiche de style IA + prompts des 300 cartes (pour Clem) ; intégration des illustrations
+- [x] Variantes procédurales des cartes (teinte, motifs, shiny, Dorée/Cristal/Ombre) + stats ±4 %
+- [x] Fiche de style IA + prompts des 300 cartes (docs/) ; intégration automatique depuis art/raw/
+- [ ] Clem : générer les illustrations et les déposer dans art/raw/
 - [ ] Écran de carte détaillé, animations d'obtention
 
 ## Étape 3 – En ligne (Supabase)
@@ -51,6 +52,7 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
 - Échanges libres, négociés entre joueurs, sans restriction de rareté.
 - 5e boost « Portée » : attaque de plus loin (langues, tentacules, archers, mages…).
 - Combats entre amis : Clem a ses idées, on s'y attaque à la toute fin.
+- Style des illustrations : cartoon coloré et rond, façon jeu mobile grand public.
 
 ## Questions pour Clem
 (aucune pour l'instant)
