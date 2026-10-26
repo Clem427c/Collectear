@@ -31,3 +31,6 @@ key.properties
 
 # Propositions générées localement (seules les images choisies vont dans art/raw/)
 /art/candidates/
+
+# Python
+__pycache__/
