@@ -1,0 +1,2702 @@
+[
+ {
+  "id": 1,
+  "name": "Cristallichon",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 51,
+  "atk": 10,
+  "def": 10
+ },
+ {
+  "id": 2,
+  "name": "Victor le Pêcheur",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 39,
+  "atk": 14,
+  "def": 8
+ },
+ {
+  "id": 3,
+  "name": "Galetiot",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 44,
+  "atk": 6,
+  "def": 15
+ },
+ {
+  "id": 4,
+  "name": "Glacin",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 82,
+  "atk": 8,
+  "def": 7
+ },
+ {
+  "id": 5,
+  "name": "Loutrette",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 52,
+  "atk": 10,
+  "def": 9
+ },
+ {
+  "id": 6,
+  "name": "Dorian le Vagabond",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 34,
+  "atk": 15,
+  "def": 8
+ },
+ {
+  "id": 7,
+  "name": "Rochiot",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 43,
+  "atk": 7,
+  "def": 15
+ },
+ {
+  "id": 8,
+  "name": "Ombriot",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 80,
+  "atk": 7,
+  "def": 7
+ },
+ {
+  "id": 9,
+  "name": "Nils l'Éclaireur",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 48,
+  "atk": 10,
+  "def": 10
+ },
+ {
+  "id": 10,
+  "name": "Tritiot",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 38,
+  "atk": 14,
+  "def": 8
+ },
+ {
+  "id": 11,
+  "name": "Mouettichon",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 48,
+  "atk": 6,
+  "def": 15
+ },
+ {
+  "id": 12,
+  "name": "Escargou",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 85,
+  "atk": 7,
+  "def": 7
+ },
+ {
+  "id": 13,
+  "name": "Prune la Vagabonde",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 48,
+  "atk": 10,
+  "def": 9
+ },
+ {
+  "id": 14,
+  "name": "Écaillou",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 36,
+  "atk": 15,
+  "def": 8
+ },
+ {
+  "id": 15,
+  "name": "Cendrin",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 48,
+  "atk": 6,
+  "def": 15
+ },
+ {
+  "id": 16,
+  "name": "Ambrinou",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 79,
+  "atk": 8,
+  "def": 7
+ },
+ {
+  "id": 17,
+  "name": "Plumin",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 52,
+  "atk": 10,
+  "def": 10
+ },
+ {
+  "id": 18,
+  "name": "Fangou",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 34,
+  "atk": 15,
+  "def": 8
+ },
+ {
+  "id": 19,
+  "name": "Mésin",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 46,
+  "atk": 7,
+  "def": 14
+ },
+ {
+  "id": 20,
+  "name": "Jade la Garde",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 85,
+  "atk": 8,
+  "def": 6
+ },
+ {
+  "id": 21,
+  "name": "Salomé l'Apprentie",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 49,
+  "atk": 11,
+  "def": 10
+ },
+ {
+  "id": 22,
+  "name": "Bulbin",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 37,
+  "atk": 16,
+  "def": 7
+ },
+ {
+  "id": 23,
+  "name": "Cigalin",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 46,
+  "atk": 6,
+  "def": 15
+ },
+ {
+  "id": 24,
+  "name": "Grenouillou",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 87,
+  "atk": 7,
+  "def": 6
+ },
+ {
+  "id": 25,
+  "name": "Blairichon",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 50,
+  "atk": 11,
+  "def": 9
+ },
+ {
+  "id": 26,
+  "name": "Crabbiot",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 34,
+  "atk": 15,
+  "def": 8
+ },
+ {
+  "id": 27,
+  "name": "Brumette",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 46,
+  "atk": 6,
+  "def": 15
+ },
+ {
+  "id": 28,
+  "name": "Rouillou",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 83,
+  "atk": 8,
+  "def": 6
+ },
+ {
+  "id": 29,
+  "name": "Tremblichon",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 49,
+  "atk": 11,
+  "def": 10
+ },
+ {
+  "id": 30,
+  "name": "Capucine la Pêcheuse",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 40,
+  "atk": 14,
+  "def": 7
+ },
+ {
+  "id": 31,
+  "name": "Belettiot",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 43,
+  "atk": 5,
+  "def": 15
+ },
+ {
+  "id": 32,
+  "name": "Quartzin",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 84,
+  "atk": 7,
+  "def": 6
+ },
+ {
+  "id": 33,
+  "name": "Léonie la Forgeronne",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 49,
+  "atk": 10,
+  "def": 10
+ },
+ {
+  "id": 34,
+  "name": "Sauliot",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 42,
+  "atk": 15,
+  "def": 8
+ },
+ {
+  "id": 35,
+  "name": "Hugo le Bûcheron",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 45,
+  "atk": 6,
+  "def": 15
+ },
+ {
+  "id": 36,
+  "name": "Souffrin",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 85,
+  "atk": 7,
+  "def": 6
+ },
+ {
+  "id": 37,
+  "name": "Silexiot",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 54,
+  "atk": 10,
+  "def": 10
+ },
+ {
+  "id": 38,
+  "name": "Noisichon",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 36,
+  "atk": 16,
+  "def": 8
+ },
+ {
+  "id": 39,
+  "name": "Lézou",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 44,
+  "atk": 5,
+  "def": 15
+ },
+ {
+  "id": 40,
+  "name": "Wanda la Vagabonde",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 82,
+  "atk": 7,
+  "def": 6
+ },
+ {
+  "id": 41,
+  "name": "Aëla la Bergère",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 55,
+  "atk": 10,
+  "def": 10
+ },
+ {
+  "id": 42,
+  "name": "Taupichon",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 41,
+  "atk": 15,
+  "def": 7
+ },
+ {
+  "id": 43,
+  "name": "Sablichon",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 42,
+  "atk": 6,
+  "def": 15
+ },
+ {
+  "id": 44,
+  "name": "Hibette",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 82,
+  "atk": 7,
+  "def": 7
+ },
+ {
+  "id": 45,
+  "name": "Ventinou",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 49,
+  "atk": 10,
+  "def": 10
+ },
+ {
+  "id": 46,
+  "name": "Lichiot",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 33,
+  "atk": 15,
+  "def": 8
+ },
+ {
+  "id": 47,
+  "name": "Corentin le Forgeron",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 45,
+  "atk": 6,
+  "def": 15
+ },
+ {
+  "id": 48,
+  "name": "Nacrin",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 82,
+  "atk": 7,
+  "def": 6
+ },
+ {
+  "id": 49,
+  "name": "Luniot",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 50,
+  "atk": 10,
+  "def": 11
+ },
+ {
+  "id": 50,
+  "name": "Grelichon",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 34,
+  "atk": 16,
+  "def": 7
+ },
+ {
+  "id": 51,
+  "name": "Libellou",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 45,
+  "atk": 6,
+  "def": 15
+ },
+ {
+  "id": 52,
+  "name": "Kira la Marchande",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 86,
+  "atk": 7,
+  "def": 5
+ },
+ {
+  "id": 53,
+  "name": "Cyrielle la Bergère",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 47,
+  "atk": 10,
+  "def": 9
+ },
+ {
+  "id": 54,
+  "name": "Saphin",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 36,
+  "atk": 16,
+  "def": 7
+ },
+ {
+  "id": 55,
+  "name": "Frelichon",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 40,
+  "atk": 6,
+  "def": 15
+ },
+ {
+  "id": 56,
+  "name": "Abeillou",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 83,
+  "atk": 8,
+  "def": 6
+ },
+ {
+  "id": 57,
+  "name": "Sanglette",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 53,
+  "atk": 10,
+  "def": 10
+ },
+ {
+  "id": 58,
+  "name": "Corbinou",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 37,
+  "atk": 15,
+  "def": 7
+ },
+ {
+  "id": 59,
+  "name": "Inès la Marchande",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 45,
+  "atk": 6,
+  "def": 15
+ },
+ {
+  "id": 60,
+  "name": "Flammin",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 81,
+  "atk": 8,
+  "def": 6
+ },
+ {
+  "id": 61,
+  "name": "Geckin",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 49,
+  "atk": 10,
+  "def": 10
+ },
+ {
+  "id": 62,
+  "name": "Wilfrid le Marchand",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 40,
+  "atk": 15,
+  "def": 7
+ },
+ {
+  "id": 63,
+  "name": "Papillette",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 42,
+  "atk": 7,
+  "def": 15
+ },
+ {
+  "id": 64,
+  "name": "Mélusine la Bergère",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 80,
+  "atk": 7,
+  "def": 7
+ },
+ {
+  "id": 65,
+  "name": "Pio le Bûcheron",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 50,
+  "atk": 9,
+  "def": 10
+ },
+ {
+  "id": 66,
+  "name": "Pieuvrou",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 39,
+  "atk": 15,
+  "def": 8
+ },
+ {
+  "id": 67,
+  "name": "Firmin le Cueilleur",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 45,
+  "atk": 6,
+  "def": 15
+ },
+ {
+  "id": 68,
+  "name": "Torrinou",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 84,
+  "atk": 7,
+  "def": 6
+ },
+ {
+  "id": 69,
+  "name": "Rascette",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 46,
+  "atk": 10,
+  "def": 10
+ },
+ {
+  "id": 70,
+  "name": "Milo le Bûcheron",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 34,
+  "atk": 15,
+  "def": 8
+ },
+ {
+  "id": 71,
+  "name": "Mira la Pêcheuse",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 44,
+  "atk": 5,
+  "def": 15
+ },
+ {
+  "id": 72,
+  "name": "Gaïa la Forgeronne",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 84,
+  "atk": 7,
+  "def": 6
+ },
+ {
+  "id": 73,
+  "name": "Opalin",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 52,
+  "atk": 11,
+  "def": 10
+ },
+ {
+  "id": 74,
+  "name": "Charbou",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 36,
+  "atk": 15,
+  "def": 8
+ },
+ {
+  "id": 75,
+  "name": "Marrou",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 48,
+  "atk": 6,
+  "def": 15
+ },
+ {
+  "id": 76,
+  "name": "Guêpiot",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 80,
+  "atk": 8,
+  "def": 7
+ },
+ {
+  "id": 77,
+  "name": "Crocin",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 46,
+  "atk": 10,
+  "def": 10
+ },
+ {
+  "id": 78,
+  "name": "Lierriot",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 40,
+  "atk": 15,
+  "def": 8
+ },
+ {
+  "id": 79,
+  "name": "Anatole le Bûcheron",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 43,
+  "atk": 6,
+  "def": 15
+ },
+ {
+  "id": 80,
+  "name": "Pinsichon",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 85,
+  "atk": 7,
+  "def": 5
+ },
+ {
+  "id": 81,
+  "name": "Bastien le Garde",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 49,
+  "atk": 10,
+  "def": 10
+ },
+ {
+  "id": 82,
+  "name": "Myrtinou",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 35,
+  "atk": 15,
+  "def": 8
+ },
+ {
+  "id": 83,
+  "name": "Isidore le Garde",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 45,
+  "atk": 6,
+  "def": 14
+ },
+ {
+  "id": 84,
+  "name": "Braisin",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 86,
+  "atk": 7,
+  "def": 5
+ },
+ {
+  "id": 85,
+  "name": "Elvire la Forgeronne",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 49,
+  "atk": 10,
+  "def": 10
+ },
+ {
+  "id": 86,
+  "name": "Zéphyr l'Apprenti",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 42,
+  "atk": 15,
+  "def": 7
+ },
+ {
+  "id": 87,
+  "name": "Gobichon",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 43,
+  "atk": 6,
+  "def": 15
+ },
+ {
+  "id": 88,
+  "name": "Gaspard l'Éclaireur",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 79,
+  "atk": 8,
+  "def": 5
+ },
+ {
+  "id": 89,
+  "name": "Viviane l'Éclaireuse",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 55,
+  "atk": 10,
+  "def": 10
+ },
+ {
+  "id": 90,
+  "name": "Écumou",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 37,
+  "atk": 15,
+  "def": 7
+ },
+ {
+  "id": 91,
+  "name": "Salamou",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 50,
+  "atk": 6,
+  "def": 14
+ },
+ {
+  "id": 92,
+  "name": "Ysa l'Apprentie",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 89,
+  "atk": 7,
+  "def": 6
+ },
+ {
+  "id": 93,
+  "name": "Oursette",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 54,
+  "atk": 10,
+  "def": 10
+ },
+ {
+  "id": 94,
+  "name": "Dunin",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 33,
+  "atk": 15,
+  "def": 8
+ },
+ {
+  "id": 95,
+  "name": "Clovis le Berger",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 47,
+  "atk": 6,
+  "def": 15
+ },
+ {
+  "id": 96,
+  "name": "Pommichon",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 85,
+  "atk": 8,
+  "def": 5
+ },
+ {
+  "id": 97,
+  "name": "Ernest le Cueilleur",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 51,
+  "atk": 10,
+  "def": 9
+ },
+ {
+  "id": 98,
+  "name": "Roncette",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 38,
+  "atk": 14,
+  "def": 8
+ },
+ {
+  "id": 99,
+  "name": "Pétalou",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 45,
+  "atk": 6,
+  "def": 15
+ },
+ {
+  "id": 100,
+  "name": "Têtiot",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 82,
+  "atk": 7,
+  "def": 6
+ },
+ {
+  "id": 101,
+  "name": "Griffin",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 49,
+  "atk": 10,
+  "def": 10
+ },
+ {
+  "id": 102,
+  "name": "Nola l'Éclaireuse",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 36,
+  "atk": 16,
+  "def": 7
+ },
+ {
+  "id": 103,
+  "name": "Opale la Vagabonde",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 41,
+  "atk": 7,
+  "def": 15
+ },
+ {
+  "id": 104,
+  "name": "Hérissin",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 83,
+  "atk": 8,
+  "def": 6
+ },
+ {
+  "id": 105,
+  "name": "Mulichon",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 47,
+  "atk": 11,
+  "def": 9
+ },
+ {
+  "id": 106,
+  "name": "Crapou",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 36,
+  "atk": 16,
+  "def": 8
+ },
+ {
+  "id": 107,
+  "name": "Octave le Pêcheur",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 46,
+  "atk": 5,
+  "def": 15
+ },
+ {
+  "id": 108,
+  "name": "Glandette",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 80,
+  "atk": 8,
+  "def": 6
+ },
+ {
+  "id": 109,
+  "name": "Tonninou",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 51,
+  "atk": 10,
+  "def": 11
+ },
+ {
+  "id": 110,
+  "name": "Jaspin",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 36,
+  "atk": 15,
+  "def": 8
+ },
+ {
+  "id": 111,
+  "name": "Fourmichon",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 46,
+  "atk": 6,
+  "def": 15
+ },
+ {
+  "id": 112,
+  "name": "Coquillou",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 80,
+  "atk": 7,
+  "def": 6
+ },
+ {
+  "id": 113,
+  "name": "Aldo le Cueilleur",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 55,
+  "atk": 10,
+  "def": 9
+ },
+ {
+  "id": 114,
+  "name": "Moussette",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 35,
+  "atk": 15,
+  "def": 8
+ },
+ {
+  "id": 115,
+  "name": "Brune la Garde",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 45,
+  "atk": 7,
+  "def": 15
+ },
+ {
+  "id": 116,
+  "name": "Lynxou",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 82,
+  "atk": 8,
+  "def": 5
+ },
+ {
+  "id": 117,
+  "name": "Lysa la Cueilleuse",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 51,
+  "atk": 10,
+  "def": 10
+ },
+ {
+  "id": 118,
+  "name": "Talia la Marchande",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 34,
+  "atk": 14,
+  "def": 8
+ },
+ {
+  "id": 119,
+  "name": "Néva l'Apprentie",
+  "family": "hero",
+  "rarity": 0,
+  "hp": 44,
+  "atk": 6,
+  "def": 16
+ },
+ {
+  "id": 120,
+  "name": "Cerviot",
+  "family": "creature",
+  "rarity": 0,
+  "hp": 81,
+  "atk": 8,
+  "def": 5
+ },
+ {
+  "id": 121,
+  "name": "Bérénice la Rôdeuse",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 63,
+  "atk": 12,
+  "def": 12
+ },
+ {
+  "id": 122,
+  "name": "Quartzard",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 48,
+  "atk": 18,
+  "def": 9
+ },
+ {
+  "id": 123,
+  "name": "Dunouille",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 54,
+  "atk": 7,
+  "def": 19
+ },
+ {
+  "id": 124,
+  "name": "Grelerin",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 104,
+  "atk": 8,
+  "def": 7
+ },
+ {
+  "id": 125,
+  "name": "Saulard",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 64,
+  "atk": 13,
+  "def": 11
+ },
+ {
+  "id": 126,
+  "name": "Rascaud",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 44,
+  "atk": 17,
+  "def": 10
+ },
+ {
+  "id": 127,
+  "name": "Hortense la Duelliste",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 57,
+  "atk": 7,
+  "def": 19
+ },
+ {
+  "id": 128,
+  "name": "Pieuvreron",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 100,
+  "atk": 9,
+  "def": 7
+ },
+ {
+  "id": 129,
+  "name": "Guêpouille",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 62,
+  "atk": 13,
+  "def": 11
+ },
+ {
+  "id": 130,
+  "name": "Ombreron",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 46,
+  "atk": 18,
+  "def": 10
+ },
+ {
+  "id": 131,
+  "name": "Lézouille",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 58,
+  "atk": 7,
+  "def": 18
+ },
+ {
+  "id": 132,
+  "name": "Oscar le Corsaire",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 106,
+  "atk": 9,
+  "def": 8
+ },
+ {
+  "id": 133,
+  "name": "Tessa la Pisteuse",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 64,
+  "atk": 12,
+  "def": 12
+ },
+ {
+  "id": 134,
+  "name": "Pétalerin",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 45,
+  "atk": 19,
+  "def": 10
+ },
+ {
+  "id": 135,
+  "name": "Rémi l'Alchimiste",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 52,
+  "atk": 8,
+  "def": 18
+ },
+ {
+  "id": 136,
+  "name": "Achille l'Alchimiste",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 95,
+  "atk": 9,
+  "def": 8
+ },
+ {
+  "id": 137,
+  "name": "Tremblouille",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 62,
+  "atk": 12,
+  "def": 12
+ },
+ {
+  "id": 138,
+  "name": "Geckille",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 42,
+  "atk": 18,
+  "def": 10
+ },
+ {
+  "id": 139,
+  "name": "Sableron",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 60,
+  "atk": 7,
+  "def": 19
+ },
+ {
+  "id": 140,
+  "name": "Crocouille",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 100,
+  "atk": 9,
+  "def": 8
+ },
+ {
+  "id": 141,
+  "name": "Belettard",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 66,
+  "atk": 12,
+  "def": 11
+ },
+ {
+  "id": 142,
+  "name": "Nacraud",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 49,
+  "atk": 17,
+  "def": 10
+ },
+ {
+  "id": 143,
+  "name": "Léandre le Duelliste",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 59,
+  "atk": 7,
+  "def": 19
+ },
+ {
+  "id": 144,
+  "name": "Hector le Barde",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 102,
+  "atk": 9,
+  "def": 8
+ },
+ {
+  "id": 145,
+  "name": "Marrille",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 63,
+  "atk": 12,
+  "def": 12
+ },
+ {
+  "id": 146,
+  "name": "Uma la Rôdeuse",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 45,
+  "atk": 18,
+  "def": 10
+ },
+ {
+  "id": 147,
+  "name": "Glandard",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 55,
+  "atk": 8,
+  "def": 18
+ },
+ {
+  "id": 148,
+  "name": "Jaspille",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 104,
+  "atk": 9,
+  "def": 7
+ },
+ {
+  "id": 149,
+  "name": "Brumouille",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 67,
+  "atk": 12,
+  "def": 12
+ },
+ {
+  "id": 150,
+  "name": "Joachim le Pisteur",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 45,
+  "atk": 18,
+  "def": 10
+ },
+ {
+  "id": 151,
+  "name": "Sangleron",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 54,
+  "atk": 8,
+  "def": 19
+ },
+ {
+  "id": 152,
+  "name": "Têterin",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 101,
+  "atk": 10,
+  "def": 8
+ },
+ {
+  "id": 153,
+  "name": "Abeillard",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 65,
+  "atk": 12,
+  "def": 12
+ },
+ {
+  "id": 154,
+  "name": "Triteron",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 43,
+  "atk": 19,
+  "def": 10
+ },
+ {
+  "id": 155,
+  "name": "Rosa l'Alchimiste",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 58,
+  "atk": 6,
+  "def": 18
+ },
+ {
+  "id": 156,
+  "name": "Moussille",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 98,
+  "atk": 10,
+  "def": 8
+ },
+ {
+  "id": 157,
+  "name": "Papillerin",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 58,
+  "atk": 13,
+  "def": 12
+ },
+ {
+  "id": 158,
+  "name": "Lynxard",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 48,
+  "atk": 18,
+  "def": 8
+ },
+ {
+  "id": 159,
+  "name": "Blairard",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 54,
+  "atk": 7,
+  "def": 19
+ },
+ {
+  "id": 160,
+  "name": "Fourmouille",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 104,
+  "atk": 9,
+  "def": 7
+ },
+ {
+  "id": 161,
+  "name": "Marius le Mercenaire",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 63,
+  "atk": 12,
+  "def": 11
+ },
+ {
+  "id": 162,
+  "name": "Doria la Corsaire",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 48,
+  "atk": 17,
+  "def": 9
+ },
+ {
+  "id": 163,
+  "name": "Myrtouille",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 51,
+  "atk": 8,
+  "def": 20
+ },
+ {
+  "id": 164,
+  "name": "Ilan le Moine",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 108,
+  "atk": 9,
+  "def": 8
+ },
+ {
+  "id": 165,
+  "name": "Tobias le Moine",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 62,
+  "atk": 12,
+  "def": 12
+ },
+ {
+  "id": 166,
+  "name": "Flora la Mercenaire",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 43,
+  "atk": 18,
+  "def": 10
+ },
+ {
+  "id": 167,
+  "name": "Crapard",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 55,
+  "atk": 8,
+  "def": 19
+ },
+ {
+  "id": 168,
+  "name": "Grenouillaud",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 97,
+  "atk": 9,
+  "def": 7
+ },
+ {
+  "id": 169,
+  "name": "Saphouille",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 67,
+  "atk": 12,
+  "def": 12
+ },
+ {
+  "id": 170,
+  "name": "Venterin",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 43,
+  "atk": 18,
+  "def": 10
+ },
+ {
+  "id": 171,
+  "name": "Lierreron",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 52,
+  "atk": 7,
+  "def": 20
+ },
+ {
+  "id": 172,
+  "name": "Jouna la Mercenaire",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 108,
+  "atk": 9,
+  "def": 7
+ },
+ {
+  "id": 173,
+  "name": "Glacouille",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 61,
+  "atk": 13,
+  "def": 12
+ },
+ {
+  "id": 174,
+  "name": "Frelerin",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 42,
+  "atk": 18,
+  "def": 9
+ },
+ {
+  "id": 175,
+  "name": "Cristallaud",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 56,
+  "atk": 7,
+  "def": 19
+ },
+ {
+  "id": 176,
+  "name": "Raphaël l'Alchimiste",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 103,
+  "atk": 9,
+  "def": 8
+ },
+ {
+  "id": 177,
+  "name": "Givrouille",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 62,
+  "atk": 12,
+  "def": 13
+ },
+ {
+  "id": 178,
+  "name": "Hibard",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 50,
+  "atk": 18,
+  "def": 9
+ },
+ {
+  "id": 179,
+  "name": "Silas le Pisteur",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 52,
+  "atk": 7,
+  "def": 19
+ },
+ {
+  "id": 180,
+  "name": "Opalille",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 100,
+  "atk": 9,
+  "def": 7
+ },
+ {
+  "id": 181,
+  "name": "Grifferon",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 65,
+  "atk": 11,
+  "def": 13
+ },
+ {
+  "id": 182,
+  "name": "Tonneron",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 51,
+  "atk": 18,
+  "def": 10
+ },
+ {
+  "id": 183,
+  "name": "Elio le Corsaire",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 52,
+  "atk": 7,
+  "def": 19
+ },
+ {
+  "id": 184,
+  "name": "Crabbouille",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 105,
+  "atk": 9,
+  "def": 8
+ },
+ {
+  "id": 185,
+  "name": "Yanis le Duelliste",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 68,
+  "atk": 11,
+  "def": 12
+ },
+ {
+  "id": 186,
+  "name": "Kaël le Rôdeur",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 47,
+  "atk": 18,
+  "def": 9
+ },
+ {
+  "id": 187,
+  "name": "Tourbard",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 49,
+  "atk": 8,
+  "def": 18
+ },
+ {
+  "id": 188,
+  "name": "Bulbille",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 99,
+  "atk": 10,
+  "def": 7
+ },
+ {
+  "id": 189,
+  "name": "Cervouille",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 62,
+  "atk": 13,
+  "def": 12
+ },
+ {
+  "id": 190,
+  "name": "Épineron",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 42,
+  "atk": 20,
+  "def": 9
+ },
+ {
+  "id": 191,
+  "name": "Zélie la Duelliste",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 57,
+  "atk": 7,
+  "def": 19
+ },
+ {
+  "id": 192,
+  "name": "Pacôme le Barde",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 101,
+  "atk": 9,
+  "def": 8
+ },
+ {
+  "id": 193,
+  "name": "Pinserin",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 67,
+  "atk": 12,
+  "def": 12
+ },
+ {
+  "id": 194,
+  "name": "Souffrard",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 44,
+  "atk": 18,
+  "def": 9
+ },
+ {
+  "id": 195,
+  "name": "Rouilleron",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 59,
+  "atk": 7,
+  "def": 19
+ },
+ {
+  "id": 196,
+  "name": "Barnabé le Rôdeur",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 94,
+  "atk": 9,
+  "def": 8
+ },
+ {
+  "id": 197,
+  "name": "Lunard",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 60,
+  "atk": 12,
+  "def": 12
+ },
+ {
+  "id": 198,
+  "name": "Taupaud",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 44,
+  "atk": 19,
+  "def": 9
+ },
+ {
+  "id": 199,
+  "name": "Noiserin",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 57,
+  "atk": 7,
+  "def": 18
+ },
+ {
+  "id": 200,
+  "name": "Mésard",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 100,
+  "atk": 9,
+  "def": 7
+ },
+ {
+  "id": 201,
+  "name": "Faye la Barde",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 72,
+  "atk": 12,
+  "def": 12
+ },
+ {
+  "id": 202,
+  "name": "Lino le Moine",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 47,
+  "atk": 18,
+  "def": 10
+ },
+ {
+  "id": 203,
+  "name": "Salamouille",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 52,
+  "atk": 7,
+  "def": 19
+ },
+ {
+  "id": 204,
+  "name": "Hélia la Pisteuse",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 103,
+  "atk": 9,
+  "def": 8
+ },
+ {
+  "id": 205,
+  "name": "Elsa la Moniale",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 61,
+  "atk": 12,
+  "def": 13
+ },
+ {
+  "id": 206,
+  "name": "Pommille",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 47,
+  "atk": 19,
+  "def": 9
+ },
+ {
+  "id": 207,
+  "name": "Corbaud",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 52,
+  "atk": 8,
+  "def": 18
+ },
+ {
+  "id": 208,
+  "name": "Fangaud",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 101,
+  "atk": 9,
+  "def": 8
+ },
+ {
+  "id": 209,
+  "name": "Ondine la Mercenaire",
+  "family": "hero",
+  "rarity": 1,
+  "hp": 66,
+  "atk": 13,
+  "def": 11
+ },
+ {
+  "id": 210,
+  "name": "Rochaud",
+  "family": "creature",
+  "rarity": 1,
+  "hp": 42,
+  "atk": 19,
+  "def": 10
+ },
+ {
+  "id": 211,
+  "name": "Geckix",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 76,
+  "atk": 15,
+  "def": 13
+ },
+ {
+  "id": 212,
+  "name": "Givroros",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 51,
+  "atk": 23,
+  "def": 12
+ },
+ {
+  "id": 213,
+  "name": "Ventidor",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 66,
+  "atk": 10,
+  "def": 23
+ },
+ {
+  "id": 214,
+  "name": "Cendrix",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 127,
+  "atk": 11,
+  "def": 8
+ },
+ {
+  "id": 215,
+  "name": "Guêpaxe",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 81,
+  "atk": 14,
+  "def": 15
+ },
+ {
+  "id": 216,
+  "name": "Grelidor",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 55,
+  "atk": 23,
+  "def": 11
+ },
+ {
+  "id": 217,
+  "name": "Anouk la Gardienne des Ruines",
+  "family": "hero",
+  "rarity": 2,
+  "hp": 73,
+  "atk": 8,
+  "def": 22
+ },
+ {
+  "id": 218,
+  "name": "Ombrix",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 126,
+  "atk": 13,
+  "def": 8
+ },
+ {
+  "id": 219,
+  "name": "Sienne la Chasseuse de Primes",
+  "family": "hero",
+  "rarity": 2,
+  "hp": 77,
+  "atk": 15,
+  "def": 15
+ },
+ {
+  "id": 220,
+  "name": "Alba la Gardienne des Ruines",
+  "family": "hero",
+  "rarity": 2,
+  "hp": 54,
+  "atk": 22,
+  "def": 13
+ },
+ {
+  "id": 221,
+  "name": "Cyprien le Paladin",
+  "family": "hero",
+  "rarity": 2,
+  "hp": 70,
+  "atk": 9,
+  "def": 21
+ },
+ {
+  "id": 222,
+  "name": "Ewen le Maître-Lame",
+  "family": "hero",
+  "rarity": 2,
+  "hp": 121,
+  "atk": 12,
+  "def": 8
+ },
+ {
+  "id": 223,
+  "name": "Rhéa l'Arcaniste",
+  "family": "hero",
+  "rarity": 2,
+  "hp": 78,
+  "atk": 15,
+  "def": 16
+ },
+ {
+  "id": 224,
+  "name": "Rouillorn",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 62,
+  "atk": 22,
+  "def": 12
+ },
+ {
+  "id": 225,
+  "name": "Félix le Mage des Cendres",
+  "family": "hero",
+  "rarity": 2,
+  "hp": 72,
+  "atk": 9,
+  "def": 22
+ },
+ {
+  "id": 226,
+  "name": "Cristalloros",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 123,
+  "atk": 11,
+  "def": 9
+ },
+ {
+  "id": 227,
+  "name": "Lunidor",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 84,
+  "atk": 16,
+  "def": 14
+ },
+ {
+  "id": 228,
+  "name": "Lichidor",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 59,
+  "atk": 22,
+  "def": 11
+ },
+ {
+  "id": 229,
+  "name": "Myrtix",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 70,
+  "atk": 9,
+  "def": 22
+ },
+ {
+  "id": 230,
+  "name": "Saphanthe",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 125,
+  "atk": 11,
+  "def": 8
+ },
+ {
+  "id": 231,
+  "name": "Sacha le Chevaucheur de Wyverne",
+  "family": "hero",
+  "rarity": 2,
+  "hp": 73,
+  "atk": 14,
+  "def": 15
+ },
+ {
+  "id": 232,
+  "name": "Crabborn",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 58,
+  "atk": 21,
+  "def": 12
+ },
+ {
+  "id": 233,
+  "name": "Edmond l'Arcaniste",
+  "family": "hero",
+  "rarity": 2,
+  "hp": 63,
+  "atk": 9,
+  "def": 22
+ },
+ {
+  "id": 234,
+  "name": "Mulanthe",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 119,
+  "atk": 11,
+  "def": 9
+ },
+ {
+  "id": 235,
+  "name": "Saulaxe",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 73,
+  "atk": 15,
+  "def": 15
+ },
+ {
+  "id": 236,
+  "name": "Glandanthe",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 56,
+  "atk": 22,
+  "def": 11
+ },
+ {
+  "id": 237,
+  "name": "Sanglidor",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 63,
+  "atk": 10,
+  "def": 22
+ },
+ {
+  "id": 238,
+  "name": "Tourbix",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 127,
+  "atk": 11,
+  "def": 10
+ },
+ {
+  "id": 239,
+  "name": "Belettix",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 75,
+  "atk": 14,
+  "def": 15
+ },
+ {
+  "id": 240,
+  "name": "Jory le Druide",
+  "family": "hero",
+  "rarity": 2,
+  "hp": 54,
+  "atk": 23,
+  "def": 12
+ },
+ {
+  "id": 241,
+  "name": "Wilhelm le Druide",
+  "family": "hero",
+  "rarity": 2,
+  "hp": 76,
+  "atk": 8,
+  "def": 23
+ },
+ {
+  "id": 242,
+  "name": "Marrix",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 127,
+  "atk": 10,
+  "def": 10
+ },
+ {
+  "id": 243,
+  "name": "Crocorn",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 75,
+  "atk": 16,
+  "def": 15
+ },
+ {
+  "id": 244,
+  "name": "Dunorn",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 55,
+  "atk": 22,
+  "def": 11
+ },
+ {
+  "id": 245,
+  "name": "Moussaxe",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 68,
+  "atk": 8,
+  "def": 23
+ },
+ {
+  "id": 246,
+  "name": "Lézaxe",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 124,
+  "atk": 11,
+  "def": 9
+ },
+ {
+  "id": 247,
+  "name": "Coquillorn",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 72,
+  "atk": 16,
+  "def": 16
+ },
+ {
+  "id": 248,
+  "name": "Pinsorn",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 52,
+  "atk": 22,
+  "def": 11
+ },
+ {
+  "id": 249,
+  "name": "Basile le Maître-Lame",
+  "family": "hero",
+  "rarity": 2,
+  "hp": 62,
+  "atk": 8,
+  "def": 23
+ },
+ {
+  "id": 250,
+  "name": "Zoé la Paladine",
+  "family": "hero",
+  "rarity": 2,
+  "hp": 131,
+  "atk": 11,
+  "def": 9
+ },
+ {
+  "id": 251,
+  "name": "Dalia la Mage des Cendres",
+  "family": "hero",
+  "rarity": 2,
+  "hp": 71,
+  "atk": 16,
+  "def": 14
+ },
+ {
+  "id": 252,
+  "name": "Quartzanthe",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 59,
+  "atk": 22,
+  "def": 10
+ },
+ {
+  "id": 253,
+  "name": "Elna la Chasseuse de Primes",
+  "family": "hero",
+  "rarity": 2,
+  "hp": 68,
+  "atk": 8,
+  "def": 22
+ },
+ {
+  "id": 254,
+  "name": "Torrorn",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 118,
+  "atk": 11,
+  "def": 10
+ },
+ {
+  "id": 255,
+  "name": "Écaillorn",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 75,
+  "atk": 15,
+  "def": 14
+ },
+ {
+  "id": 256,
+  "name": "Tonnidor",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 54,
+  "atk": 24,
+  "def": 11
+ },
+ {
+  "id": 257,
+  "name": "Loutrorn",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 67,
+  "atk": 9,
+  "def": 23
+ },
+ {
+  "id": 258,
+  "name": "Théo le Chevaucheur de Wyverne",
+  "family": "hero",
+  "rarity": 2,
+  "hp": 117,
+  "atk": 12,
+  "def": 10
+ },
+ {
+  "id": 259,
+  "name": "Épinorn",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 77,
+  "atk": 14,
+  "def": 16
+ },
+ {
+  "id": 260,
+  "name": "Libellidor",
+  "family": "creature",
+  "rarity": 2,
+  "hp": 62,
+  "atk": 22,
+  "def": 11
+ },
+ {
+  "id": 261,
+  "name": "Bram Cœur-de-Fer",
+  "family": "hero",
+  "rarity": 3,
+  "hp": 97,
+  "atk": 18,
+  "def": 18
+ },
+ {
+  "id": 262,
+  "name": "Calixte le Chevalier Errant",
+  "family": "hero",
+  "rarity": 3,
+  "hp": 76,
+  "atk": 26,
+  "def": 13
+ },
+ {
+  "id": 263,
+  "name": "Basaltor",
+  "family": "creature",
+  "rarity": 3,
+  "hp": 83,
+  "atk": 11,
+  "def": 28
+ },
+ {
+  "id": 264,
+  "name": "Thaïs, Lame d'Aube",
+  "family": "hero",
+  "rarity": 3,
+  "hp": 155,
+  "atk": 14,
+  "def": 10
+ },
+ {
+  "id": 265,
+  "name": "Givrespectre",
+  "family": "creature",
+  "rarity": 3,
+  "hp": 97,
+  "atk": 18,
+  "def": 19
+ },
+ {
+  "id": 266,
+  "name": "Hydromance",
+  "family": "creature",
+  "rarity": 3,
+  "hp": 69,
+  "atk": 28,
+  "def": 14
+ },
+ {
+  "id": 267,
+  "name": "Solsticien",
+  "family": "creature",
+  "rarity": 3,
+  "hp": 88,
+  "atk": 10,
+  "def": 27
+ },
+ {
+  "id": 268,
+  "name": "Vortexis",
+  "family": "creature",
+  "rarity": 3,
+  "hp": 150,
+  "atk": 14,
+  "def": 12
+ },
+ {
+  "id": 269,
+  "name": "Doran le Briseur de Rocs",
+  "family": "hero",
+  "rarity": 3,
+  "hp": 94,
+  "atk": 17,
+  "def": 18
+ },
+ {
+  "id": 270,
+  "name": "Pyralis",
+  "family": "creature",
+  "rarity": 3,
+  "hp": 64,
+  "atk": 27,
+  "def": 15
+ },
+ {
+  "id": 271,
+  "name": "Maëlis l'Archère d'Argent",
+  "family": "hero",
+  "rarity": 3,
+  "hp": 85,
+  "atk": 11,
+  "def": 27
+ },
+ {
+  "id": 272,
+  "name": "Orageon",
+  "family": "creature",
+  "rarity": 3,
+  "hp": 144,
+  "atk": 14,
+  "def": 12
+ },
+ {
+  "id": 273,
+  "name": "Mirelune",
+  "family": "creature",
+  "rarity": 3,
+  "hp": 91,
+  "atk": 18,
+  "def": 19
+ },
+ {
+  "id": 274,
+  "name": "Cendrolithe",
+  "family": "creature",
+  "rarity": 3,
+  "hp": 70,
+  "atk": 29,
+  "def": 13
+ },
+ {
+  "id": 275,
+  "name": "Aquilarc",
+  "family": "creature",
+  "rarity": 3,
+  "hp": 84,
+  "atk": 11,
+  "def": 26
+ },
+ {
+  "id": 276,
+  "name": "Liora la Tisseuse d'Orage",
+  "family": "hero",
+  "rarity": 3,
+  "hp": 152,
+  "atk": 14,
+  "def": 11
+ },
+ {
+  "id": 277,
+  "name": "Nahia la Dompteuse de Bêtes",
+  "family": "hero",
+  "rarity": 3,
+  "hp": 84,
+  "atk": 18,
+  "def": 19
+ },
+ {
+  "id": 278,
+  "name": "Marévore",
+  "family": "creature",
+  "rarity": 3,
+  "hp": 61,
+  "atk": 28,
+  "def": 15
+ },
+ {
+  "id": 279,
+  "name": "Cristalame",
+  "family": "creature",
+  "rarity": 3,
+  "hp": 86,
+  "atk": 12,
+  "def": 26
+ },
+ {
+  "id": 280,
+  "name": "Fulgurion",
+  "family": "creature",
+  "rarity": 3,
+  "hp": 149,
+  "atk": 13,
+  "def": 11
+ },
+ {
+  "id": 281,
+  "name": "Isaure la Prêtresse des Marées",
+  "family": "hero",
+  "rarity": 3,
+  "hp": 91,
+  "atk": 18,
+  "def": 18
+ },
+ {
+  "id": 282,
+  "name": "Sépulcrin",
+  "family": "creature",
+  "rarity": 3,
+  "hp": 67,
+  "atk": 27,
+  "def": 14
+ },
+ {
+  "id": 283,
+  "name": "Émeraudon",
+  "family": "creature",
+  "rarity": 3,
+  "hp": 80,
+  "atk": 12,
+  "def": 26
+ },
+ {
+  "id": 284,
+  "name": "Vesper le Voleur de Lunes",
+  "family": "hero",
+  "rarity": 3,
+  "hp": 149,
+  "atk": 14,
+  "def": 11
+ },
+ {
+  "id": 285,
+  "name": "Sabrecorne",
+  "family": "creature",
+  "rarity": 3,
+  "hp": 99,
+  "atk": 17,
+  "def": 17
+ },
+ {
+  "id": 286,
+  "name": "Noctifère",
+  "family": "creature",
+  "rarity": 3,
+  "hp": 71,
+  "atk": 27,
+  "def": 14
+ },
+ {
+  "id": 287,
+  "name": "Oren le Chasseur d'Ombres",
+  "family": "hero",
+  "rarity": 3,
+  "hp": 78,
+  "atk": 11,
+  "def": 28
+ },
+ {
+  "id": 288,
+  "name": "Ronceroi",
+  "family": "creature",
+  "rarity": 3,
+  "hp": 153,
+  "atk": 14,
+  "def": 10
+ },
+ {
+  "id": 289,
+  "name": "Glacivore",
+  "family": "creature",
+  "rarity": 4,
+  "hp": 118,
+  "atk": 25,
+  "def": 21
+ },
+ {
+  "id": 290,
+  "name": "Sylvarche",
+  "family": "creature",
+  "rarity": 4,
+  "hp": 89,
+  "atk": 34,
+  "def": 18
+ },
+ {
+  "id": 291,
+  "name": "Abyssiel",
+  "family": "creature",
+  "rarity": 4,
+  "hp": 98,
+  "atk": 16,
+  "def": 34
+ },
+ {
+  "id": 292,
+  "name": "Néantor",
+  "family": "creature",
+  "rarity": 4,
+  "hp": 179,
+  "atk": 18,
+  "def": 15
+ },
+ {
+  "id": 293,
+  "name": "Chronoptère",
+  "family": "creature",
+  "rarity": 4,
+  "hp": 117,
+  "atk": 23,
+  "def": 22
+ },
+ {
+  "id": 294,
+  "name": "Sélénor le Dernier Mage",
+  "family": "hero",
+  "rarity": 4,
+  "hp": 82,
+  "atk": 36,
+  "def": 18
+ },
+ {
+  "id": 295,
+  "name": "Volcarion",
+  "family": "creature",
+  "rarity": 4,
+  "hp": 102,
+  "atk": 14,
+  "def": 34
+ },
+ {
+  "id": 296,
+  "name": "Aurèle l'Immortelle",
+  "family": "hero",
+  "rarity": 4,
+  "hp": 197,
+  "atk": 17,
+  "def": 13
+ },
+ {
+  "id": 297,
+  "name": "Tempestor",
+  "family": "creature",
+  "rarity": 4,
+  "hp": 107,
+  "atk": 22,
+  "def": 24
+ },
+ {
+  "id": 298,
+  "name": "Astrelune",
+  "family": "creature",
+  "rarity": 4,
+  "hp": 97,
+  "atk": 33,
+  "def": 16
+ },
+ {
+  "id": 299,
+  "name": "Ysolde Brise-Étoiles",
+  "family": "hero",
+  "rarity": 4,
+  "hp": 104,
+  "atk": 13,
+  "def": 34
+ },
+ {
+  "id": 300,
+  "name": "Kaelith, Gardien des Seuils",
+  "family": "hero",
+  "rarity": 4,
+  "hp": 185,
+  "atk": 17,
+  "def": 13
+ }
+]
