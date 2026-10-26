@@ -11,6 +11,11 @@ class Collection {
   static const _kCompanion = 'companion_id';
   static const _kRunsDay = 'runs_day';
   static const _kRunsCount = 'runs_count';
+  static const _kTotalRuns = 'stat_runs';
+  static const _kTotalKills = 'stat_kills';
+  static const _kTotalCards = 'stat_cards';
+  static const _kBestKills = 'stat_best_kills';
+  static const _kFriendCode = 'friend_code';
 
   final SharedPreferences _prefs;
   final Map<int, int> owned = {};
@@ -67,5 +72,29 @@ class Collection {
     final count = runsToday + 1;
     await _prefs.setString(_kRunsDay, _today());
     await _prefs.setInt(_kRunsCount, count);
+  }
+
+  // --- Statistiques du profil d'explorateur ---
+  int get totalRuns => _prefs.getInt(_kTotalRuns) ?? 0;
+  int get totalKills => _prefs.getInt(_kTotalKills) ?? 0;
+  int get totalCards => _prefs.getInt(_kTotalCards) ?? 0;
+  int get bestKills => _prefs.getInt(_kBestKills) ?? 0;
+
+  Future<void> recordRunResult({required int kills, required int cards}) async {
+    await _prefs.setInt(_kTotalRuns, totalRuns + 1);
+    await _prefs.setInt(_kTotalKills, totalKills + kills);
+    await _prefs.setInt(_kTotalCards, totalCards + cards);
+    if (kills > bestKills) await _prefs.setInt(_kBestKills, kills);
+  }
+
+  /// Code ami local (prototype ; deviendra l'identifiant du compte en ligne).
+  String get friendCode {
+    final existing = _prefs.getString(_kFriendCode);
+    if (existing != null) return existing;
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    final seed = DateTime.now().microsecondsSinceEpoch;
+    final code = List.generate(8, (i) => chars[(seed ~/ (i * 7 + 3) + i * 13) % chars.length]).join();
+    _prefs.setString(_kFriendCode, code);
+    return code;
   }
 }

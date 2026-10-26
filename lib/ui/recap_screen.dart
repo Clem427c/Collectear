@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/cards.dart';
 import '../core/run_state.dart';
-import 'card_tile.dart';
+import 'widgets.dart';
 import 'theme.dart';
 
 class RecapScreen extends StatelessWidget {
@@ -44,17 +44,17 @@ class RecapScreen extends StatelessWidget {
                   const Text('Aucune carte cette fois. Tue 10 ennemis ou trouve un coffre !',
                       textAlign: TextAlign.center, style: TextStyle(color: Colors.white70))
                 else
-                  for (final c in run.cards) CardTile(card: c, isNew: freshIds.contains(c.id)),
-                const SizedBox(height: 32),
-                FilledButton(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.gold,
-                    foregroundColor: AppColors.ink,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      for (final c in run.cards)
+                        SizedBox(width: 130, child: CardView(card: c, isNew: freshIds.contains(c.id))),
+                    ],
                   ),
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Retour au menu', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
+                const SizedBox(height: 32),
+                ChunkyButton(label: 'CONTINUER', fontSize: 20, onPressed: () => Navigator.of(context).pop()),
               ],
             ),
           ),

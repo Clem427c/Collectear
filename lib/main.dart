@@ -1,27 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
-import 'core/cards.dart';
-import 'core/collection.dart';
-import 'ui/menu_screen.dart';
+import 'app_data.dart';
+import 'ui/home_shell.dart';
 import 'ui/theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const CollectearApp());
-}
-
-class AppData {
-  const AppData(this.pool, this.collection);
-  final CardPool pool;
-  final Collection collection;
-
-  static Future<AppData> load() async {
-    final json = await rootBundle.loadString('assets/data/cards.json');
-    final pool = CardPool.fromJsonString(json);
-    final collection = await Collection.load();
-    return AppData(pool, collection);
-  }
 }
 
 class CollectearApp extends StatefulWidget {
@@ -49,7 +34,7 @@ class _CollectearAppState extends State<CollectearApp> {
           if (!snap.hasData) {
             return const Scaffold(body: Center(child: CircularProgressIndicator()));
           }
-          return MenuScreen(data: snap.data!);
+          return HomeShell(data: snap.data!);
         },
       ),
     );

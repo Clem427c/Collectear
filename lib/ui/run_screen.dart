@@ -7,7 +7,7 @@ import '../core/cards.dart';
 import '../core/config.dart';
 import '../core/run_state.dart';
 import '../game/collectear_game.dart';
-import '../main.dart';
+import '../app_data.dart';
 import 'recap_screen.dart';
 import 'theme.dart';
 
@@ -38,7 +38,9 @@ class _RunScreenState extends State<RunScreen> {
   Future<void> _onRunEnd(RunState run) async {
     if (_ended || !mounted) return;
     _ended = true;
-    final fresh = await widget.data.collection.addAll(run.cards.map((c) => c.id));
+    final col = widget.data.collection;
+    final fresh = await col.addAll(run.cards.map((c) => c.id));
+    await col.recordRunResult(kills: run.kills, cards: run.cards.length);
     if (!mounted) return;
     Navigator.of(context).pushReplacement(MaterialPageRoute<void>(
       builder: (_) => RecapScreen(run: run, freshIds: fresh, companion: widget.companion),
