@@ -3,7 +3,7 @@
     "class_type": "UNETLoader",
     "inputs": {
       "unet_name": "flux1-schnell.safetensors",
-      "weight_dtype": "default"
+      "weight_dtype": "fp8_e4m3fn"
     }
   },
   "2": {
@@ -11,7 +11,8 @@
     "inputs": {
       "clip_name1": "t5xxl_fp16.safetensors",
       "clip_name2": "clip_l.safetensors",
-      "type": "flux"
+      "type": "flux",
+      "device": "cpu"
     }
   },
   "3": {
@@ -23,7 +24,7 @@
   "4": {
     "class_type": "CLIPTextEncode",
     "inputs": {
-      "text": "small elemental creature made of crystals, tiny baby-like creature, very cute and chubby, cute colorful cartoon mobile game character, round chunky shapes, thick clean dark outlines, soft cel shading, vibrant saturated colors, big expressive eyes, simple readable silhouette, full body, centered, 3/4 front view, plain white background, original design, a single character only, isolated on a plain pure white background, no text, no letters, no frame, no border, no ground shadow, flat 2D illustration",
+      "text": "small elemental creature made of crystals, tiny baby-like creature, very cute and chubby, cute colorful cartoon mobile game character, round chunky shapes, thick clean dark outlines, soft cel shading, vibrant saturated colors, big expressive eyes, simple readable silhouette, full body, centered, 3/4 front view, plain white background, original design, a single character only, isolated on a plain pure white background, no text, no letters, no frame, no border, soft round shadow on the ground under the character, flat 2D illustration",
       "clip": [
         "2",
         0

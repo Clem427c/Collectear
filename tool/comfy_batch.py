@@ -36,13 +36,19 @@ ROOT = Path(__file__).resolve().parent.parent
 PROMPTS = ROOT / "docs/prompts_flux.csv"
 OUT = ROOT / "art/candidates"
 RAW = ROOT / "art/raw"
+WEIGHT_DTYPE = "fp8_e4m3fn"
+CLIP_DEVICE = "cpu"
 
 
 def workflow(prompt: str, seed: int, prefix: str) -> dict:
     return {
-        "1": {"class_type": "UNETLoader", "inputs": {"unet_name": "flux1-schnell.safetensors", "weight_dtype": "default"}},
+        # FLUX chargé en fp8 (~12 Go de VRAM au lieu de ~24) et encodeurs de texte sur le processeur :
+        # sinon, à chaque nouveau prompt, ComfyUI fait des allers-retours de ~34 Go entre la RAM et la VRAM
+        # et la génération devient extrêmement lente. Qualité quasi identique.
+        "1": {"class_type": "UNETLoader", "inputs": {"unet_name": "flux1-schnell.safetensors", "weight_dtype": WEIGHT_DTYPE}},
         "2": {"class_type": "DualCLIPLoader",
-              "inputs": {"clip_name1": "t5xxl_fp16.safetensors", "clip_name2": "clip_l.safetensors", "type": "flux"}},
+              "inputs": {"clip_name1": "t5xxl_fp16.safetensors", "clip_name2": "clip_l.safetensors", "type": "flux",
+                         "device": CLIP_DEVICE}},
         "3": {"class_type": "VAELoader", "inputs": {"vae_name": "ae.safetensors"}},
         "4": {"class_type": "CLIPTextEncode", "inputs": {"text": prompt, "clip": ["2", 0]}},
         "5": {"class_type": "ConditioningZeroOut", "inputs": {"conditioning": ["4", 0]}},
@@ -76,8 +82,12 @@ def generate(url: str, prompt: str, seed: int, prefix: str, dest: Path):
     client = str(uuid.uuid4())
     res = json.loads(call(url, "/prompt", {"prompt": workflow(prompt, seed, prefix), "client_id": client}))
     pid = res["prompt_id"]
+    deadline = time.time() + 300
     while True:
         time.sleep(1)
+        if time.time() > deadline:
+            call(url, "/interrupt", {})
+            raise RuntimeError("image trop longue (> 5 min), génération interrompue")
         hist = json.loads(call(url, f"/history/{pid}"))
         if pid in hist and hist[pid].get("outputs"):
             img = hist[pid]["outputs"]["9"]["images"][0]
@@ -96,7 +106,11 @@ def main():
     ap.add_argument("--url", default=None)
     ap.add_argument("--auto", action="store_true", help="1 image par carte dans art/raw/ + push GitHub")
     ap.add_argument("--no-push", action="store_true", help="en mode auto : ne pas pousser sur GitHub")
+    ap.add_argument("--full", action="store_true", help="FLUX en pleine précision et encodeurs sur la carte graphique")
     args = ap.parse_args()
+    if args.full:
+        global WEIGHT_DTYPE, CLIP_DEVICE
+        WEIGHT_DTYPE, CLIP_DEVICE = "default", "default"
     if args.auto:
         return auto_mode(args)
 
