@@ -29,7 +29,9 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
 - [ ] Clem : générer les illustrations et les déposer dans art/raw/
 - [ ] Écran de carte détaillé, animations d'obtention
 
-## Étape 3 – En ligne (Supabase)
+## Étape 3 – En ligne (Supabase) — prochaine étape
+Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et `SUPABASE_PUBLISHABLE_KEY` (26/10).
+Première tâche : vérifier en CI que les secrets sont bien transmis (sans les afficher), puis brancher `supabase_flutter`.
 - [ ] Comptes (e-mail, Google), sauvegarde de la collection côté serveur
 - [ ] Validation serveur des récompenses (anti-triche)
 - [ ] Amis (code ami), échanges carte contre carte
