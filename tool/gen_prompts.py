@@ -15,6 +15,10 @@ STYLE = (
     "soft cel shading, vibrant saturated colors, big expressive eyes, simple readable silhouette, "
     "full body, centered, 3/4 front view, plain white background, original design"
 )
+FLUX_SUFFIX = (
+    ", a single character only, isolated on a plain pure white background, no text, no letters, "
+    "no frame, no border, no ground shadow, flat 2D illustration"
+)
 NEGATIVE = (
     "text, letters, watermark, logo, signature, card frame, border, realistic, photo, 3d render, "
     "gore, scary, multiple characters, cropped, resembling Pokemon or any existing franchise character"
@@ -143,6 +147,15 @@ def main():
                         "Héros" if c["family"] == "hero" else "Créature", labels[c["rarity"]],
                         describe(c), NEGATIVE])
     print("écrit", out)
+
+    # Version FLUX : pas de prompt négatif (FLUX l'ignore), consignes intégrées au prompt.
+    flux = ROOT / "docs/prompts_flux.csv"
+    with flux.open("w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f, delimiter=";")
+        w.writerow(["numero", "fichier", "nom", "prompt"])
+        for c in CARDS:
+            w.writerow([c["id"], f"{c['id']:03d}.png", c["name"], describe(c) + FLUX_SUFFIX])
+    print("écrit", flux)
 
 
 if __name__ == "__main__":
