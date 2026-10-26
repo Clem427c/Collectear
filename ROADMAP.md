@@ -12,8 +12,13 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
 - [x] Run de 2 min : fin par mort (2 coups), 3 cartes ou chrono
 - [x] Carte tous les 10 kills ou dans un coffre ; tirage pondéré par rareté
 - [x] Récapitulatif, collection locale, bestiaire, limite de 10 runs/jour
-- [x] Compagnon de run (P : boost déduit du numéro de carte)
-- [ ] Retours de playtest de Clem → réglages (vitesses, densité d'ennemis, zoom)
+- [x] Compagnon de run, boost fixe par carte choisi selon son nom
+- [x] Terrain garanti sans blocage (écart max d'1 niveau entre cases voisines)
+- [x] 3 vies, +1 vie tous les 3 kills si une vie a été perdue
+- [x] Interface à onglets : Profil, Boutique, Jouer, Bestiaire, Social
+- [x] Prototypes visuels : boutique (cosmétiques), échanges, combats (données d'exemple)
+- [x] Premiers retours de playtest de Clem (blocage terrain, vies, interface)
+- [ ] Nouveaux retours de playtest → réglages (vitesses, densité d'ennemis, zoom)
 - [ ] Feedback : sons, vibrations, effets de coup, écran de début de run
 - [ ] Mini-carte ou boussole vers le coffre le plus proche
 
@@ -37,7 +42,12 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
 - [ ] Combats entre amis (format à définir par Clem)
 - [ ] Publication Google Play, puis App Store, puis web
 
+## Décisions de Clem
+- Boost fixé par carte, cohérent avec son nom (tool/assign_boosts.py).
+- Le compteur de 10 ennemis repart à zéro à chaque run.
+- Héros et créatures ne diffèrent que par le style visuel (héros = humanoïde, créature = non humanoïde).
+- 3 vies ; une vie rendue tous les 3 kills si on en a perdu au moins une.
+
 ## Questions pour Clem
-- Boost du compagnon : fixé par espèce ou tiré selon la variante ? (actuellement : numéro de carte % 4)
-- Le compteur de 10 ennemis repart-il à zéro à chaque run ? (actuellement : oui)
-- Héros vs créatures : quelle différence en dehors du boost ?
+- Combats entre amis : format à définir (écran de composition d'équipe prototypé).
+- Échanges : uniquement entre cartes de même rareté ? (proposé dans le prototype)
