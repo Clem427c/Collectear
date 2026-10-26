@@ -1,4 +1,7 @@
-"""Génère les prompts d'illustration des 300 cartes (style cartoon coloré et rond).
+"""Génère les prompts d'illustration des 300 cartes (style cartoon coloré).
+
+Styles : petites créatures mignonnes et rondes ; créatures rares = bêtes puissantes ;
+épiques/légendaires = monstres épiques (effrayants si leur nom est sombre) ; héros = héroïques, « durs à cuire ».
 
 Usage : python3 tool/gen_prompts.py → docs/prompts_illustrations.csv
 Les prompts sont en anglais (les générateurs d'images les comprennent mieux).
@@ -15,6 +18,34 @@ STYLE = (
     "soft cel shading, vibrant saturated colors, big expressive eyes, simple readable silhouette, "
     "full body, centered, 3/4 front view, plain white background, original design"
 )
+# Créatures puissantes (rares) : plus de bébé mignon, une vraie bête qui en impose.
+FIERCE_STYLE = (
+    "stylized cartoon creature for a mobile game, powerful adult beast, fierce determined eyes, "
+    "sharp claws, horns or spikes, muscular dynamic pose, thick clean dark outlines, bold cel shading, "
+    "vibrant saturated colors, strong readable silhouette, full body, centered, 3/4 front view, "
+    "plain white background, original design, not chibi, not baby-like"
+)
+# Créatures épiques et légendaires : imposantes, intimidantes, épiques.
+EPIC_STYLE = (
+    "epic stylized cartoon monster for a mobile game, huge imposing creature, intimidating fierce glare, "
+    "dramatic dynamic pose, detailed armor-like features, thick clean dark outlines, dramatic cel shading, "
+    "vibrant saturated colors, strong readable silhouette, full body, centered, 3/4 front view, "
+    "plain white background, original design, not cute, not chibi"
+)
+# Noms sombres (ombre, néant, abysses, tombe, nuit…) : la créature doit faire peur, dès « Rare ».
+DARK_ROOTS = ("Ombr", "Néant", "Sépulcr", "spectre", "Abyss", "abysse", "Noct", "Nuit", "Mort", "Crâne", "Cauchemar")
+DARK_MOOD = "menacing and scary, dark ominous aura, glowing eyes,"
+# Légendaires lumineux : grandioses plutôt qu'effrayants.
+MAJESTIC_MOOD = "awe-inspiring and majestic, godlike presence,"
+# Suffixe du nom d'une créature « Rare » → trait marquant, pour que chacune ait sa silhouette.
+SUFFIX_TRAIT = {
+    "orn": "with large curved horns", "axe": "with axe-like blade limbs", "oros": "massive heavily armored body",
+    "idor": "regal with ornate golden markings", "ix": "sleek, fast and agile predator", "anthe": "elegant with sharp thorny petals",
+}
+# Animaux juvéniles → version adulte pour les créatures puissantes.
+ADULT = {"bear cub": "bear", "deer fawn": "stag", "tadpole": "giant frog", "fanged critter": "fanged beast",
+         "clawed critter": "clawed beast"}
+
 # Héros : toujours cartoon, mais héroïque et impressionnant (pas « kawaii »).
 HERO_STYLE = (
     "stylized cartoon hero character for a mobile game, heroic proportions about six heads tall, "
@@ -57,7 +88,7 @@ ELEMENTS = {
 STAGE = {
     0: "tiny baby-like creature, very cute and chubby",
     1: "young playful creature, a little bigger and bolder",
-    2: "evolved confident creature with distinctive features",
+    2: "fully evolved powerful creature, imposing and battle-ready",
 }
 
 ROLE_EN = {
@@ -108,25 +139,25 @@ HERO_STAGE = {0: "seasoned adventurer", 1: "battle-hardened veteran", 2: "renown
 MANUAL = {
     # Légendaires
     "Astrelune": "majestic celestial fox-like creature made of starlight and a crescent moon",
-    "Volcarion": "majestic volcanic dragon-lion with lava mane",
-    "Abyssiel": "majestic deep-sea serpent with glowing bioluminescent patterns",
-    "Tempestor": "majestic storm eagle crackling with lightning",
+    "Volcarion": "colossal volcanic dragon-lion with a roaring lava mane and obsidian horns",
+    "Abyssiel": "colossal abyssal sea serpent with rows of fangs, eerie glowing bioluminescent patterns",
+    "Tempestor": "giant storm eagle with huge wings crackling with lightning",
     "Sylvarche": "majestic ancient forest stag whose antlers are a living tree",
-    "Glacivore": "majestic ice wolf with crystal armor",
+    "Glacivore": "giant ice wolf with jagged crystal armor and frozen fangs",
     "Chronoptère": "majestic clockwork moth with hourglass wings",
-    "Néantor": "majestic cosmic void beast with galaxy fur",
+    "Néantor": "colossal cosmic void beast with galaxy fur, many glowing eyes and black tendrils",
     "Aurèle l'Immortelle": "majestic immortal golden priestess with a halo",
     "Kaelith, Gardien des Seuils": "majestic guardian of portals holding a glowing gate key",
     "Sélénor le Dernier Mage": "majestic old archmage with a moonstone staff",
     "Ysolde Brise-Étoiles": "majestic warrior shattering a falling star with a great sword",
     # Épiques
     "Pyralis": "fire salamander-dragon", "Hydromance": "water serpent mage creature",
-    "Fulgurion": "lightning cheetah", "Basaltor": "basalt rock golem turtle", "Noctifère": "night bat with starry wings",
-    "Cristalame": "crystal-bladed mantis", "Orageon": "thundercloud ram", "Mirelune": "mirror-moon jellyfish",
-    "Sabrecorne": "sabre-horned rhino beetle", "Ronceroi": "bramble king boar", "Cendrolithe": "ash stone golem",
+    "Fulgurion": "lightning-fast cheetah wreathed in electricity", "Basaltor": "massive basalt rock golem turtle with a volcanic shell", "Noctifère": "giant night bat with starry wings and sharp fangs",
+    "Cristalame": "giant crystal-bladed praying mantis", "Orageon": "thundercloud ram with huge lightning horns", "Mirelune": "giant mirror-moon jellyfish with long glowing stinging tentacles",
+    "Sabrecorne": "sabre-horned rhino beetle", "Ronceroi": "huge bramble king boar with thorny tusks and a crown of thorns", "Cendrolithe": "ash stone golem",
     "Aquilarc": "eagle archer bird with a bow-shaped crest", "Vortexis": "wind vortex manta ray",
-    "Sépulcrin": "friendly ghost lantern spirit", "Émeraudon": "emerald scaled drake",
-    "Marévore": "tidal shark-whale", "Solsticien": "sun phoenix chick", "Givrespectre": "frost wisp spirit",
+    "Sépulcrin": "eerie ghost lantern wraith with hollow glowing eyes and ghostly chains", "Émeraudon": "emerald scaled dragon drake with spread wings",
+    "Marévore": "colossal tidal shark-whale with rows of teeth", "Solsticien": "blazing sun phoenix with wings of fire", "Givrespectre": "frost wraith spirit with icy claws",
     "Thaïs, Lame d'Aube": "dawn swordswoman with a glowing sword", "Bram Cœur-de-Fer": "iron-hearted dwarf knight",
     "Liora la Tisseuse d'Orage": "storm weaver sorceress", "Oren le Chasseur d'Ombres": "shadow hunter archer",
     "Maëlis l'Archère d'Argent": "silver archer", "Doran le Briseur de Rocs": "rock-breaking giant with a hammer",
@@ -156,12 +187,47 @@ def describe(card):
     else:
         stem = max((s for s in list(ANIMALS) + list(ELEMENTS) if name.startswith(s)), key=len)
         if stem in ANIMALS:
-            subject = f"{ANIMALS[stem]} creature, {STAGE[r]}"
+            animal = ANIMALS[stem]
+            if r >= 2:
+                animal = ADULT.get(animal, animal)
+            subject = f"{animal} creature, {STAGE[r]}"
         else:
-            subject = f"small elemental creature made of {ELEMENTS[stem]}, {STAGE[r]}"
-    accent = RARITY_ACCENT[r]
-    style = HERO_STYLE if card["family"] == "hero" else STYLE
-    return f"{subject}, {accent} {style}".replace("  ", " ")
+            size = "small" if r < 2 else "large"
+            subject = f"{size} elemental creature made of {ELEMENTS[stem]}, {STAGE[r]}"
+        if r == 2:
+            trait = next((v for k, v in sorted(SUFFIX_TRAIT.items(), key=lambda kv: -len(kv[0])) if name.endswith(k)), "")
+            if trait:
+                subject += f", {trait}"
+    return f"{subject}, {mood(card)}{RARITY_ACCENT[r]} {style_for(card)}".replace("  ", " ")
+
+
+def is_dark(card):
+    return any(k.lower() in card["name"].lower() for k in DARK_ROOTS)
+
+
+def style_for(card):
+    """Petites créatures (commune, peu commune) : mignonnes. Rares : bêtes puissantes. Épiques+ : monstres épiques."""
+    if card["family"] == "hero":
+        return HERO_STYLE
+    r = card["rarity"]
+    return STYLE if r < 2 else FIERCE_STYLE if r == 2 else EPIC_STYLE
+
+
+def mood(card):
+    if card["family"] == "hero" or card["rarity"] < 2:
+        return ""
+    if is_dark(card):
+        return DARK_MOOD + " "
+    if card["rarity"] == 4:
+        return MAJESTIC_MOOD + " "
+    return ""
+
+
+def negative(card):
+    """Prompt négatif (générateurs autres que FLUX) : « scary » n'est exclu que pour les créatures mignonnes."""
+    if style_for(card) == STYLE:
+        return NEGATIVE
+    return NEGATIVE.replace("gore, scary,", "gore, cute, chibi, baby,")
 
 
 def main():
@@ -173,7 +239,7 @@ def main():
         for c in CARDS:
             w.writerow([c["id"], f"{c['id']:03d}.png", c["name"],
                         "Héros" if c["family"] == "hero" else "Créature", labels[c["rarity"]],
-                        describe(c), NEGATIVE])
+                        describe(c), negative(c)])
     print("écrit", out)
 
     # Version FLUX : pas de prompt négatif (FLUX l'ignore), consignes intégrées au prompt.

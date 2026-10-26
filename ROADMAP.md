@@ -54,7 +54,7 @@ Première tâche : vérifier en CI que les secrets sont bien transmis (sans les 
 - Échanges libres, négociés entre joueurs, sans restriction de rareté.
 - 5e boost « Portée » : attaque de plus loin (langues, tentacules, archers, mages…).
 - Combats entre amis : Clem a ses idées, on s'y attaque à la toute fin.
-- Style des illustrations : cartoon coloré et rond, façon jeu mobile grand public.
+- Style des illustrations : cartoon coloré, façon jeu mobile grand public. Petites créatures (communes, peu communes) mignonnes et rondes ; créatures rares, épiques et légendaires plus impressionnantes (effrayantes si leur nom est sombre) ; héros héroïques, « durs à cuire », pas enfantins.
 
 ## Questions pour Clem
 (aucune pour l'instant)
