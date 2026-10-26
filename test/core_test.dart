@@ -7,6 +7,7 @@ import 'package:collectear/core/noise.dart';
 import 'package:collectear/core/places.dart';
 import 'package:collectear/core/run_state.dart';
 import 'package:collectear/core/terrain.dart';
+import 'package:collectear/core/variants.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 CardPool _pool() => CardPool.fromJsonString(File('assets/data/cards.json').readAsStringSync());
@@ -126,10 +127,10 @@ void main() {
       }
       expect(earned, 0);
       expect(run.registerKill(), isTrue);
-      run.addCard(pool.cards[0]);
-      run.addCard(pool.cards[1]);
+      run.addCard(CardInstance(pool.cards[0], 1));
+      run.addCard(CardInstance(pool.cards[1], 2));
       expect(run.isOver, isFalse);
-      run.addCard(pool.cards[2]);
+      run.addCard(CardInstance(pool.cards[2], 3));
       expect(run.endReason, RunEndReason.cardsCollected);
     });
 
@@ -256,6 +257,47 @@ void main() {
       final c = t.towerCenter(cx, cy);
       for (var d = 0; d <= Terrain.towerRadius; d++) {
         expect(t.levelAt(c.x + d, c.y), GameConfig.maxLevel - d);
+      }
+    });
+  });
+
+  group('Variantes', () {
+    test('déterministes et variées', () {
+      final a = Variant.fromSeed(1234), b = Variant.fromSeed(1234);
+      expect(a.hue, b.hue);
+      expect(a.pattern, b.pattern);
+      expect(a.hpMult, b.hpMult);
+      final hues = {for (var s = 0; s < 200; s++) (Variant.fromSeed(s).hue ~/ 30)};
+      expect(hues.length, greaterThan(8));
+    });
+
+    test('raretés des variantes à peu près respectées', () {
+      var shiny = 0, special = 0;
+      const n = 20000;
+      for (var s = 0; s < n; s++) {
+        final v = Variant.fromSeed(s * 31 + 7);
+        if (v.shiny) shiny++;
+        if (v.finish != VariantFinish.normal) special++;
+      }
+      expect(shiny / n, closeTo(Variant.shinyChance, 0.01));
+      expect(special / n, closeTo(1 / 100 + 2 / 150, 0.008));
+    });
+
+    test('les stats varient de ±4 % au plus et respectent les paliers de rareté', () {
+      final pool = _pool();
+      double power(CardInstance c) => c.hp / 5 + c.atk + c.def;
+      final lo = <Rarity, double>{}, hi = <Rarity, double>{};
+      for (final card in pool.cards) {
+        for (var s = 0; s < 40; s++) {
+          final inst = CardInstance(card, card.id * 1000 + s);
+          expect((inst.hp - card.hp).abs(), lessThanOrEqualTo((card.hp * 0.04).ceil()));
+          final p = power(inst);
+          lo[card.rarity] = min(lo[card.rarity] ?? 1e9, p);
+          hi[card.rarity] = max(hi[card.rarity] ?? 0, p);
+        }
+      }
+      for (var i = 1; i < Rarity.values.length; i++) {
+        expect(lo[Rarity.values[i]]!, greaterThan(hi[Rarity.values[i - 1]]!));
       }
     });
   });

@@ -1,0 +1,111 @@
+import 'dart:math' as math;
+
+import 'cards.dart';
+
+/// Motif appliqué sur l'illustration d'une variante.
+enum VariantPattern { none, stripes, spots, stars, rings }
+
+/// Finition spéciale (très rare).
+enum VariantFinish { normal, golden, crystal, shadow }
+
+extension VariantFinishInfo on VariantFinish {
+  String get label => const ['', 'Dorée', 'Cristal', 'Ombre'][index];
+}
+
+/// Variante procédurale d'une carte : même espèce, apparence et stats légèrement différentes.
+/// Entièrement déterminée par une seed, donc stockable sous forme d'un simple entier.
+class Variant {
+  Variant._({
+    required this.seed,
+    required this.hue,
+    required this.pattern,
+    required this.shiny,
+    required this.finish,
+    required this.hpMult,
+    required this.atkMult,
+    required this.defMult,
+  });
+
+  /// Probabilités (sur 1).
+  static const double shinyChance = 1 / 40;
+  static const double goldenChance = 1 / 100;
+  static const double crystalChance = 1 / 150;
+  static const double shadowChance = 1 / 150;
+
+  /// Écart maximal des stats par rapport à l'espèce (±4 %). À ±4 %, même dans le pire cas,
+  /// une variante ne dépasse jamais la puissance d'une carte de rareté supérieure.
+  static const double statSpread = 0.04;
+
+  factory Variant.fromSeed(int seed) {
+    final rng = math.Random(seed);
+    final hue = rng.nextDouble() * 360;
+    final p = rng.nextDouble();
+    final pattern = p < 0.40
+        ? VariantPattern.none
+        : p < 0.60
+            ? VariantPattern.stripes
+            : p < 0.78
+                ? VariantPattern.spots
+                : p < 0.90
+                    ? VariantPattern.rings
+                    : VariantPattern.stars;
+    final shiny = rng.nextDouble() < shinyChance;
+    final f = rng.nextDouble();
+    final finish = f < goldenChance
+        ? VariantFinish.golden
+        : f < goldenChance + crystalChance
+            ? VariantFinish.crystal
+            : f < goldenChance + crystalChance + shadowChance
+                ? VariantFinish.shadow
+                : VariantFinish.normal;
+    double mult() => 1 + (rng.nextDouble() * 2 - 1) * statSpread;
+    return Variant._(
+      seed: seed,
+      hue: hue,
+      pattern: pattern,
+      shiny: shiny,
+      finish: finish,
+      hpMult: mult(),
+      atkMult: mult(),
+      defMult: mult(),
+    );
+  }
+
+  final int seed;
+
+  /// Teinte de l'illustration (0..360°).
+  final double hue;
+  final VariantPattern pattern;
+  final bool shiny;
+  final VariantFinish finish;
+  final double hpMult;
+  final double atkMult;
+  final double defMult;
+
+  /// Plus la variante est spéciale, plus elle est recherchée (0 = ordinaire).
+  int get prestige => (shiny ? 2 : 0) + (finish != VariantFinish.normal ? 3 : 0);
+
+  /// Code court lisible (ex. « #4F2A »), unique à 1 chance sur 65 536.
+  String get code => '#${(seed & 0xFFFF).toRadixString(16).toUpperCase().padLeft(4, '0')}';
+
+  String get label {
+    final parts = <String>[
+      if (finish != VariantFinish.normal) finish.label,
+      if (shiny) 'Shiny',
+    ];
+    return parts.isEmpty ? 'Variante $code' : '${parts.join(' ')} $code';
+  }
+}
+
+/// Un exemplaire possédé : une espèce + une variante.
+class CardInstance {
+  CardInstance(this.card, this.variantSeed) : variant = Variant.fromSeed(variantSeed);
+
+  final GameCard card;
+  final int variantSeed;
+  final Variant variant;
+
+  int get hp => (card.hp * variant.hpMult).round();
+  int get atk => math.max(1, (card.atk * variant.atkMult).round());
+  int get def => math.max(1, (card.def * variant.defMult).round());
+}

@@ -50,7 +50,7 @@ class RecapScreen extends StatelessWidget {
                     runSpacing: 10,
                     children: [
                       for (final c in run.cards)
-                        SizedBox(width: 130, child: CardView(card: c, isNew: freshIds.contains(c.id))),
+                        SizedBox(width: 130, child: CardView(card: c.card, instance: c, isNew: freshIds.contains(c.card.id))),
                     ],
                   ),
                 const SizedBox(height: 32),

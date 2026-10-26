@@ -8,6 +8,7 @@ import '../core/config.dart';
 import '../core/run_state.dart';
 import '../game/collectear_game.dart';
 import '../game/sfx.dart';
+import '../core/variants.dart';
 import '../app_data.dart';
 import 'recap_screen.dart';
 import 'theme.dart';
@@ -41,7 +42,7 @@ class _RunScreenState extends State<RunScreen> {
     if (_ended || !mounted) return;
     _ended = true;
     final col = widget.data.collection;
-    final fresh = await col.addAll(run.cards.map((c) => c.id));
+    final fresh = await col.addAll(run.cards.map((c) => (c.card.id, c.variantSeed)));
     await col.recordRunResult(kills: run.kills, cards: run.cards.length);
     if (!mounted) return;
     Navigator.of(context).pushReplacement(MaterialPageRoute<void>(
@@ -254,7 +255,7 @@ class _Fx extends StatelessWidget {
           },
         ),
         // Carte obtenue.
-        ValueListenableBuilder<GameCard?>(
+        ValueListenableBuilder<CardInstance?>(
           valueListenable: game.cardEvent,
           builder: (context, card, _) {
             if (card == null) return const SizedBox.shrink();
@@ -270,7 +271,7 @@ class _Fx extends StatelessWidget {
 
 class _CardPopup extends StatefulWidget {
   const _CardPopup({super.key, required this.card, required this.onDone});
-  final GameCard card;
+  final CardInstance card;
   final VoidCallback onDone;
 
   @override
@@ -306,13 +307,13 @@ class _CardPopupState extends State<_CardPopup> with SingleTickerProviderStateMi
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         Text('NOUVELLE CARTE !',
             style: TextStyle(
-              color: rarityColor(widget.card.rarity),
+              color: rarityColor(widget.card.card.rarity),
               fontSize: 22,
               fontWeight: FontWeight.w900,
               shadows: const [Shadow(color: Colors.black, blurRadius: 8)],
             )),
         const SizedBox(height: 8),
-        SizedBox(width: 150, child: CardView(card: widget.card)),
+        SizedBox(width: 150, child: CardView(card: widget.card.card, instance: widget.card)),
       ]),
     );
   }

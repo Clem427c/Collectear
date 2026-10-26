@@ -1,5 +1,6 @@
 import 'cards.dart';
 import 'config.dart';
+import 'variants.dart';
 
 enum RunEndReason { death, cardsCollected, timeUp, quit }
 
@@ -35,7 +36,7 @@ class RunState {
   double elapsed = 0;
   int kills = 0;
   int hitsTaken = 0;
-  final List<GameCard> cards = [];
+  final List<CardInstance> cards = [];
   RunEndReason? endReason;
 
   bool get isOver => endReason != null;
@@ -68,7 +69,7 @@ class RunState {
   }
 
   /// Ajoute une carte ; la run se termine à la 3e.
-  void addCard(GameCard card) {
+  void addCard(CardInstance card) {
     if (isOver) return;
     cards.add(card);
     if (cards.length >= GameConfig.maxCardsPerRun) endReason = RunEndReason.cardsCollected;

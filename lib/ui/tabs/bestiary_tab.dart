@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app_data.dart';
 import '../../core/cards.dart';
+import '../../core/variants.dart';
 import '../theme.dart';
 import '../widgets.dart';
 
@@ -84,8 +85,15 @@ class _BestiaryTabState extends State<BestiaryTab> {
             itemBuilder: (context, i) {
               final c = cards[i];
               final qty = owned[c.id];
+              final seeds = data.collection.variants[c.id] ?? const <int>[];
+              CardInstance? best;
+              for (final s in seeds) {
+                final inst = CardInstance(c, s);
+                if (best == null || inst.variant.prestige > best.variant.prestige) best = inst;
+              }
               return CardView(
                 card: c,
+                instance: best,
                 owned: qty != null,
                 quantity: qty,
                 onTap: qty == null
@@ -94,6 +102,7 @@ class _BestiaryTabState extends State<BestiaryTab> {
                           context,
                           c,
                           quantity: qty,
+                          variantSeeds: seeds,
                           isCompanion: data.collection.companionId == c.id,
                           onEquip: () async {
                             await data.collection.setCompanion(c.id);

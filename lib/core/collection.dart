@@ -17,23 +17,49 @@ class Collection {
   static const _kBestKills = 'stat_best_kills';
   static const _kFriendCode = 'friend_code';
 
+  static const _kVariants = 'owned_variants'; // "id:seed1,seed2,…"
+
   final SharedPreferences _prefs;
-  final Map<int, int> owned = {};
+
+  /// Exemplaires possédés : id de carte → seeds des variantes obtenues.
+  final Map<int, List<int>> variants = {};
+
+  /// Nombre d'exemplaires par carte (compatibilité avec les écrans existants).
+  Map<int, int> get owned => {for (final e in variants.entries) e.key: e.value.length};
 
   static Future<Collection> load() async {
     final prefs = await SharedPreferences.getInstance();
     final c = Collection._(prefs);
-    for (final entry in prefs.getStringList(_kOwned) ?? const <String>[]) {
-      final parts = entry.split(':');
-      if (parts.length != 2) continue;
-      final id = int.tryParse(parts[0]);
-      final qty = int.tryParse(parts[1]);
-      if (id != null && qty != null && qty > 0) c.owned[id] = qty;
+    final stored = prefs.getStringList(_kVariants);
+    if (stored != null) {
+      for (final entry in stored) {
+        final parts = entry.split(':');
+        if (parts.length != 2) continue;
+        final id = int.tryParse(parts[0]);
+        if (id == null) continue;
+        final seeds = parts[1].split(',').map(int.tryParse).whereType<int>().toList();
+        if (seeds.isNotEmpty) c.variants[id] = seeds;
+      }
+    } else {
+      // Migration de l'ancien format "id:quantité" : variantes déterministes.
+      for (final entry in prefs.getStringList(_kOwned) ?? const <String>[]) {
+        final parts = entry.split(':');
+        if (parts.length != 2) continue;
+        final id = int.tryParse(parts[0]);
+        final qty = int.tryParse(parts[1]);
+        if (id != null && qty != null && qty > 0) {
+          c.variants[id] = [for (var i = 0; i < qty; i++) id * 7919 + i];
+        }
+      }
+      await c._save();
     }
     return c;
   }
 
-  int get distinctCount => owned.length;
+  Future<void> _save() => _prefs.setStringList(
+      _kVariants, variants.entries.map((e) => '${e.key}:${e.value.join(',')}').toList());
+
+  int get distinctCount => variants.length;
 
   int? get companionId => _prefs.getInt(_kCompanion);
 
@@ -45,14 +71,14 @@ class Collection {
     }
   }
 
-  /// Ajoute des cartes ; renvoie les ids nouvellement découverts.
-  Future<Set<int>> addAll(Iterable<int> ids) async {
+  /// Ajoute des exemplaires (id, seed de variante) ; renvoie les ids nouvellement découverts.
+  Future<Set<int>> addAll(Iterable<(int, int)> items) async {
     final fresh = <int>{};
-    for (final id in ids) {
-      if (!owned.containsKey(id)) fresh.add(id);
-      owned[id] = (owned[id] ?? 0) + 1;
+    for (final (id, seed) in items) {
+      if (!variants.containsKey(id)) fresh.add(id);
+      (variants[id] ??= []).add(seed);
     }
-    await _prefs.setStringList(_kOwned, owned.entries.map((e) => '${e.key}:${e.value}').toList());
+    await _save();
     return fresh;
   }
 

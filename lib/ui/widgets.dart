@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'dart:math' as math;
+
 import '../core/cards.dart';
+import '../core/variants.dart';
 import 'theme.dart';
 
 IconData boostIcon(Boost b) =>
@@ -18,8 +21,19 @@ LinearGradient rarityGradient(Rarity r) {
 
 /// Carte portrait. Le visuel central sera remplacé par l'illustration.
 class CardView extends StatelessWidget {
-  const CardView({super.key, required this.card, this.owned = true, this.quantity, this.isNew = false, this.onTap});
+  const CardView({
+    super.key,
+    required this.card,
+    this.instance,
+    this.owned = true,
+    this.quantity,
+    this.isNew = false,
+    this.onTap,
+  });
   final GameCard card;
+
+  /// Exemplaire précis (variante) ; null = vue de l'espèce.
+  final CardInstance? instance;
   final bool owned;
   final int? quantity;
   final bool isNew;
@@ -65,28 +79,43 @@ class CardView extends StatelessWidget {
                     ),
                     Expanded(
                       child: Center(
-                        child: Container(
-                          width: w * 0.55,
-                          height: w * 0.55,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: owned ? Colors.black.withValues(alpha: 0.18) : Colors.white.withValues(alpha: 0.04),
-                          ),
-                          child: Icon(
-                            owned ? (card.family == CardFamily.hero ? Icons.person : Icons.pets) : Icons.question_mark,
-                            size: w * 0.32,
-                            color: owned ? Colors.white : Colors.white24,
-                          ),
-                        ),
+                        child: instance != null
+                            ? VariantEmblem(card: card, variant: instance!.variant, size: w * 0.6)
+                            : Container(
+                                width: w * 0.55,
+                                height: w * 0.55,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: owned
+                                      ? Colors.black.withValues(alpha: 0.18)
+                                      : Colors.white.withValues(alpha: 0.04),
+                                ),
+                                child: Icon(
+                                  owned
+                                      ? (card.family == CardFamily.hero ? Icons.person : Icons.pets)
+                                      : Icons.question_mark,
+                                  size: w * 0.32,
+                                  color: owned ? Colors.white : Colors.white24,
+                                ),
+                              ),
                       ),
                     ),
+                    if (instance != null && !small)
+                      Text(instance!.variant.label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: instance!.variant.prestige > 0 ? AppColors.gold : Colors.white70,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          )),
                     if (owned && !small)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          _MiniStat(icon: Icons.favorite, value: card.hp),
-                          _MiniStat(icon: Icons.flash_on, value: card.atk),
-                          _MiniStat(icon: Icons.shield_outlined, value: card.def),
+                          _MiniStat(icon: Icons.favorite, value: instance?.hp ?? card.hp),
+                          _MiniStat(icon: Icons.flash_on, value: instance?.atk ?? card.atk),
+                          _MiniStat(icon: Icons.shield_outlined, value: instance?.def ?? card.def),
                         ],
                       ),
                     Text(
@@ -239,7 +268,9 @@ void showPrototypeSnack(BuildContext context, String text) {
 
 /// Fiche détaillée d'une carte (bottom sheet).
 Future<void> showCardDetail(BuildContext context, GameCard card,
-    {int? quantity, bool isCompanion = false, VoidCallback? onEquip}) {
+    {int? quantity, List<int> variantSeeds = const [], bool isCompanion = false, VoidCallback? onEquip}) {
+  final instances = [for (final s in variantSeeds) CardInstance(card, s)]
+    ..sort((a, b) => b.variant.prestige.compareTo(a.variant.prestige));
   return showModalBottomSheet<void>(
     context: context,
     backgroundColor: AppColors.night,
@@ -263,7 +294,21 @@ Future<void> showCardDetail(BuildContext context, GameCard card,
                     style: const TextStyle(color: Colors.white)),
               ),
             ]),
-            if (quantity != null) ...[
+            if (instances.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text('Mes exemplaires (${instances.length})',
+                  style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 6),
+              SizedBox(
+                height: 150,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: instances.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (_, i) => SizedBox(width: 108, child: CardView(card: card, instance: instances[i])),
+                ),
+              ),
+            ] else if (quantity != null) ...[
               const SizedBox(height: 4),
               Text('Exemplaires : $quantity', style: const TextStyle(color: Colors.white60)),
             ],
@@ -285,4 +330,121 @@ Future<void> showCardDetail(BuildContext context, GameCard card,
       ),
     ),
   );
+}
+
+
+/// Illustration provisoire d'une variante : pastille teintée, motif, finition et éclat shiny.
+/// Sera remplacée par l'illustration IA teintée de la même façon.
+class VariantEmblem extends StatelessWidget {
+  const VariantEmblem({super.key, required this.card, required this.variant, required this.size});
+  final GameCard card;
+  final Variant variant;
+  final double size;
+
+  List<Color> get _colors => switch (variant.finish) {
+        VariantFinish.golden => const [Color(0xFFFFF1A8), Color(0xFFE0A100)],
+        VariantFinish.crystal => const [Color(0xFFF2FDFF), Color(0xFF7FD3FF)],
+        VariantFinish.shadow => const [Color(0xFF5B4B8A), Color(0xFF120B26)],
+        VariantFinish.normal => [
+            HSVColor.fromAHSV(1, variant.hue, 0.45, 0.95).toColor(),
+            HSVColor.fromAHSV(1, (variant.hue + 25) % 360, 0.75, 0.65).toColor(),
+          ],
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(
+        painter: _EmblemPainter(colors: _colors, pattern: variant.pattern, shiny: variant.shiny),
+        child: Center(
+          child: Icon(
+            card.family == CardFamily.hero ? Icons.person : Icons.pets,
+            size: size * 0.5,
+            color: variant.finish == VariantFinish.shadow ? const Color(0xFFCBB8FF) : Colors.white,
+            shadows: const [Shadow(color: Colors.black45, blurRadius: 4)],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EmblemPainter extends CustomPainter {
+  _EmblemPainter({required this.colors, required this.pattern, required this.shiny});
+  final List<Color> colors;
+  final VariantPattern pattern;
+  final bool shiny;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final c = Offset(size.width / 2, size.height / 2);
+    final r = size.width / 2;
+    final rect = Rect.fromCircle(center: c, radius: r);
+    canvas.drawCircle(c, r, Paint()..shader = LinearGradient(colors: colors, begin: Alignment.topLeft, end: Alignment.bottomRight).createShader(rect));
+    canvas.save();
+    canvas.clipPath(Path()..addOval(rect));
+    final p = Paint()..color = Colors.white.withValues(alpha: 0.22);
+    switch (pattern) {
+      case VariantPattern.none:
+        break;
+      case VariantPattern.stripes:
+        p
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = r * 0.12;
+        for (var i = -4; i <= 4; i++) {
+          final o = i * r * 0.35;
+          canvas.drawLine(Offset(c.dx + o - r, c.dy - r), Offset(c.dx + o + r, c.dy + r), p);
+        }
+      case VariantPattern.spots:
+        for (final o in const [Offset(-0.5, -0.4), Offset(0.45, -0.3), Offset(-0.2, 0.5), Offset(0.5, 0.45), Offset(0.05, -0.05)]) {
+          canvas.drawCircle(c + Offset(o.dx * r, o.dy * r), r * 0.16, p);
+        }
+      case VariantPattern.rings:
+        p
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = r * 0.07;
+        for (var k = 1; k <= 3; k++) {
+          canvas.drawCircle(c, r * k * 0.3, p);
+        }
+      case VariantPattern.stars:
+        for (var k = 0; k < 6; k++) {
+          final a = k * math.pi / 3;
+          _star(canvas, c + Offset(math.cos(a) * r * 0.62, math.sin(a) * r * 0.62), r * 0.13, p);
+        }
+    }
+    canvas.restore();
+    if (shiny) {
+      canvas.drawCircle(
+        c,
+        r - 1.5,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3
+          ..shader = const SweepGradient(colors: [
+            Color(0xFFFF6B6B), Color(0xFFFFB627), Color(0xFF6BE36B), Color(0xFF4DD6FF), Color(0xFFB57BFF), Color(0xFFFF6B6B),
+          ]).createShader(rect),
+      );
+      final sp = Paint()..color = Colors.white;
+      _star(canvas, c + Offset(r * 0.7, -r * 0.7), r * 0.18, sp);
+      _star(canvas, c + Offset(-r * 0.75, r * 0.55), r * 0.12, sp);
+    }
+  }
+
+  void _star(Canvas canvas, Offset c, double s, Paint p) {
+    final path = Path();
+    for (var i = 0; i < 8; i++) {
+      final a = i * math.pi / 4;
+      final rr = i.isEven ? s : s * 0.4;
+      final pt = c + Offset(math.cos(a) * rr, math.sin(a) * rr);
+      i == 0 ? path.moveTo(pt.dx, pt.dy) : path.lineTo(pt.dx, pt.dy);
+    }
+    path.close();
+    canvas.drawPath(path, Paint()..color = p.color);
+  }
+
+  @override
+  bool shouldRepaint(covariant _EmblemPainter old) =>
+      old.colors != colors || old.pattern != pattern || old.shiny != shiny;
 }

@@ -14,6 +14,7 @@ import '../core/places.dart';
 import '../core/config.dart';
 import '../core/run_state.dart';
 import '../core/terrain.dart';
+import '../core/variants.dart';
 import 'effects.dart';
 import 'sfx.dart';
 import 'enemy.dart';
@@ -80,7 +81,7 @@ class CollectearGame extends FlameGame with KeyboardEvents {
   final ValueNotifier<int> hurtPulse = ValueNotifier(0);
 
   /// Dernière carte obtenue (animation dans le HUD).
-  final ValueNotifier<GameCard?> cardEvent = ValueNotifier(null);
+  final ValueNotifier<CardInstance?> cardEvent = ValueNotifier(null);
 
   /// La run est en cours : après le compte à rebours et avant la fin.
   bool get active => started && !run.isOver;
@@ -236,7 +237,7 @@ class CollectearGame extends FlameGame with KeyboardEvents {
   }
 
   void _giveCard({double bonusLuck = 0}) {
-    final card = pool.draw(_rng, luck: _luck + bonusLuck);
+    final card = CardInstance(pool.draw(_rng, luck: _luck + bonusLuck), _rng.nextInt(1 << 30));
     run.addCard(card);
     cardEvent.value = card;
     Sfx.play('card');
