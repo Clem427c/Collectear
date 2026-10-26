@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flame/components.dart';
@@ -96,8 +97,8 @@ class CollectearGame extends FlameGame with KeyboardEvents {
     world.add(spawner);
     camera.follow(player);
     _addControls();
-    await Sfx.preload();
-    Sfx.play('tick');
+    // Chargement des sons en arrière-plan : le jeu s'affiche sans attendre.
+    unawaited(Sfx.preload());
   }
 
   @override

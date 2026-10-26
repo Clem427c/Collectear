@@ -19,10 +19,11 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
 - [x] Prototypes visuels : boutique (cosmétiques), échanges, combats (données d'exemple)
 - [x] Premiers retours de playtest de Clem (blocage terrain, vies, interface)
 - [ ] Nouveaux retours de playtest → réglages (vitesses, densité d'ennemis, zoom)
-- [ ] Feedback : sons, vibrations, effets de coup, écran de début de run
+- [x] Sensations : sons, vibrations, particules, flash de dégâts, compte à rebours, carte obtenue animée
+- [x] Boost Portée (5e boost)
 
 ## Étape 2 – Boucle de jeu
-- [ ] Types de lieux du GDD : sanctuaire (vaincre les ennemis autour), tour, ruine, coffre rare
+- [x] Types de lieux du GDD : sanctuaire (4 gardiens), tour (pyramide à gravir), ruine (3 runes), coffre rare (loin du départ)
 - [ ] Variantes procédurales des cartes (teinte, motifs, shiny) + stats légèrement variées
 - [ ] Fiche de style IA + prompts des 300 cartes (pour Clem) ; intégration des illustrations
 - [ ] Écran de carte détaillé, animations d'obtention
