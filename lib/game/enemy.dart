@@ -7,6 +7,7 @@ import '../core/config.dart';
 import '../core/terrain.dart';
 import 'collectear_game.dart';
 import 'effects.dart';
+import 'place.dart';
 import 'projectile.dart';
 import 'sfx.dart';
 
@@ -21,12 +22,16 @@ class Enemy extends PositionComponent with HasGameReference<CollectearGame> {
     required this.spawnId,
     required Vector2 position,
     required int seed,
+    this.guardOf,
   })  : _rng = math.Random(seed),
         super(position: position, size: Vector2.all(24), anchor: Anchor.center, priority: 50);
 
   final EnemyKind kind;
   final int level;
   final String spawnId;
+
+  /// Sanctuaire gardé par cet ennemi (null pour un ennemi ordinaire).
+  final PlaceComponent? guardOf;
   final math.Random _rng;
 
   late int hp;

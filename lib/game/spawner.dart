@@ -5,9 +5,10 @@ import 'package:flame/components.dart';
 import '../core/config.dart';
 import '../core/noise.dart';
 import '../core/terrain.dart';
-import 'chest.dart';
+import '../core/places.dart';
 import 'collectear_game.dart';
 import 'enemy.dart';
+import 'place.dart';
 
 /// Charge les entités des chunks proches du joueur et décharge les chunks lointains.
 class Spawner extends Component with HasGameReference<CollectearGame> {
@@ -74,23 +75,33 @@ class Spawner extends Component with HasGameReference<CollectearGame> {
       ));
     }
 
-    // Coffre : de préférence sur le point le plus haut du chunk (il faut sauter pour l'atteindre).
-    if (rng.nextDouble() < 0.22) {
-      final id = 'c:$cx:$cy';
-      var best = -1;
-      var bx = 0, by = 0;
-      for (var j = 0; j < n * n; j++) {
-        final tx = cx * n + j % n;
-        final ty = cy * n + j ~/ n;
-        final l = terrain.levelAt(tx, ty);
-        if (l > best || (l == best && rng.nextDouble() < 0.15)) {
-          best = l;
-          bx = tx;
-          by = ty;
-        }
+    // Lieux : coffre, coffre rare, sanctuaire, tour ou ruine.
+    for (final spec in PlaceRules.forChunk(terrain, cx, cy)) {
+      if (consumed.contains(spec.id)) continue;
+      final guardianIds = [for (var g = 0; g < spec.guardians.length; g++) '${spec.id}:g$g'];
+      final runeIds = [for (var r = 0; r < spec.runes.length; r++) '${spec.id}:r$r'];
+      final place = PlaceComponent(
+        spec: spec,
+        guardiansLeft: guardianIds.where((id) => !consumed.contains(id)).length,
+        runesLit: runeIds.where(consumed.contains).length,
+      );
+      out.add(place);
+      for (var g = 0; g < spec.guardians.length; g++) {
+        if (consumed.contains(guardianIds[g])) continue;
+        final t = spec.guardians[g];
+        out.add(Enemy(
+          kind: g.isEven ? EnemyKind.melee : EnemyKind.ranged,
+          level: terrain.levelAt(t.x, t.y),
+          spawnId: guardianIds[g],
+          position: tileCenter(t),
+          seed: rng.nextInt(1 << 30),
+          guardOf: place,
+        ));
       }
-      if (!consumed.contains(id)) {
-        out.add(Chest(position: _tileCenter(bx, by), level: best, spawnId: id));
+      for (var r = 0; r < spec.runes.length; r++) {
+        final t = spec.runes[r];
+        out.add(RuneStone(tile: t, level: terrain.levelAt(t.x, t.y), runeId: runeIds[r], ruin: place)
+          ..lit = consumed.contains(runeIds[r]));
       }
     }
 

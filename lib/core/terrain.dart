@@ -1,5 +1,8 @@
+import 'dart:math' as math;
+
 import 'config.dart';
 import 'noise.dart';
+import 'places.dart' show TilePos;
 
 /// Terrain infini en niveaux de hauteur, entièrement déterminé par une seed.
 class Terrain {
@@ -50,8 +53,37 @@ class Terrain {
     return v;
   }
 
+  // --- Tours : pyramides à gravir saut après saut, un coffre au sommet. ---
+
+  /// Rayon d'une tour en cases (le sommet est au niveau maxLevel).
+  static const int towerRadius = 3;
+
+  /// Probabilité qu'un chunk contienne une tour.
+  static const double towerChance = 0.05;
+
+  bool hasTower(int cx, int cy) {
+    if (cx.abs() <= 1 && cy.abs() <= 1) return false;
+    return hash01(seed ^ 0x7031, cx, cy) < towerChance;
+  }
+
+  TilePos towerCenter(int cx, int cy) {
+    const n = GameConfig.chunkTiles;
+    return TilePos(cx * n + n ~/ 2, cy * n + n ~/ 2);
+  }
+
+  /// Distance (Chebyshev) au centre de la tour du chunk, ou null si hors tour.
+  int? towerRing(int tx, int ty) {
+    final cx = chunkOf(tx), cy = chunkOf(ty);
+    if (!hasTower(cx, cy)) return null;
+    final c = towerCenter(cx, cy);
+    final d = math.max((tx - c.x).abs(), (ty - c.y).abs());
+    return d <= towerRadius ? d : null;
+  }
+
   int _compute(int tx, int ty) {
     if (tx.abs() <= spawnClearRadius && ty.abs() <= spawnClearRadius) return 0;
+    final ring = towerRing(tx, ty);
+    if (ring != null) return GameConfig.maxLevel - ring;
     final n = fbm(seed, tx / 11.0, ty / 11.0);
     // Courbe : beaucoup de plaines, des plateaux, quelques sommets.
     const thresholds = [0.48, 0.58, 0.67, 0.75];

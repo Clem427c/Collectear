@@ -9,13 +9,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../core/cards.dart';
+import '../core/places.dart';
 import '../core/config.dart';
 import '../core/run_state.dart';
 import '../core/terrain.dart';
-import 'chest.dart';
 import 'effects.dart';
 import 'sfx.dart';
 import 'enemy.dart';
+import 'place.dart';
 import 'player.dart';
 import 'spawner.dart';
 import 'terrain_component.dart';
@@ -243,6 +244,11 @@ class CollectearGame extends FlameGame with KeyboardEvents {
 
   void enemyKilled(Enemy enemy) {
     spawner.consumed.add(enemy.spawnId);
+    final sanctuary = enemy.guardOf;
+    if (sanctuary != null) {
+      sanctuary.guardianKilled();
+      if (sanctuary.unlocked && sanctuary.isMounted) _toast('Le sanctuaire s\'éveille…');
+    }
     final before = run.livesRegained;
     final card = run.registerKill();
     world.add(Burst(position: enemy.position.clone(), color: const Color(0xFFFFE066), count: 16, speed: 150));
@@ -255,11 +261,22 @@ class CollectearGame extends FlameGame with KeyboardEvents {
     if (card) _giveCard();
   }
 
-  void chestOpened(Chest chest) {
-    spawner.consumed.add(chest.spawnId);
-    world.add(Burst(position: chest.position.clone(), color: const Color(0xFFFFB627), count: 22, speed: 170, life: 0.7));
+  void placeCompleted(PlaceComponent place) {
+    spawner.consumed.add(place.spec.id);
+    world.add(Burst(position: place.position.clone(), color: const Color(0xFFFFB627), count: 22, speed: 170, life: 0.7));
     Sfx.play('chest');
-    _giveCard(bonusLuck: 0.15);
+    _giveCard(bonusLuck: place.spec.type.luckBonus);
+  }
+
+  void runeActivated(RuneStone rune) {
+    spawner.consumed.add(rune.runeId);
+    final ruin = rune.ruin;
+    if (ruin != null) ruin.runesLit++;
+    world.add(Burst(position: rune.position.clone(), color: const Color(0xFF7FE9FF), count: 10, speed: 90));
+    Sfx.play('life', volume: 0.5);
+    if (ruin != null && ruin.unlocked) {
+      _toast('Un passage s\'ouvre dans la ruine…');
+    }
   }
 
   void playerHit() {

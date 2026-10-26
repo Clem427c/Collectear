@@ -20,6 +20,16 @@ class TerrainComponent extends Component with HasGameReference<CollectearGame> {
   ];
 
   final _fills = [for (final c in _levelColors) Paint()..color = c];
+
+  // Tours : pierre taillée, plus claire vers le sommet.
+  static const _towerColors = [
+    Color(0xFF6F6890),
+    Color(0xFF837BA6),
+    Color(0xFF9890BA),
+    Color(0xFFADA6CC),
+    Color(0xFFC6C0E0),
+  ];
+  final _towerFills = [for (final c in _towerColors) Paint()..color = c];
   final _cliff = Paint()..color = const Color(0xFF3B2F45);
   final _sideEdge = Paint()..color = const Color(0x553B2F45);
   final _highlight = Paint()..color = const Color(0x55FFFFFF);
@@ -40,7 +50,8 @@ class TerrainComponent extends Component with HasGameReference<CollectearGame> {
         final level = terrain.levelAt(tx, ty);
         final left = tx * t;
         final top = ty * t;
-        canvas.drawRect(Rect.fromLTWH(left, top, t + 0.5, t + 0.5), _fills[level]);
+        final tower = terrain.towerRing(tx, ty) != null;
+        canvas.drawRect(Rect.fromLTWH(left, top, t + 0.5, t + 0.5), tower ? _towerFills[level] : _fills[level]);
         if ((tx + ty).isEven) {
           canvas.drawRect(Rect.fromLTWH(left + t / 2 - 1, top + t / 2 - 1, 2, 2), _gridDot);
         }

@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:collectear/core/cards.dart';
 import 'package:collectear/core/config.dart';
 import 'package:collectear/core/noise.dart';
+import 'package:collectear/core/places.dart';
 import 'package:collectear/core/run_state.dart';
 import 'package:collectear/core/terrain.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -200,6 +201,62 @@ void main() {
       expect(HeightRules.playerCanEnter(current: 1, target: 2, airborne: true), isTrue);
       expect(HeightRules.playerCanEnter(current: 1, target: 3, airborne: true), isFalse);
       expect(HeightRules.enemyCanEnter(current: 2, target: 1), isFalse);
+    });
+  });
+
+  group('Lieux', () {
+    test('aucun lieu près du départ, génération déterministe', () {
+      final t = Terrain(5);
+      for (var cx = -1; cx <= 1; cx++) {
+        for (var cy = -1; cy <= 1; cy++) {
+          expect(PlaceRules.forChunk(t, cx, cy), isEmpty);
+        }
+      }
+      final a = PlaceRules.forChunk(t, 4, -3).map((p) => '${p.type}${p.tile}').toList();
+      final b = PlaceRules.forChunk(Terrain(5), 4, -3).map((p) => '${p.type}${p.tile}').toList();
+      expect(a, b);
+    });
+
+    test('tous les types de lieux existent, avec leurs règles', () {
+      final t = Terrain(2026);
+      final seen = <PlaceType>{};
+      for (var cx = -20; cx <= 20; cx++) {
+        for (var cy = -20; cy <= 20; cy++) {
+          for (final p in PlaceRules.forChunk(t, cx, cy)) {
+            seen.add(p.type);
+            switch (p.type) {
+              case PlaceType.sanctuary:
+                expect(p.guardians.length, PlaceRules.guardiansPerSanctuary);
+              case PlaceType.ruin:
+                expect(p.runes.toSet().length, PlaceRules.runesPerRuin);
+                expect(p.runes.contains(p.tile), isFalse);
+              case PlaceType.tower:
+                expect(p.level, GameConfig.maxLevel);
+              case PlaceType.rareChest:
+                expect(cx * cx + cy * cy, greaterThanOrEqualTo(25));
+              case PlaceType.chest:
+                break;
+            }
+            expect(p.level, t.levelAt(p.tile.x, p.tile.y));
+          }
+        }
+      }
+      expect(seen, PlaceType.values.toSet());
+    });
+
+    test('une tour se gravit niveau par niveau jusqu\'au sommet', () {
+      final t = Terrain(2026);
+      late int cx, cy;
+      search:
+      for (cx = 2; cx < 60; cx++) {
+        for (cy = 2; cy < 60; cy++) {
+          if (t.hasTower(cx, cy)) break search;
+        }
+      }
+      final c = t.towerCenter(cx, cy);
+      for (var d = 0; d <= Terrain.towerRadius; d++) {
+        expect(t.levelAt(c.x + d, c.y), GameConfig.maxLevel - d);
+      }
     });
   });
 }
