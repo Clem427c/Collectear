@@ -9,7 +9,7 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
 - [x] Ennemis : corps à corps et tir à distance, attaques télégraphiées, restent sur leur niveau
 - [x] Spawn / despawn par chunks, difficulté selon la distance
 - [x] Coffres (lieux) placés sur les points hauts
-- [x] Run de 2 min : fin par mort (2 coups), 3 cartes ou chrono
+- [x] Run de 2 min : fin par mort (3 vies), 3 cartes ou chrono
 - [x] Carte tous les 10 kills ou dans un coffre ; tirage pondéré par rareté
 - [x] Récapitulatif, collection locale, bestiaire, limite de 10 runs/jour
 - [x] Compagnon de run, boost fixe par carte choisi selon son nom
