@@ -20,6 +20,11 @@ Mode automatique (pour laisser tourner sans surveiller) :
     exactement la même image) :
   python tool/comfy_batch.py --redo 29,64,72
 
+Décors, personnage jouable et ennemis (docs/prompts_decors.csv, regénéré par tool/gen_decor_prompts.py) :
+  python tool/comfy_batch.py --decors             # 3 propositions par image dans art/decors/candidates/
+  python tool/comfy_batch.py --decors --auto      # 1 image par élément dans art/decors/raw/ + push GitHub
+  python tool/comfy_batch.py --decors --redo 3,12 # refaire certains éléments (numéros du CSV)
+
 Les images arrivent dans art/candidates/ (001_a.png, 001_b.png, …). Choisis la meilleure,
 renomme-la 001.png et place-la dans art/raw/. Les cartes déjà présentes dans art/raw/ sont sautées.
 Aucune dépendance : uniquement la bibliothèque standard de Python.
@@ -42,7 +47,7 @@ WEIGHT_DTYPE = "fp8_e4m3fn"
 CLIP_DEVICE = "cpu"
 
 
-def workflow(prompt: str, seed: int, prefix: str) -> dict:
+def workflow(prompt: str, seed: int, prefix: str, width: int = 1024, height: int = 1024) -> dict:
     return {
         # FLUX chargé en fp8 (~12 Go de VRAM au lieu de ~24) et encodeurs de texte sur le processeur :
         # sinon, à chaque nouveau prompt, ComfyUI fait des allers-retours de ~34 Go entre la RAM et la VRAM
@@ -54,7 +59,7 @@ def workflow(prompt: str, seed: int, prefix: str) -> dict:
         "3": {"class_type": "VAELoader", "inputs": {"vae_name": "ae.safetensors"}},
         "4": {"class_type": "CLIPTextEncode", "inputs": {"text": prompt, "clip": ["2", 0]}},
         "5": {"class_type": "ConditioningZeroOut", "inputs": {"conditioning": ["4", 0]}},
-        "6": {"class_type": "EmptySD3LatentImage", "inputs": {"width": 1024, "height": 1024, "batch_size": 1}},
+        "6": {"class_type": "EmptySD3LatentImage", "inputs": {"width": width, "height": height, "batch_size": 1}},
         "7": {"class_type": "KSampler", "inputs": {
             "model": ["1", 0], "positive": ["4", 0], "negative": ["5", 0], "latent_image": ["6", 0],
             "seed": seed, "steps": 4, "cfg": 1.0, "sampler_name": "euler", "scheduler": "simple", "denoise": 1.0}},
@@ -80,9 +85,9 @@ def find_server(urls):
     raise SystemExit("ComfyUI injoignable. Lance ComfyUI puis réessaie (ou précise --url).")
 
 
-def generate(url: str, prompt: str, seed: int, prefix: str, dest: Path):
+def generate(url: str, prompt: str, seed: int, prefix: str, dest: Path, width: int = 1024, height: int = 1024):
     client = str(uuid.uuid4())
-    res = json.loads(call(url, "/prompt", {"prompt": workflow(prompt, seed, prefix), "client_id": client}))
+    res = json.loads(call(url, "/prompt", {"prompt": workflow(prompt, seed, prefix, width, height), "client_id": client}))
     pid = res["prompt_id"]
     deadline = time.time() + 300
     while True:
@@ -111,10 +116,14 @@ def main():
     ap.add_argument("--redo", default="",
                     help="numéros à refaire, séparés par des virgules (ex. 29,64,72) : remplace l'image avec une nouvelle graine")
     ap.add_argument("--full", action="store_true", help="FLUX en pleine précision et encodeurs sur la carte graphique")
+    ap.add_argument("--decors", action="store_true",
+                    help="décors, personnage jouable et ennemis (docs/prompts_decors.csv) au lieu des cartes")
     args = ap.parse_args()
     if args.full:
         global WEIGHT_DTYPE, CLIP_DEVICE
         WEIGHT_DTYPE, CLIP_DEVICE = "default", "default"
+    if args.decors:
+        return decors_mode(args)
     if args.auto or args.redo:
         return auto_mode(args)
 
@@ -139,9 +148,9 @@ def main():
     print("Terminé. Choisis tes images dans art/candidates/ et place-les dans art/raw/ (001.png…).")
 
 
-def git_push(message: str):
+def git_push(message: str, folder: str = "art/raw"):
     try:
-        subprocess.run(["git", "add", "art/raw"], cwd=ROOT, check=True)
+        subprocess.run(["git", "add", folder], cwd=ROOT, check=True)
         diff = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=ROOT)
         if diff.returncode == 0:
             return
@@ -201,6 +210,56 @@ def auto_mode(args):
         what = f"cartes refaites : {', '.join(f'{n:03d}' for n in sorted(redo))}" if redo else f"{done} cartes"
         git_push(f"Illustrations : génération auto FLUX ({what})")
     print(f"Terminé : {done} carte(s) générée(s).")
+
+
+DECOR_PROMPTS = ROOT / "docs/prompts_decors.csv"
+DECOR_RAW = ROOT / "art/decors/raw"
+DECOR_OUT = ROOT / "art/decors/candidates"
+
+
+def decors_mode(args):
+    """Décors / perso / ennemis : 3 propositions par image dans art/decors/candidates/ (au choix de Clem,
+    à copier dans art/decors/raw/ sous le nom de la colonne « fichier »), ou avec --auto une image
+    directement dans art/decors/raw/ puis envoi sur GitHub. --redo marche avec les numéros du CSV."""
+    url = find_server([args.url] if args.url else ["http://127.0.0.1:8000", "http://127.0.0.1:8188"])
+    print("ComfyUI trouvé :", url)
+    rows = list(csv.DictReader(DECOR_PROMPTS.open(encoding="utf-8"), delimiter=";"))
+    redo = parse_numbers(args.redo)
+    seed_offset = int(time.time()) % 100_000 + 1 if redo else 0
+    auto = args.auto or bool(redo)
+    (DECOR_RAW if auto else DECOR_OUT).mkdir(parents=True, exist_ok=True)
+    letters = "abcdefghij"
+    done = 0
+    for row in rows:
+        n = int(row["numero"])
+        if redo and n not in redo:
+            continue
+        final = DECOR_RAW / row["fichier"]
+        if final.exists() and n not in redo:
+            continue
+        w, h = int(row["largeur"]), int(row["hauteur"])
+        stem = Path(row["fichier"]).stem
+        targets = [final] if auto else [DECOR_OUT / f"{stem}_{letters[v]}.png" for v in range(args.variants)]
+        for v, dest in enumerate(targets):
+            if dest.exists() and not auto:
+                continue
+            for attempt in range(3):
+                try:
+                    t0 = time.time()
+                    generate(url, row["prompt"], seed=5000 + n * 100 + v + seed_offset,
+                             prefix=f"collectear_decors/{stem}", dest=dest, width=w, height=h)
+                    print(f"{dest.name}  {row['nom']}  ({time.time() - t0:.1f} s)")
+                    break
+                except Exception as e:
+                    print(f"! {dest.name} tentative {attempt + 1} échouée : {e}")
+                    time.sleep(5)
+        done += 1
+    if auto and not args.no_push:
+        git_push(f"Décors : génération auto FLUX ({done} images)", folder="art/decors/raw")
+    if not auto:
+        print("Terminé. Choisis dans art/decors/candidates/ et copie la meilleure dans art/decors/raw/ "
+              "sous le nom de la colonne « fichier » (ex. tile_l0_vallee.png).")
+    print(f"Terminé : {done} image(s).")
 
 
 if __name__ == "__main__":

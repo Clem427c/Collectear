@@ -34,3 +34,4 @@ key.properties
 
 # Python
 __pycache__/
+/art/decors/candidates/
