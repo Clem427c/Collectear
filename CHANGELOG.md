@@ -1,5 +1,15 @@
 # Journal des versions
 
+## 0.6.0 – 27/10/2026 (après-midi)
+- En ligne : schéma de la base (`supabase/schema.sql`) avec RLS — profils créés automatiquement à
+  l'inscription avec un code ami unique, collection (carte + variante) ; chacun ne voit et n'ajoute que
+  ses propres cartes, rien ne peut être modifié ni supprimé depuis l'appli. Testé sur PostgreSQL 16.
+- Connexion sans mot de passe dans le Profil : on saisit son e-mail, on reçoit un code à 6 chiffres
+  (ou un lien magique sur le web). Affiche le compte, le code ami en ligne et l'état de la synchro.
+- Synchro de la collection : union entre l'appareil et le serveur (rien n'est jamais supprimé), au
+  démarrage, à la connexion, sur le bouton « Synchroniser » ; les cartes d'une run partent en ligne à la fin.
+- `docs/SUPABASE.md` : les 3 réglages à faire une fois dans le tableau de bord Supabase.
+
 ## 0.5.0 – 27/10/2026
 - Revue des 300 illustrations générées par Clem : 284 validées, 16 à refaire (liste dans ROADMAP.md).
   Bug corrigé dans les prompts : certaines héroïnes (Rosa, Rhéa, Nahia…) étaient demandées en homme.

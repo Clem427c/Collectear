@@ -36,9 +36,13 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
 Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et `SUPABASE_PUBLISHABLE_KEY` (26/10).
 - [x] Secrets vérifiés en CI sans les afficher (présents, URL https, clé publishable) et injectés au build (27/10)
 - [x] `supabase_flutter` branché : client initialisé au démarrage, état du serveur dans le Profil
-- [ ] **Prochaine session** : schéma SQL (profils, collection) avec RLS dans `supabase/schema.sql`, à coller par Clem
-  dans l'éditeur SQL de Supabase ; puis connexion e-mail (lien magique) et synchro de la collection
-- [ ] Comptes (e-mail, Google), sauvegarde de la collection côté serveur
+- [x] Schéma SQL (profils avec code ami, collection) avec RLS dans `supabase/schema.sql`, testé sur PostgreSQL (27/10)
+- [x] Connexion e-mail sans mot de passe (code à 6 chiffres, ou lien magique sur le web) dans le Profil (27/10)
+- [x] Synchro de la collection (union, rien n'est supprimé) au démarrage, à la connexion et en fin de run (27/10)
+- [ ] **Clem** : faire les 3 réglages de `docs/SUPABASE.md` (coller le SQL, adresse du site, code dans l'e-mail)
+- [ ] **Prochaine session** (après les réglages de Clem) : pseudo modifiable, stats du profil en ligne,
+  puis validation serveur des récompenses
+- [ ] Connexion Google (attend la réponse de Clem, voir « Questions »)
 - [ ] Validation serveur des récompenses (anti-triche)
 - [ ] Amis (code ami), échanges carte contre carte
 - [ ] Profil d'explorateur, classement entre amis
@@ -96,6 +100,13 @@ Priorité basse (à toi de juger) :
 - Pour la connexion Google, il faudra créer des identifiants OAuth dans Google Cloud et les coller dans
   Supabase (Authentication → Providers → Google). Je commencerai par l'e-mail (aucun réglage). Tu valides ?
 - Dans le Profil, la ligne « Compte en ligne » doit afficher « Serveur joignable » : dis-moi si ce n'est pas le cas.
+- **À faire (5 min)** : les 3 réglages de `docs/SUPABASE.md`. Sans eux, la connexion renvoie une erreur
+  « Base pas encore créée » et, sur l'APK, l'e-mail ne contient pas de code.
+- PROVISOIRE : la collection locale appartient à l'appareil. Si un 2e compte se connecte sur le même
+  téléphone, les cartes locales partent aussi sur ce compte. Préfères-tu qu'à la déconnexion on vide
+  la collection locale (elle reviendra à la reconnexion) ?
+- PROVISOIRE : en attendant l'anti-triche, c'est l'appli qui ajoute les cartes en ligne (une appli
+  modifiée pourrait tricher). La validation serveur est la prochaine grosse tâche de l'étape 3.
 
 ### Illustrations (suite)
 Remarque : les 4 bûcherons (035 Hugo, 065 Pio, 070 Milo, 079 Anatole) se ressemblent beaucoup
