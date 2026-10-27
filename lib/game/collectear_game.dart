@@ -17,6 +17,7 @@ import '../core/run_state.dart';
 import '../core/terrain.dart';
 import '../core/variants.dart';
 import 'coin.dart';
+import 'decor_art.dart';
 import 'effects.dart';
 import 'sfx.dart';
 import 'enemy.dart';
@@ -75,6 +76,7 @@ class CollectearGame extends FlameGame with KeyboardEvents {
   String? _message;
   double _messageTime = 0;
   bool _endNotified = false;
+  bool _hurryPlayed = false;
 
   /// Compte à rebours avant le départ (3, 2, 1, 0 = « GO », null = terminé).
   final ValueNotifier<int?> countdown = ValueNotifier(3);
@@ -95,6 +97,7 @@ class CollectearGame extends FlameGame with KeyboardEvents {
 
   @override
   Future<void> onLoad() async {
+    await DecorArt.load(images);
     world.add(TerrainComponent());
     player = Player()..position = Vector2.all(GameConfig.tileSize / 2);
     world.add(player);
@@ -196,6 +199,12 @@ class CollectearGame extends FlameGame with KeyboardEvents {
     super.update(dt);
     if (countdown.value != null) _updateCountdown(dt);
     if (started) run.tick(dt);
+    // Alerte des 15 dernières secondes : un seul son, au moment où le chrono passe en rouge.
+    if (started && !_hurryPlayed && !run.isOver && run.remaining <= GameConfig.hurrySeconds) {
+      _hurryPlayed = true;
+      Sfx.play('hurry', volume: 0.8);
+      Sfx.haptic(HapticStrength.medium);
+    }
     if (_messageTime > 0) {
       _messageTime -= dt;
       if (_messageTime <= 0) _message = null;

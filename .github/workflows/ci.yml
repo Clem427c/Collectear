@@ -66,6 +66,7 @@ jobs:
         run: |
           python3 -m pip install --quiet pillow numpy scipy || python3 -m pip install --quiet --break-system-packages pillow numpy scipy
           python3 tool/process_art.py
+          python3 tool/process_decors.py
 
       - name: Vérifier les secrets Supabase (sans les afficher)
         env:

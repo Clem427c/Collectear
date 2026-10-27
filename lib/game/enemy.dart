@@ -6,6 +6,7 @@ import 'package:flame/components.dart';
 import '../core/config.dart';
 import '../core/terrain.dart';
 import 'collectear_game.dart';
+import 'decor_art.dart';
 import 'effects.dart';
 import 'place.dart';
 import 'projectile.dart';
@@ -23,8 +24,22 @@ class Enemy extends PositionComponent with HasGameReference<CollectearGame> {
     required Vector2 position,
     required int seed,
     this.guardOf,
+    bool guard = false,
   })  : _rng = math.Random(seed),
+        isGuard = guard || guardOf != null,
+        home = position.clone(),
         super(position: position, size: Vector2.all(24), anchor: Anchor.center, priority: 50);
+
+  /// Gardien (sanctuaire ou pierre runique) : apparence d'élite et reste près de son poste.
+  final bool isGuard;
+
+  /// Poste du gardien.
+  final Vector2 home;
+
+  /// Un gardien patrouille dans ce rayon autour de son poste et ne poursuit pas au-delà de
+  /// [_chaseLeash] (retour de Clem du 27/10 : les gardiens d'un sanctuaire s'éloignaient).
+  static const double _leash = 1.5 * GameConfig.tileSize;
+  static const double _chaseLeash = 4.5 * GameConfig.tileSize;
 
   final EnemyKind kind;
   final int level;
@@ -95,12 +110,18 @@ class Enemy extends PositionComponent with HasGameReference<CollectearGame> {
     final dist = math.sqrt(d2);
     final sameLevel = player.level == level;
     // Période de grâce au début de la run : les ennemis ne repèrent pas encore le joueur.
-    final sees = sameLevel && dist < GameConfig.detectRadius && game.run.elapsed > GameConfig.startGrace;
+    var sees = sameLevel && dist < GameConfig.detectRadius && game.run.elapsed > GameConfig.startGrace;
+    if (isGuard && position.distanceTo(home) > _chaseLeash) sees = false; // retourne à son poste
 
     switch (_state) {
       case _State.patrol:
         _timer -= dt;
         if (_timer <= 0) _pickWander();
+        if (isGuard && position.distanceTo(home) > _leash) {
+          // Revient vers son poste.
+          _wander.setFrom(home - position);
+          _wander.normalize();
+        }
         _move(_wander * (_speed * 0.4) * dt);
         if (sees) {
           _state = _State.chase;
@@ -210,7 +231,15 @@ class Enemy extends PositionComponent with HasGameReference<CollectearGame> {
   void render(Canvas canvas) {
     if (_offscreen) return;
     final c = Offset(size.x / 2, size.y / 2);
+    if (isGuard) {
+      // Anneau doré sous les gardiens : on voit tout de suite lesquels défendent le lieu.
+      canvas.drawOval(Rect.fromCenter(center: c + const Offset(0, 9), width: 30, height: 12), _guardRing);
+    }
     canvas.drawOval(Rect.fromCenter(center: c + const Offset(0, 9), width: 20, height: 7), _shadow);
+    if (_renderSprite(canvas, c)) {
+      _renderOverlay(canvas, c, -16);
+      return;
+    }
     final paint = _flash > 0 ? _flashPaint : (kind == EnemyKind.melee ? _meleePaint : _rangedPaint);
     if (kind == EnemyKind.melee) {
       final r = RRect.fromRectAndRadius(Rect.fromCenter(center: c, width: 20, height: 20), const Radius.circular(5));
@@ -226,13 +255,36 @@ class Enemy extends PositionComponent with HasGameReference<CollectearGame> {
       canvas.drawPath(path, paint);
       canvas.drawPath(path, _outline);
     }
+    _renderOverlay(canvas, c, 0);
+  }
+
+  static final _guardRing = Paint()
+    ..color = const Color(0xCCFFC93C)
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 2.5;
+
+  String get _spriteName => switch ((kind, isGuard)) {
+        (EnemyKind.melee, false) => 'ennemi_cac',
+        (EnemyKind.melee, true) => 'ennemi_cac_elite',
+        (EnemyKind.ranged, false) => 'ennemi_distance',
+        (EnemyKind.ranged, true) => 'ennemi_distance_elite',
+      };
+
+  bool _renderSprite(Canvas canvas, Offset c) {
+    final h = isGuard ? 36.0 : 30.0;
+    return DecorArt.drawOnGround(canvas, _spriteName, c + const Offset(0, 10), h,
+        flipX: game.player.position.x < position.x, flash: _flash > 0 ? const Color(0xDDFFFFFF) : null);
+  }
+
+  /// Cercle d'attaque imminente et points de vie (au-dessus de la tête, [lift] pour les grands dessins).
+  void _renderOverlay(Canvas canvas, Offset c, double lift) {
     if (_state == _State.telegraph) {
       final total = kind == EnemyKind.melee ? GameConfig.meleeTelegraph : GameConfig.rangedTelegraph;
       final p = 1 - (_timer / total).clamp(0.0, 1.0);
       canvas.drawCircle(c, 14 + 10 * (1 - p), _telegraph);
     }
     for (var i = 0; i < maxHp; i++) {
-      canvas.drawCircle(Offset(c.dx - (maxHp - 1) * 4 + i * 8, c.dy - 17), 2.5, i < hp ? _pip : _pipEmpty);
+      canvas.drawCircle(Offset(c.dx - (maxHp - 1) * 4 + i * 8, c.dy - 17 + lift), 2.5, i < hp ? _pip : _pipEmpty);
     }
   }
 }

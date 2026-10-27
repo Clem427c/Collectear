@@ -1,9 +1,12 @@
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flame/components.dart';
 
 import '../core/config.dart';
+
 import 'collectear_game.dart';
+import 'decor_art.dart';
 
 /// Tir ennemi : touche le joueur s'il est au même niveau, s'écrase sur le relief plus haut.
 class Projectile extends PositionComponent with HasGameReference<CollectearGame> {
@@ -36,6 +39,15 @@ class Projectile extends PositionComponent with HasGameReference<CollectearGame>
 
   @override
   void render(Canvas canvas) {
+    if (DecorArt.has('ennemi_projectile')) {
+      // L'image : tête de la boule en bas à gauche, traînée vers le haut à droite → on aligne la tête sur le tir.
+      canvas.save();
+      canvas.translate(5, 5);
+      canvas.rotate(math.atan2(velocity.y, velocity.x) - math.pi * 0.75);
+      DecorArt.drawOnGround(canvas, 'ennemi_projectile', const Offset(0, 8), 16);
+      canvas.restore();
+      return;
+    }
     canvas.drawCircle(const Offset(5, 5), 5, _paint);
     canvas.drawCircle(const Offset(5, 5), 2.5, _core);
   }

@@ -6,6 +6,8 @@ import 'package:flame/components.dart';
 import '../core/config.dart';
 import '../core/places.dart';
 import 'collectear_game.dart';
+import 'decor_art.dart';
+import 'enemy.dart';
 
 Vector2 tileCenter(TilePos t) => Vector2((t.x + 0.5) * GameConfig.tileSize, (t.y + 0.5) * GameConfig.tileSize);
 
@@ -21,6 +23,9 @@ class PlaceComponent extends PositionComponent with HasGameReference<CollectearG
 
   /// Ruine : runes déjà activées.
   int runesLit;
+
+  /// Sanctuaire : gardiens présents dans le monde (pour les relier à l'autel).
+  final List<Enemy> guardianEnemies = [];
 
   double _t = 0;
 
@@ -44,13 +49,53 @@ class PlaceComponent extends PositionComponent with HasGameReference<CollectearG
 
   void guardianKilled() => guardiansLeft = math.max(0, guardiansLeft - 1);
 
+  static final _tether = Paint()
+    ..color = const Color(0x88FFC93C)
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 1.5;
+
+  String? get _spriteName => switch (spec.type) {
+        PlaceType.chest || PlaceType.tower => 'place_coffre',
+        PlaceType.rareChest => 'place_coffre_rare',
+        PlaceType.sanctuary => unlocked ? 'place_sanctuaire_eveille' : 'place_sanctuaire',
+        PlaceType.ruin => unlocked ? 'place_ruine_ouverte' : 'place_ruine',
+      };
+
+  static const _spriteHeights = {
+    PlaceType.chest: 26.0,
+    PlaceType.tower: 26.0,
+    PlaceType.rareChest: 28.0,
+    PlaceType.sanctuary: 36.0,
+    PlaceType.ruin: 44.0,
+  };
+
   @override
   void render(Canvas canvas) {
+    final c = Offset(size.x / 2, size.y / 2);
+    final pulse = math.sin(_t * 4);
+    // Sanctuaire : un fil doré relie l'autel à chaque gardien encore en vie.
+    if (spec.type == PlaceType.sanctuary && !unlocked) {
+      for (final g in guardianEnemies) {
+        if (!g.isMounted) continue;
+        canvas.drawLine(c, c + Offset(g.position.x - position.x, g.position.y - position.y), _tether);
+      }
+    }
+    final name = _spriteName;
+    final h = _spriteHeights[spec.type]!;
+    if (name != null && DecorArt.has(name)) {
+      if (unlocked) {
+        PlaceArt.glow(canvas, c, spec.type, pulse);
+      }
+      DecorArt.drawOnGround(canvas, name, c + const Offset(0, 10), h);
+      PlaceArt.drawPips(canvas, c, spec.type,
+          top: 10 - h, unlocked: unlocked, guardiansLeft: guardiansLeft, runesLit: runesLit, runeCount: spec.runes.length);
+      return;
+    }
     PlaceArt.draw(
       canvas,
       spec.type,
-      Offset(size.x / 2, size.y / 2),
-      pulse: math.sin(_t * 4),
+      c,
+      pulse: pulse,
       unlocked: unlocked,
       guardiansLeft: guardiansLeft,
       runesLit: runesLit,
@@ -134,6 +179,38 @@ class PlaceArt {
     }
   }
 
+  /// Halo lumineux sous un lieu prêt à être ouvert.
+  static void glow(Canvas canvas, Offset c, PlaceType type, double pulse) {
+    _glow.color = switch (type) {
+      PlaceType.rareChest => const Color(0x55C79BFF),
+      PlaceType.ruin => const Color(0x5577E0FF),
+      _ => const Color(0x44FFE066),
+    };
+    canvas.drawOval(Rect.fromCenter(center: c + const Offset(0, 6), width: 40 + 4 * pulse, height: 18 + 2 * pulse), _glow);
+  }
+
+  /// Indicateurs au-dessus du dessin : gardiens restants (sanctuaire), runes allumées (ruine).
+  static void drawPips(Canvas canvas, Offset c, PlaceType type,
+      {required double top, bool unlocked = true, int guardiansLeft = 0, int runesLit = 0, int runeCount = 3}) {
+    if (type == PlaceType.sanctuary && !unlocked) {
+      for (var i = 0; i < guardiansLeft; i++) {
+        final p = Offset(c.dx - (guardiansLeft - 1) * 5 + i * 10, c.dy + top - 4);
+        canvas.drawCircle(p, 3.5, _pipBack);
+        canvas.drawCircle(p, 2.5, _pipGuard);
+      }
+    } else if (type == PlaceType.ruin) {
+      for (var i = 0; i < runeCount; i++) {
+        final p = Offset(c.dx - (runeCount - 1) * 5 + i * 10, c.dy + top - 4);
+        canvas.drawCircle(p, 3.5, _pipBack);
+        _glow.color = i < runesLit ? const Color(0xFF7FE9FF) : const Color(0xFF4A4466);
+        canvas.drawCircle(p, 2.5, _glow);
+      }
+    }
+  }
+
+  static final _pipBack = Paint()..color = const Color(0xCC1B1440);
+  static final _pipGuard = Paint()..color = const Color(0xFFFFC93C);
+
   /// Pierre runique (éteinte ou activée), centrée sur [c].
   static void drawRune(Canvas canvas, Offset c, {required bool lit, double shimmer = 0}) {
     canvas.drawCircle(c, 8, _runeStone);
@@ -176,5 +253,8 @@ class RuneStone extends PositionComponent with HasGameReference<CollectearGame> 
   }
 
   @override
-  void render(Canvas canvas) => PlaceArt.drawRune(canvas, const Offset(10, 10), lit: lit, shimmer: math.sin(_t * 2));
+  void render(Canvas canvas) {
+    if (DecorArt.drawOnGround(canvas, lit ? 'place_rune_active' : 'place_rune', const Offset(10, 15), 16)) return;
+    PlaceArt.drawRune(canvas, const Offset(10, 10), lit: lit, shimmer: math.sin(_t * 2));
+  }
 }

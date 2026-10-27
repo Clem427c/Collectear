@@ -79,6 +79,33 @@ class PlaceRules {
   /// Distance (en chunks) à partir de laquelle les coffres rares peuvent apparaître.
   static const double rareChestMinChunkDistance = 5;
 
+  /// Places des gardiens autour de l'autel, à 3 cases au plus : de préférence au même étage que
+  /// l'autel (les ennemis ne changent jamais d'étage ; sinon un gardien pouvait se retrouver
+  /// coincé sur un autre étage, loin de l'autel — retour de Clem du 27/10).
+  static const List<TilePos> guardianOffsets = [
+    TilePos(2, 0), TilePos(-2, 0), TilePos(0, 2), TilePos(0, -2),
+    TilePos(2, 2), TilePos(-2, -2), TilePos(2, -2), TilePos(-2, 2),
+    TilePos(1, 2), TilePos(-1, -2), TilePos(2, 1), TilePos(-2, -1),
+    TilePos(1, 1), TilePos(-1, -1), TilePos(1, -1), TilePos(-1, 1),
+    TilePos(3, 0), TilePos(-3, 0), TilePos(0, 3), TilePos(0, -3),
+  ];
+
+  static List<TilePos> guardianTiles(Terrain terrain, TilePos altar, int level) {
+    final out = <TilePos>[];
+    for (final o in guardianOffsets) {
+      if (out.length >= guardiansPerSanctuary) break;
+      final g = TilePos(altar.x + o.x, altar.y + o.y);
+      if (terrain.levelAt(g.x, g.y) == level && terrain.towerRing(g.x, g.y) == null) out.add(g);
+    }
+    // Relief très accidenté : on complète au plus près, même sur un autre étage.
+    for (final o in guardianOffsets) {
+      if (out.length >= guardiansPerSanctuary) break;
+      final g = TilePos(altar.x + o.x, altar.y + o.y);
+      if (!out.contains(g)) out.add(g);
+    }
+    return out;
+  }
+
   /// Lieux du chunk (cx, cy). Au plus un lieu par chunk, aucun près du départ.
   static List<PlaceSpec> forChunk(Terrain terrain, int cx, int cy) {
     if (cx.abs() <= 1 && cy.abs() <= 1) return const [];
@@ -98,14 +125,14 @@ class PlaceRules {
     if (roll < sanctuaryChance) {
       // Sanctuaire : autel entouré de gardiens.
       final t = randomTile();
-      final offsets = [const TilePos(-2, 0), const TilePos(2, 0), const TilePos(0, -2), const TilePos(0, 2)];
+      final level = terrain.levelAt(t.x, t.y);
       return [
         PlaceSpec(
           type: PlaceType.sanctuary,
           id: 'sanct:$cx:$cy',
           tile: t,
-          level: terrain.levelAt(t.x, t.y),
-          guardians: [for (final o in offsets.take(guardiansPerSanctuary)) TilePos(t.x + o.x, t.y + o.y)],
+          level: level,
+          guardians: guardianTiles(terrain, t, level),
         ),
       ];
     }

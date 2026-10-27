@@ -14,6 +14,7 @@ class GameConfig {
   // --- Run ---
   static const double runDuration = 120; // secondes
   static const double timeBoostSeconds = 30;
+  static const int hurrySeconds = 15; // chrono en alerte (rouge, au centre, son)
   static const int maxCardsPerRun = 3;
   static const int killsPerCard = 10;
   static const int runsPerDay = 10;

@@ -3,8 +3,10 @@ import 'dart:ui';
 import 'package:flame/components.dart';
 
 import '../core/config.dart';
+import '../core/decor.dart';
 import '../core/terrain.dart';
 import 'collectear_game.dart';
+import 'decor_art.dart';
 
 /// Dessine uniquement les cases visibles du terrain infini.
 class TerrainComponent extends Component with HasGameReference<CollectearGame> {
@@ -20,6 +22,18 @@ class TerrainComponent extends Component with HasGameReference<CollectearGame> {
   ];
 
   final _fills = [for (final c in _levelColors) Paint()..color = c];
+
+  // Textures de sol générées (une par étage) ; une image couvre 4×4 cases.
+  static const _levelTextures = ['tile_l0_vallee', 'tile_l1_prairie', 'tile_l2_plateau', 'tile_l3_roche', 'tile_l4_sommet'];
+  static const double _textureWorldSize = GameConfig.tileSize * 4;
+  late final List<Paint?> _textures = [
+    for (final t in _levelTextures) DecorArt.groundPaint(t, _textureWorldSize),
+  ];
+  late final Paint? _towerTexture = DecorArt.groundPaint('tile_tour', _textureWorldSize);
+  // Voile par étage : assombrit les vallées, éclaircit les sommets (lisibilité des hauteurs).
+  static const _levelShade = [Color(0x22000000), Color(0x00000000), Color(0x10FFFFFF), Color(0x1AFFFFFF), Color(0x00FFFFFF)];
+  final _shade = Paint();
+  final _propShadow = Paint()..color = const Color(0x40000000);
 
   // Tours : pierre taillée, plus claire vers le sommet.
   static const _towerColors = [
@@ -68,6 +82,15 @@ class TerrainComponent extends Component with HasGameReference<CollectearGame> {
         _drawTile(canvas, tx, ty);
       }
     }
+    // Décors (arbres, rochers, fleurs…) posés par-dessus, du fond vers l'avant.
+    for (final prop in DecorRules.propsForChunk(game.terrain, game.seed, cx, cy)) {
+      if (!DecorArt.has(prop.name)) continue;
+      final foot = Offset((prop.tx + 0.5) * GameConfig.tileSize, (prop.ty + 0.85) * GameConfig.tileSize);
+      final h = prop.height * GameConfig.tileSize;
+      final w = h * 0.55;
+      canvas.drawOval(Rect.fromCenter(center: foot, width: w, height: w * 0.32), _propShadow);
+      DecorArt.drawOnGround(canvas, prop.name, foot, h, flipX: prop.flip);
+    }
     final pic = recorder.endRecording();
     _chunks[key] = pic;
     return pic;
@@ -80,9 +103,17 @@ class TerrainComponent extends Component with HasGameReference<CollectearGame> {
     final left = tx * t;
     final top = ty * t;
     final tower = terrain.towerRing(tx, ty) != null;
-    canvas.drawRect(Rect.fromLTWH(left, top, t + 0.5, t + 0.5), tower ? _towerFills[level] : _fills[level]);
-    if ((tx + ty).isEven) {
-      canvas.drawRect(Rect.fromLTWH(left + t / 2 - 1, top + t / 2 - 1, 2, 2), _gridDot);
+    final rect = Rect.fromLTWH(left, top, t + 0.5, t + 0.5);
+    final texture = tower ? _towerTexture : _textures[level];
+    if (texture != null) {
+      canvas.drawRect(rect, texture);
+      _shade.color = tower ? Color.fromARGB(18 * (GameConfig.maxLevel - level), 0, 0, 0) : _levelShade[level];
+      if (_shade.color.a > 0) canvas.drawRect(rect, _shade);
+    } else {
+      canvas.drawRect(rect, tower ? _towerFills[level] : _fills[level]);
+      if ((tx + ty).isEven) {
+        canvas.drawRect(Rect.fromLTWH(left + t / 2 - 1, top + t / 2 - 1, 2, 2), _gridDot);
+      }
     }
     if (level > 0) {
       // Bord éclairé en haut, falaise sombre en bas si la case du dessous est plus basse.

@@ -92,7 +92,7 @@ class _Hud extends StatelessWidget {
         builder: (context, h, _) {
           final m = h.remaining ~/ 60;
           final s = (h.remaining % 60).toString().padLeft(2, '0');
-          final low = h.remaining <= 15;
+          final low = h.remaining <= GameConfig.hurrySeconds;
           return Stack(
             children: [
               Positioned(
@@ -116,13 +116,12 @@ class _Hud extends StatelessWidget {
                       Text('${h.coins}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                     ])),
                     const Spacer(),
-                    _Pill(
-                      child: Text('$m:$s',
-                          style: TextStyle(
-                              color: low ? AppColors.coral : Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.w900)),
-                    ),
+                    // En alerte, le chrono quitte la barre (voir plus bas).
+                    if (!low)
+                      _Pill(
+                        child: Text('$m:$s',
+                            style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900)),
+                      ),
                     const Spacer(),
                     _Pill(child: Row(mainAxisSize: MainAxisSize.min, children: [
                       for (var i = 0; i < GameConfig.maxCardsPerRun; i++)
@@ -149,9 +148,48 @@ class _Hud extends StatelessWidget {
                   ],
                 ),
               ),
+              // 15 dernières secondes : chrono centré, un peu plus bas (sans gêner la vue),
+              // plus grand, en rouge, qui bat légèrement chaque seconde.
+              if (low)
+                Positioned(
+                  top: 58,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0, end: 1),
+                      duration: const Duration(milliseconds: 350),
+                      curve: Curves.easeOutBack,
+                      builder: (context, enter, child) => Transform.translate(
+                        offset: Offset(0, -30 * (1 - enter)),
+                        child: Transform.scale(scale: 0.8 + 0.2 * enter, child: child),
+                      ),
+                      child: TweenAnimationBuilder<double>(
+                        key: ValueKey(h.remaining),
+                        tween: Tween(begin: 1.18, end: 1.0),
+                        duration: const Duration(milliseconds: 300),
+                        builder: (context, beat, child) => Transform.scale(scale: beat, child: child),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.45),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(color: AppColors.coral, width: 2),
+                          ),
+                          child: Text('$m:$s',
+                              style: const TextStyle(
+                                  color: AppColors.coral,
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w900,
+                                  shadows: [Shadow(color: Colors.black, blurRadius: 6)])),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               if (companion != null)
                 Positioned(
-                  top: 60,
+                  top: low ? 112 : 60,
                   left: 8,
                   child: _Pill(
                     child: Text('${companion!.name} · ${companion!.boost.label}',
@@ -160,7 +198,7 @@ class _Hud extends StatelessWidget {
                 ),
               if (h.message != null)
                 Positioned(
-                  top: 100,
+                  top: low ? 150 : 100,
                   left: 0,
                   right: 0,
                   child: Center(

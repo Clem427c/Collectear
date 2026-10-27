@@ -5,6 +5,7 @@ import 'package:flame/components.dart';
 
 import '../core/config.dart';
 import 'collectear_game.dart';
+import 'decor_art.dart';
 
 /// Pièce (ou petit tas de pièces) posée au sol : ramassée en passant dessus, sur le même étage.
 class CoinPickup extends PositionComponent with HasGameReference<CollectearGame> {
@@ -50,6 +51,18 @@ class CoinPickup extends PositionComponent with HasGameReference<CollectearGame>
     if (!_visible) return;
     final bob = math.sin(_t * 3) * 1.5;
     canvas.drawOval(const Rect.fromLTWH(3, 12, 10, 4), _shadow);
+    if (isPile) {
+      if (DecorArt.drawOnGround(canvas, 'item_tas_pieces', Offset(8, 14 + bob), 14)) return;
+    } else if (DecorArt.has('item_piece')) {
+      // Pièce qui tourne : on écrase sa largeur.
+      final squash = 0.3 + 0.7 * math.cos(_t * 4).abs();
+      canvas.save();
+      canvas.translate(8, 0);
+      canvas.scale(squash, 1);
+      DecorArt.drawOnGround(canvas, 'item_piece', Offset(0, 13 + bob), 11);
+      canvas.restore();
+      return;
+    }
     if (isPile) {
       for (final o in const [Offset(4, 9), Offset(12, 9), Offset(8, 5)]) {
         _coin(canvas, o + Offset(0, bob), 4.5);

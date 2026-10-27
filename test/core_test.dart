@@ -6,6 +6,7 @@ import 'package:collectear/core/cards.dart';
 import 'package:collectear/core/cloud_sync.dart';
 import 'package:collectear/core/collection.dart';
 import 'package:collectear/core/config.dart';
+import 'package:collectear/core/decor.dart';
 import 'package:collectear/core/economy.dart';
 import 'package:collectear/core/noise.dart';
 import 'package:collectear/core/online_config.dart';
@@ -277,6 +278,50 @@ void main() {
       expect(ratio(PlaceType.ruin), closeTo(0.094, 0.025));
       expect(ratio(PlaceType.chest) + ratio(PlaceType.rareChest), lessThan(0.08));
       expect(ratio(PlaceType.tower), closeTo(0.06, 0.02));
+    });
+
+    test('gardiens de sanctuaire : 4, tout près de l\'autel, au même étage', () {
+      final t = Terrain(2026);
+      var sanctuaries = 0;
+      var sameLevel = 0;
+      var guardians = 0;
+      for (var cx = -25; cx <= 25; cx++) {
+        for (var cy = -25; cy <= 25; cy++) {
+          for (final p in PlaceRules.forChunk(t, cx, cy)) {
+            if (p.type != PlaceType.sanctuary) continue;
+            sanctuaries++;
+            expect(p.guardians.length, PlaceRules.guardiansPerSanctuary);
+            expect(p.guardians.toSet().length, p.guardians.length);
+            for (final g in p.guardians) {
+              guardians++;
+              expect(max((g.x - p.tile.x).abs(), (g.y - p.tile.y).abs()), lessThanOrEqualTo(3));
+              expect(g, isNot(p.tile));
+              if (t.levelAt(g.x, g.y) == p.level) sameLevel++;
+            }
+          }
+        }
+      }
+      expect(sanctuaries, greaterThan(50));
+      expect(sameLevel / guardians, greaterThan(0.9));
+    });
+
+    test('décors : déterministes, sur des cases libres, rien autour du départ', () {
+      final t = Terrain(99);
+      expect(DecorRules.propsForChunk(t, 99, 0, 0), isEmpty);
+      for (var cx = -6; cx <= 6; cx++) {
+        for (var cy = -6; cy <= 6; cy++) {
+          final props = DecorRules.propsForChunk(t, 99, cx, cy);
+          final again = DecorRules.propsForChunk(t, 99, cx, cy);
+          expect(props.map((p) => '${p.tx},${p.ty},${p.name}'), again.map((p) => '${p.tx},${p.ty},${p.name}'));
+          expect(props.length, lessThanOrEqualTo(DecorRules.maxPerChunk));
+          final reserved = DecorRules.reservedTiles(t, 99, cx, cy);
+          for (final p in props) {
+            expect(reserved.contains((p.tx, p.ty)), isFalse);
+            expect(t.towerRing(p.tx, p.ty), isNull);
+            expect(DecorRules.byLevel[t.levelAt(p.tx, p.ty)]!.any((o) => o.$1 == p.name), isTrue);
+          }
+        }
+      }
     });
 
     test('une tour se gravit niveau par niveau jusqu\'au sommet', () {

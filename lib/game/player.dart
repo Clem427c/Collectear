@@ -6,6 +6,7 @@ import 'package:flame/components.dart';
 import '../core/config.dart';
 import '../core/terrain.dart';
 import 'collectear_game.dart';
+import 'decor_art.dart';
 import 'enemy.dart';
 import 'sfx.dart';
 
@@ -142,11 +143,12 @@ class Player extends PositionComponent with HasGameReference<CollectearGame> {
       Rect.fromCenter(center: c + const Offset(0, 8), width: 20 - lift * 0.3, height: 8 - lift * 0.15),
       _shadow,
     );
+    final blink = _invincible > 0 && (_invincible * 12).floor().isEven;
+    if (_renderSprite(canvas, c, lift, blink)) return;
     if (dodging) {
       canvas.drawCircle(c - Offset(_dodgeDir.x, _dodgeDir.y) * 10, _radius, _dodgeTrail);
     }
     final body = c - Offset(0, lift);
-    final blink = _invincible > 0 && (_invincible * 12).floor().isEven;
     canvas.drawCircle(body, _radius + 1, blink ? _bodyHit : _body);
     canvas.drawCircle(body, _radius + 1, _outline);
     canvas.drawCircle(body + Offset(facing.x, facing.y) * 5, 3, _eye);
@@ -161,5 +163,48 @@ class Player extends PositionComponent with HasGameReference<CollectearGame> {
         _swingPaint,
       );
     }
+  }
+
+  /// Hauteur de l'explorateur à l'écran (unités du monde).
+  static const double _spriteHeight = 40;
+
+  /// Explorateur dessiné (images générées) : face, dos ou profil selon la direction, pose
+  /// d'attaque pendant un coup. Renvoie false si les images manquent (dessin de secours).
+  bool _renderSprite(Canvas canvas, Offset c, double lift, bool blink) {
+    final String name;
+    var flip = facing.x < 0;
+    if (_swing > 0) {
+      name = 'perso_explorateur_attaque';
+    } else if (facing.y > facing.x.abs()) {
+      name = 'perso_explorateur_face';
+      flip = false;
+    } else if (-facing.y > facing.x.abs()) {
+      name = 'perso_explorateur_dos';
+      flip = false;
+    } else {
+      name = 'perso_explorateur_profil';
+    }
+    if (!DecorArt.has(name)) return false;
+    final foot = c + Offset(0, 9 - lift);
+    if (dodging) {
+      DecorArt.drawOnGround(canvas, name, foot - Offset(_dodgeDir.x, _dodgeDir.y) * 10, _spriteHeight,
+          flipX: flip, opacity: 0.35);
+    }
+    // Petit rebond pendant la marche.
+    final moving = game.moveInput.length2 > 0.01 && !airborne;
+    final bob = moving ? (math.sin(game.run.elapsed * 18).abs() * 2) : 0.0;
+    DecorArt.drawOnGround(canvas, name, foot - Offset(0, bob), _spriteHeight,
+        flipX: flip, opacity: blink ? 0.35 : 1);
+    if (_swing > 0) {
+      final angle = math.atan2(facing.y, facing.x);
+      canvas.drawArc(
+        Rect.fromCircle(center: c - Offset(0, lift + 8), radius: game.run.rules.attackRange * 0.8),
+        angle - 1.1,
+        2.2,
+        false,
+        _swingPaint,
+      );
+    }
+    return true;
   }
 }

@@ -12,7 +12,7 @@ class Sfx {
 
   static const files = [
     'swing.wav', 'hit.wav', 'enemy_die.wav', 'hurt.wav', 'jump.wav', 'dodge.wav', 'shoot.wav',
-    'life.wav', 'chest.wav', 'card.wav', 'tick.wav', 'go.wav', 'run_end.wav', 'coin.wav',
+    'life.wav', 'chest.wav', 'card.wav', 'tick.wav', 'go.wav', 'run_end.wav', 'coin.wav', 'hurry.wav',
   ];
 
   /// Un petit groupe de lecteurs réutilisés par son (AudioPool). Avant, chaque son créait un

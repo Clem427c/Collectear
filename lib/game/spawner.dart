@@ -100,14 +100,16 @@ class Spawner extends Component with HasGameReference<CollectearGame> {
       for (var g = 0; g < spec.guardians.length; g++) {
         if (consumed.contains(guardianIds[g])) continue;
         final t = spec.guardians[g];
-        out.add(Enemy(
+        final guardian = Enemy(
           kind: g.isEven ? EnemyKind.melee : EnemyKind.ranged,
           level: terrain.levelAt(t.x, t.y),
           spawnId: guardianIds[g],
           position: tileCenter(t),
           seed: rng.nextInt(1 << 30),
           guardOf: place,
-        ));
+        );
+        place.guardianEnemies.add(guardian);
+        out.add(guardian);
       }
       for (var k = 0; k < spec.runeGuards.length; k++) {
         final id = '${spec.id}:k$k';
@@ -120,6 +122,7 @@ class Spawner extends Component with HasGameReference<CollectearGame> {
           spawnId: id,
           position: tileCenter(t),
           seed: kindSeed,
+          guard: true,
         ));
       }
       for (var r = 0; r < spec.runes.length; r++) {

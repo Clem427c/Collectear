@@ -49,8 +49,8 @@ class GuideScreen extends StatelessWidget {
           _Entry(
             art: _Art(_ArtKind.sanctuaryLocked),
             title: 'Sanctuaire (autel endormi)',
-            text: 'Un autel de pierre avec un orbe éteint. Les points au-dessus = les gardiens encore en vie : '
-                '4 ennemis postés tout autour. Bats-les tous…',
+            text: 'Un autel de pierre avec un orbe éteint. Les points dorés au-dessus = les gardiens encore en '
+                'vie : 4 ennemis d\'élite postés tout autour, reliés à l\'autel par un fil doré. Bats-les tous…',
           ),
           _Entry(
             art: _Art(_ArtKind.sanctuaryAwake),
@@ -91,13 +91,19 @@ class GuideScreen extends StatelessWidget {
           SectionTitle('Les ennemis'),
           _Entry(
             art: _Art(_ArtKind.melee),
-            title: 'Corps à corps',
+            title: 'Gobelin (corps à corps)',
             text: 'Te fonce dessus. Quand un cercle blanc se resserre autour de lui, il va frapper : esquive !',
           ),
           _Entry(
             art: _Art(_ArtKind.ranged),
-            title: 'Tireur',
-            text: 'Garde ses distances et tire des projectiles. Les ennemis ne quittent jamais leur étage.',
+            title: 'Diablotin (tireur)',
+            text: 'Garde ses distances et lance des boules de feu. Les ennemis ne quittent jamais leur étage.',
+          ),
+          _Entry(
+            art: _Art(_ArtKind.guards),
+            title: 'Gardiens (élite)',
+            text: 'Golem et mage noir, avec un anneau doré au sol : ils défendent un sanctuaire ou une pierre '
+                'runique et restent près de leur poste. Mêmes points de vie que les autres.',
           ),
           _Entry(
             art: _Art(_ArtKind.hearts),
@@ -169,6 +175,7 @@ enum _ArtKind {
   coin,
   melee,
   ranged,
+  guards,
   hearts,
   levels,
 }
@@ -177,8 +184,53 @@ class _Art extends StatelessWidget {
   const _Art(this.kind);
   final _ArtKind kind;
 
+  /// Images générées (assets/images/decors) ; repli sur les dessins vectoriels si elles manquent.
+  static const _assets = {
+    _ArtKind.chest: ['place_coffre'],
+    _ArtKind.rareChest: ['place_coffre_rare'],
+    _ArtKind.sanctuaryLocked: ['place_sanctuaire'],
+    _ArtKind.sanctuaryAwake: ['place_sanctuaire_eveille'],
+    _ArtKind.tower: ['place_sommet_tour'],
+    _ArtKind.ruinClosed: ['place_ruine'],
+    _ArtKind.ruinOpen: ['place_ruine_ouverte'],
+    _ArtKind.rune: ['place_rune', 'place_rune_active'],
+    _ArtKind.coin: ['item_tas_pieces'],
+    _ArtKind.melee: ['ennemi_cac'],
+    _ArtKind.ranged: ['ennemi_distance'],
+    _ArtKind.guards: ['ennemi_cac_elite', 'ennemi_distance_elite'],
+  };
+
   @override
   Widget build(BuildContext context) {
+    final assets = _assets[kind];
+    if (assets != null) {
+      final fallback = CustomPaint(painter: _ArtPainter(kind));
+      Widget art = Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+        for (final a in assets)
+          Flexible(
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: Image.asset('assets/images/decors/$a.png',
+                  fit: BoxFit.contain, errorBuilder: (_, __, ___) => fallback),
+            ),
+          ),
+      ]);
+      if (kind == _ArtKind.sanctuaryLocked) {
+        art = Stack(children: [
+          Positioned.fill(child: art),
+          const Positioned(
+            top: 2,
+            left: 0,
+            right: 0,
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              for (var i = 0; i < 4; i++)
+                Padding(padding: EdgeInsets.symmetric(horizontal: 2), child: Icon(Icons.circle, size: 8, color: AppColors.gold)),
+            ]),
+          ),
+        ]);
+      }
+      return art;
+    }
     switch (kind) {
       case _ArtKind.cards:
         return const Icon(Icons.style, color: AppColors.gold, size: 40);
@@ -275,6 +327,7 @@ class _ArtPainter extends CustomPainter {
         canvas.drawCircle(Offset(-6, 2 - 4 * math.sin(math.pi / 3)), 4, _fill);
       case _ArtKind.cards:
       case _ArtKind.hearts:
+      case _ArtKind.guards:
         break;
     }
     canvas.restore();
