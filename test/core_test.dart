@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:collectear/core/cards.dart';
+import 'package:collectear/core/cloud_sync.dart';
 import 'package:collectear/core/config.dart';
 import 'package:collectear/core/noise.dart';
 import 'package:collectear/core/online_config.dart';
@@ -376,6 +377,57 @@ void main() {
           OnlineConfigStatus.invalidUrl);
       expect(const OnlineConfig('http://abcd.supabase.co', 'sb_publishable_AbCdEf123456789').status,
           OnlineConfigStatus.invalidUrl);
+    });
+  });
+  group('Synchro en ligne', () {
+    test('union : envoie ce qui manque en ligne, ajoute ce qui manque en local', () {
+      final plan = planSync({
+        5: [10, 11],
+        7: [3],
+      }, const [(5, 10), (9, 42), (7, 4)]);
+      expect(plan.toUpload, [(5, 11), (7, 3)]);
+      expect(plan.toAddLocally, [(7, 4), (9, 42)]);
+      expect(plan.isEmpty, isFalse);
+    });
+
+    test('collections identiques : rien à faire, doublons exacts ignorés', () {
+      final plan = planSync({
+        1: [1, 1, 2],
+      }, const [(1, 2), (1, 1), (1, 1)]);
+      expect(plan.isEmpty, isTrue);
+    });
+
+    test('première connexion : tout part en ligne ; nouvel appareil : tout revient', () {
+      expect(planSync({3: [9]}, const []).toUpload, [(3, 9)]);
+      expect(planSync({}, const [(3, 9)]).toAddLocally, [(3, 9)]);
+    });
+
+    test('lignes serveur : conversion aller-retour, lignes invalides ignorées', () {
+      final rows = toRows('u1', const [(5, 10)]);
+      expect(rows, [
+        {'user_id': 'u1', 'card_id': 5, 'seed': 10},
+      ]);
+      expect(fromRows([...rows, {'card_id': 'x', 'seed': 1}, {'card_id': 2}]), [(5, 10)]);
+    });
+
+    test('envoi par lots', () {
+      expect(chunked([1, 2, 3, 4, 5], 2), [
+        [1, 2],
+        [3, 4],
+        [5],
+      ]);
+      expect(chunked(<int>[], 500), isEmpty);
+    });
+
+    test('e-mail et code', () {
+      expect(isPlausibleEmail('clem@exemple.fr'), isTrue);
+      expect(isPlausibleEmail(' clem@exemple.fr '), isTrue);
+      expect(isPlausibleEmail('clem@exemple'), isFalse);
+      expect(isPlausibleEmail('clem exemple.fr'), isFalse);
+      expect(isPlausibleOtp('123456'), isTrue);
+      expect(isPlausibleOtp('123 456'), isTrue);
+      expect(isPlausibleOtp('12345'), isFalse);
+      expect(isPlausibleOtp('12a456'), isFalse);
     });
   });
 }
