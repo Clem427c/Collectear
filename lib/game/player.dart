@@ -112,7 +112,7 @@ class Player extends PositionComponent with HasGameReference<CollectearGame> {
     _swing = 0.15;
     Sfx.play('swing', volume: 0.35);
     for (final enemy in game.world.children.whereType<Enemy>().toList()) {
-      if (enemy.level != level) continue;
+      if (!HeightRules.playerCanHit(attacker: level, target: enemy.level)) continue;
       final toEnemy = enemy.position - position;
       final dist = toEnemy.length;
       if (dist > game.run.rules.attackRange + enemy.radius) continue;

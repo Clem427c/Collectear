@@ -59,7 +59,7 @@ class Terrain {
   static const int towerRadius = 3;
 
   /// Probabilité qu'un chunk contienne une tour.
-  static const double towerChance = 0.05;
+  static const double towerChance = 0.06; // avant : 0.05 (lieux spéciaux un peu plus fréquents)
 
   bool hasTower(int cx, int cy) {
     if (cx.abs() <= 1 && cy.abs() <= 1) return false;
@@ -114,6 +114,11 @@ class HeightRules {
     if (target <= current) return true;
     return airborne && target == current + 1;
   }
+
+  /// Le joueur peut-il toucher une cible située sur le niveau [target] ?
+  /// Retour de Clem du 27/10 : l'attaque passe d'un étage à l'étage voisin (la portée reste la même).
+  static bool playerCanHit({required int attacker, required int target}) =>
+      (attacker - target).abs() <= GameConfig.attackMaxLevelDiff;
 
   /// Les ennemis restent sur leur niveau (pas de saut, pas de chute).
   static bool enemyCanEnter({required int current, required int target}) => target == current;

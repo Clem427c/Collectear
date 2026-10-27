@@ -205,6 +205,10 @@ void main() {
       expect(HeightRules.playerCanEnter(current: 1, target: 2, airborne: true), isTrue);
       expect(HeightRules.playerCanEnter(current: 1, target: 3, airborne: true), isFalse);
       expect(HeightRules.enemyCanEnter(current: 2, target: 1), isFalse);
+      expect(HeightRules.playerCanHit(attacker: 2, target: 2), isTrue);
+      expect(HeightRules.playerCanHit(attacker: 2, target: 3), isTrue);
+      expect(HeightRules.playerCanHit(attacker: 2, target: 1), isTrue);
+      expect(HeightRules.playerCanHit(attacker: 2, target: 0), isFalse);
     });
   });
 
@@ -234,18 +238,41 @@ void main() {
               case PlaceType.ruin:
                 expect(p.runes.toSet().length, PlaceRules.runesPerRuin);
                 expect(p.runes.contains(p.tile), isFalse);
+                expect(p.runeGuards.length, greaterThanOrEqualTo(PlaceRules.runesPerRuin));
+                expect(p.runeGuards.length, lessThanOrEqualTo(PlaceRules.runesPerRuin * PlaceRules.guardsPerRune));
+                expect(p.runeGuards.toSet().length, p.runeGuards.length);
+                expect(p.runeGuards.any(p.runes.contains), isFalse);
               case PlaceType.tower:
                 expect(p.level, GameConfig.maxLevel);
               case PlaceType.rareChest:
                 expect(cx * cx + cy * cy, greaterThanOrEqualTo(25));
               case PlaceType.chest:
-                break;
+                expect(cx * cx + cy * cy, greaterThanOrEqualTo(9));
             }
             expect(p.level, t.levelAt(p.tile.x, p.tile.y));
           }
         }
       }
       expect(seen, PlaceType.values.toSet());
+    });
+
+    test('fréquences : coffres simples rares, lieux à défi plus fréquents', () {
+      final t = Terrain(77);
+      final counts = <PlaceType, int>{};
+      var chunks = 0;
+      for (var cx = -30; cx <= 30; cx++) {
+        for (var cy = -30; cy <= 30; cy++) {
+          chunks++;
+          for (final p in PlaceRules.forChunk(t, cx, cy)) {
+            counts[p.type] = (counts[p.type] ?? 0) + 1;
+          }
+        }
+      }
+      double ratio(PlaceType type) => (counts[type] ?? 0) / chunks;
+      expect(ratio(PlaceType.sanctuary), closeTo(0.094, 0.025));
+      expect(ratio(PlaceType.ruin), closeTo(0.094, 0.025));
+      expect(ratio(PlaceType.chest) + ratio(PlaceType.rareChest), lessThan(0.08));
+      expect(ratio(PlaceType.tower), closeTo(0.06, 0.02));
     });
 
     test('une tour se gravit niveau par niveau jusqu\'au sommet', () {

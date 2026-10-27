@@ -98,6 +98,19 @@ class Spawner extends Component with HasGameReference<CollectearGame> {
           guardOf: place,
         ));
       }
+      for (var k = 0; k < spec.runeGuards.length; k++) {
+        final id = '${spec.id}:k$k';
+        final t = spec.runeGuards[k];
+        final kindSeed = rng.nextInt(1 << 30);
+        if (consumed.contains(id)) continue;
+        out.add(Enemy(
+          kind: k.isEven ? EnemyKind.melee : EnemyKind.ranged,
+          level: terrain.levelAt(t.x, t.y),
+          spawnId: id,
+          position: tileCenter(t),
+          seed: kindSeed,
+        ));
+      }
       for (var r = 0; r < spec.runes.length; r++) {
         final t = spec.runes[r];
         out.add(RuneStone(tile: t, level: terrain.levelAt(t.x, t.y), runeId: runeIds[r], ruin: place)

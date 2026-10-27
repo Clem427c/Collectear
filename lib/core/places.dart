@@ -39,6 +39,7 @@ class PlaceSpec {
     required this.level,
     this.guardians = const [],
     this.runes = const [],
+    this.runeGuards = const [],
   });
 
   final PlaceType type;
@@ -51,6 +52,9 @@ class PlaceSpec {
 
   /// Ruine : pierres runiques à activer (marcher dessus) pour ouvrir la ruine.
   final List<TilePos> runes;
+
+  /// Ruine : ennemis postés autour des pierres runiques (ils ne verrouillent rien, ils défendent).
+  final List<TilePos> runeGuards;
 }
 
 /// Règles de génération des lieux d'un chunk.
@@ -59,6 +63,18 @@ class PlaceRules {
 
   static const int guardiansPerSanctuary = 4;
   static const int runesPerRuin = 3;
+
+  /// Ennemis autour de chaque pierre runique (retour de Clem du 27/10 : défi plus relevé).
+  static const int guardsPerRune = 2;
+
+  // Probabilités par chunk (hors tours). Retour de Clem du 27/10 : cartes trop faciles,
+  // coffres simples moins fréquents ; lieux à défi (sanctuaire, ruine) un peu plus fréquents.
+  static const double sanctuaryChance = 0.10; // avant : 0.08
+  static const double ruinChance = 0.10; // avant : 0.07
+  static const double chestChance = 0.06; // avant : 0.18
+
+  /// Pas de coffre simple à moins de cette distance (en chunks) du départ.
+  static const double chestMinChunkDistance = 3;
 
   /// Distance (en chunks) à partir de laquelle les coffres rares peuvent apparaître.
   static const double rareChestMinChunkDistance = 5;
@@ -79,7 +95,7 @@ class PlaceRules {
 
     TilePos randomTile() => TilePos(cx * n + 1 + rng.nextInt(n - 2), cy * n + 1 + rng.nextInt(n - 2));
 
-    if (roll < 0.08) {
+    if (roll < sanctuaryChance) {
       // Sanctuaire : autel entouré de gardiens.
       final t = randomTile();
       final offsets = [const TilePos(-2, 0), const TilePos(2, 0), const TilePos(0, -2), const TilePos(0, 2)];
@@ -93,13 +109,27 @@ class PlaceRules {
         ),
       ];
     }
-    if (roll < 0.15) {
+    if (roll < sanctuaryChance + ruinChance) {
       // Ruine : 3 runes dispersées dans le chunk, la ruine au centre.
       final center = TilePos(cx * n + n ~/ 2, cy * n + n ~/ 2);
       final runes = <TilePos>[];
       while (runes.length < runesPerRuin) {
         final r = randomTile();
         if (r != center && !runes.contains(r)) runes.add(r);
+      }
+      // Gardes : de part et d'autre de chaque rune, à 2 cases, sans sortir du chunk.
+      final guards = <TilePos>[];
+      const around = [TilePos(2, 0), TilePos(-2, 0), TilePos(0, 2), TilePos(0, -2), TilePos(2, 2), TilePos(-2, -2)];
+      for (final r in runes) {
+        var placed = 0;
+        for (final o in around) {
+          if (placed >= guardsPerRune) break;
+          final g = TilePos(r.x + o.x, r.y + o.y);
+          final inside = g.x >= cx * n && g.x < (cx + 1) * n && g.y >= cy * n && g.y < (cy + 1) * n;
+          if (!inside || runes.contains(g) || guards.contains(g) || g == center) continue;
+          guards.add(g);
+          placed++;
+        }
       }
       return [
         PlaceSpec(
@@ -108,10 +138,11 @@ class PlaceRules {
           tile: center,
           level: terrain.levelAt(center.x, center.y),
           runes: runes,
+          runeGuards: guards,
         ),
       ];
     }
-    if (roll < 0.33) {
+    if (roll < sanctuaryChance + ruinChance + chestChance && dist >= chestMinChunkDistance) {
       // Coffre, de préférence sur le point le plus haut du chunk.
       var best = TilePos(cx * n, cy * n);
       var bestLevel = -1;
