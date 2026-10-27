@@ -36,6 +36,9 @@ class RunState {
   double elapsed = 0;
   int kills = 0;
   int hitsTaken = 0;
+
+  /// Pièces ramassées pendant la run (ajoutées au porte-monnaie à la fin, même en cas de défaite).
+  int coins = 0;
   final List<CardInstance> cards = [];
   RunEndReason? endReason;
 
@@ -84,6 +87,12 @@ class RunState {
       return true;
     }
     return false;
+  }
+
+  /// Ajoute des pièces (ignoré une fois la run terminée).
+  void addCoins(int amount) {
+    if (isOver || amount <= 0) return;
+    coins += amount;
   }
 
   void quit() => endReason ??= RunEndReason.quit;

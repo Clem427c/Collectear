@@ -58,7 +58,7 @@ class _HomeShellState extends State<HomeShell> {
     final data = widget.data;
     final pages = [
       ProfileTab(data: data),
-      const ShopTab(),
+      ShopTab(data: data, onChanged: _refresh),
       PlayTab(data: data, onChanged: _refresh),
       BestiaryTab(data: data, onChanged: _refresh),
       SocialTab(data: data),
@@ -104,7 +104,7 @@ class _TopBar extends StatelessWidget {
         children: [
           const Text('Collectear', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900)),
           const Spacer(),
-          const _Currency(icon: Icons.monetization_on, color: AppColors.gold, value: 0),
+          _Currency(icon: Icons.monetization_on, color: AppColors.gold, value: data.collection.coins),
           const SizedBox(width: 8),
           const _Currency(icon: Icons.diamond, color: Color(0xFF4DD6FF), value: 0),
         ],

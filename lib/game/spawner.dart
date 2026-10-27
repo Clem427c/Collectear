@@ -3,9 +3,11 @@ import 'dart:math' as math;
 import 'package:flame/components.dart';
 
 import '../core/config.dart';
+import '../core/economy.dart';
 import '../core/noise.dart';
 import '../core/terrain.dart';
 import '../core/places.dart';
+import 'coin.dart';
 import 'collectear_game.dart';
 import 'enemy.dart';
 import 'place.dart';
@@ -73,6 +75,15 @@ class Spawner extends Component with HasGameReference<CollectearGame> {
         position: _tileCenter(tx, ty),
         seed: enemySeed,
       ));
+    }
+
+    // Pièces au sol (bien plus courantes que les cartes).
+    final coins = Economy.coinsForChunk(game.seed, cx, cy);
+    for (var i = 0; i < coins.length; i++) {
+      final (tx, ty, value) = coins[i];
+      final id = 'c:$cx:$cy:$i';
+      if (consumed.contains(id)) continue;
+      out.add(CoinPickup(tx: tx, ty: ty, level: terrain.levelAt(tx, ty), value: value, coinId: id));
     }
 
     // Lieux : coffre, coffre rare, sanctuaire, tour ou ruine.

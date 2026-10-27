@@ -12,9 +12,11 @@ import 'package:flutter/services.dart';
 import '../core/cards.dart';
 import '../core/places.dart';
 import '../core/config.dart';
+import '../core/economy.dart';
 import '../core/run_state.dart';
 import '../core/terrain.dart';
 import '../core/variants.dart';
+import 'coin.dart';
 import 'effects.dart';
 import 'sfx.dart';
 import 'enemy.dart';
@@ -32,6 +34,7 @@ class HudData {
     required this.killsTowardCard,
     required this.cards,
     required this.message,
+    this.coins = 0,
   });
 
   final int remaining;
@@ -40,6 +43,7 @@ class HudData {
   final int killsTowardCard;
   final int cards;
   final String? message;
+  final int coins;
 }
 
 class CollectearGame extends FlameGame with KeyboardEvents {
@@ -213,6 +217,7 @@ class CollectearGame extends FlameGame with KeyboardEvents {
       killsTowardCard: run.killsTowardNextCard,
       cards: run.cards.length,
       message: _message,
+      coins: run.coins,
     );
     final cur = hud.value;
     if (cur.remaining != next.remaining ||
@@ -220,6 +225,7 @@ class CollectearGame extends FlameGame with KeyboardEvents {
         cur.maxHits != next.maxHits ||
         cur.killsTowardCard != next.killsTowardCard ||
         cur.cards != next.cards ||
+        cur.coins != next.coins ||
         cur.message != next.message) {
       hud.value = next;
     }
@@ -253,6 +259,7 @@ class CollectearGame extends FlameGame with KeyboardEvents {
     }
     final before = run.livesRegained;
     final card = run.registerKill();
+    _earnCoins(Economy.coinsPerKill, enemy.position);
     world.add(Burst(position: enemy.position.clone(), color: const Color(0xFFFFE066), count: 16, speed: 150));
     Sfx.play('enemy_die', volume: 0.6);
     if (run.livesRegained > before) {
@@ -267,7 +274,24 @@ class CollectearGame extends FlameGame with KeyboardEvents {
     spawner.consumed.add(place.spec.id);
     world.add(Burst(position: place.position.clone(), color: const Color(0xFFFFB627), count: 22, speed: 170, life: 0.7));
     Sfx.play('chest');
+    _earnCoins(Economy.coinsPerPlace, place.position);
     _giveCard(bonusLuck: place.spec.type.luckBonus);
+  }
+
+  void _earnCoins(int amount, Vector2 at) {
+    if (run.isOver) return;
+    run.addCoins(amount);
+    world.add(FloatingText('+$amount', position: at - Vector2(0, 14), color: const Color(0xFFFFC93C)));
+  }
+
+  void coinCollected(CoinPickup coin) {
+    spawner.consumed.add(coin.coinId);
+    run.addCoins(coin.value);
+    Sfx.play('coin', volume: 0.35);
+    if (coin.isPile) {
+      world.add(Burst(position: coin.position.clone(), color: const Color(0xFFFFC93C), count: 8, speed: 80));
+      world.add(FloatingText('+${coin.value}', position: coin.position - Vector2(0, 14), color: const Color(0xFFFFC93C)));
+    }
   }
 
   void runeActivated(RuneStone rune) {

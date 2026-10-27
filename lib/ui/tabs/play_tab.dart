@@ -107,12 +107,26 @@ class PlayTab extends StatelessWidget {
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
-                    child: ChunkyButton(
-                      label: runsLeft > 0 ? 'JOUER' : 'REVIENS DEMAIN',
-                      icon: runsLeft > 0 ? Icons.play_arrow_rounded : Icons.bedtime,
-                      fontSize: 28,
-                      onPressed: runsLeft > 0 ? () => _startRun(context) : null,
-                    ),
+                    child: runsLeft > 0
+                        ? ChunkyButton(
+                            label: 'JOUER',
+                            icon: Icons.play_arrow_rounded,
+                            fontSize: 28,
+                            onPressed: () => _startRun(context),
+                          )
+                        : ChunkyButton(
+                            label: col.nextEnergyPrice == null
+                                ? 'REVIENS DEMAIN'
+                                : 'ÉNERGIE · ${col.nextEnergyPrice} pièces',
+                            icon: col.nextEnergyPrice == null ? Icons.bedtime : Icons.bolt,
+                            fontSize: 20,
+                            onPressed: col.canBuyEnergy
+                                ? () async {
+                                    await col.buyEnergy();
+                                    onChanged();
+                                  }
+                                : null,
+                          ),
                   ),
                   const SizedBox(height: 12),
                   GestureDetector(
@@ -129,7 +143,9 @@ class PlayTab extends StatelessWidget {
                         ),
                     ]),
                   ),
-                  Text('$runsLeft / ${GameConfig.runsPerDay} runs aujourd\'hui',
+                  Text('$runsLeft / ${GameConfig.runsPerDay} runs aujourd\'hui'
+                      '${col.energyBoughtToday > 0 ? ' (+${col.energyBoughtToday} achetée${col.energyBoughtToday > 1 ? 's' : ''})' : ''}'
+                      ' · ${col.coins} pièces',
                       style: const TextStyle(color: Colors.white60, fontSize: 12)),
                   const SizedBox(height: 16),
                   const Text(

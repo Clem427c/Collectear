@@ -57,4 +57,5 @@ write("card", seq(tone(0.07, 784, None, "tri"), tone(0.07, 988, None, "tri"), to
 write("tick", tone(0.06, 880, None, "sine"), 0.4)
 write("go", tone(0.25, 1320, None, "sine", release=0.8), 0.5)
 write("run_end", seq(tone(0.12, 523, None, "tri"), tone(0.12, 392, None, "tri"), tone(0.3, 262, None, "tri", release=0.9)), 0.5)
+write("coin", seq(tone(0.05, 1568, None, "square"), tone(0.12, 2093, None, "square", release=0.8)), 0.3)
 print(sorted(p.name for p in OUT.iterdir()))

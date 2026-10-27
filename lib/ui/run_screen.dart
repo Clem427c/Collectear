@@ -48,6 +48,7 @@ class _RunScreenState extends State<RunScreen> {
     final fresh = await col.addAll(won);
     unawaited(Online.pushCards(won));
     await col.recordRunResult(kills: run.kills, cards: run.cards.length);
+    await col.addCoins(run.coins);
     if (!mounted) return;
     Navigator.of(context).pushReplacement(MaterialPageRoute<void>(
       builder: (_) => RecapScreen(run: run, freshIds: fresh, companion: widget.companion),
@@ -108,6 +109,12 @@ class _Hud extends StatelessWidget {
                     const SizedBox(width: 8),
                     _Pill(child: Text('⚔ ${h.killsTowardCard}/${GameConfig.killsPerCard}',
                         style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                    const SizedBox(width: 8),
+                    _Pill(child: Row(mainAxisSize: MainAxisSize.min, children: [
+                      const Icon(Icons.monetization_on, color: AppColors.gold, size: 18),
+                      const SizedBox(width: 4),
+                      Text('${h.coins}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    ])),
                     const Spacer(),
                     _Pill(
                       child: Text('$m:$s',

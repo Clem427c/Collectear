@@ -38,6 +38,7 @@ class RecapScreen extends StatelessWidget {
                     _Stat(label: 'Durée', value: '${secs ~/ 60}:${(secs % 60).toString().padLeft(2, '0')}'),
                     _Stat(label: 'Ennemis vaincus', value: '${run.kills}'),
                     _Stat(label: 'Cartes', value: '${run.cards.length}'),
+                    _Stat(label: 'Pièces', value: '+${run.coins}'),
                   ],
                 ),
                 const SizedBox(height: 24),

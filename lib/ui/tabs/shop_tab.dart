@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../app_data.dart';
+import '../../core/economy.dart';
 import '../theme.dart';
 import '../widgets.dart';
 
@@ -37,7 +39,27 @@ const _gems = [
 
 /// Onglet Boutique : cosmétiques uniquement (pas de pay-to-win).
 class ShopTab extends StatelessWidget {
-  const ShopTab({super.key});
+  const ShopTab({super.key, required this.data, required this.onChanged});
+  final AppData data;
+  final VoidCallback onChanged;
+
+  Future<void> _buyEnergy(BuildContext context) async {
+    final col = data.collection;
+    final price = col.nextEnergyPrice;
+    final String msg;
+    if (price == null) {
+      msg = 'Limite atteinte : ${Economy.maxEnergyPurchasesPerDay} énergies achetées aujourd\'hui. Reviens demain !';
+    } else if (col.runsLeftToday > 0) {
+      msg = 'Il te reste ${col.runsLeftToday} run(s) aujourd\'hui : les énergies s\'achètent quand tout est épuisé.';
+    } else if (col.coins < price) {
+      msg = 'Pas assez de pièces : il t\'en faut $price (tu en as ${col.coins}).';
+    } else {
+      await col.buyEnergy();
+      msg = 'Énergie achetée : +1 run aujourd\'hui !';
+      onChanged();
+    }
+    if (context.mounted) showPrototypeSnack(context, msg);
+  }
 
   void _buy(BuildContext context, String what) =>
       showPrototypeSnack(context, 'Prototype : les achats arriveront avec l\'étape Monétisation ($what).');
@@ -47,6 +69,17 @@ class ShopTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
       children: [
+        const SectionTitle('Énergies'),
+        _WideOffer(
+          icon: Icons.bolt,
+          title: 'Énergie : +1 run aujourd\'hui',
+          subtitle: 'Avec les pièces ramassées en run. '
+              '${data.collection.energyBoughtToday} / ${Economy.maxEnergyPurchasesPerDay} achetées aujourd\'hui'
+              '${data.collection.runsLeftToday > 0 ? ' · disponible quand tes runs sont épuisées' : ''}.',
+          price: data.collection.nextEnergyPrice == null ? 'Demain' : '${data.collection.nextEnergyPrice} pièces',
+          onBuy: () => _buyEnergy(context),
+        ),
+        const SizedBox(height: 4),
         _DailyOffer(onBuy: () => _buy(context, 'Pack Explorateur')),
         SectionTitle('Skins d\'explorateur', trailing: _Timer(text: 'Renouvelé dans 7 h')),
         _Grid(items: _skins, preview: (i) => _SkinPreview(item: i), onBuy: (i) => _buy(context, i.name)),

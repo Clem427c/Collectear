@@ -12,7 +12,7 @@ class Sfx {
 
   static const files = [
     'swing.wav', 'hit.wav', 'enemy_die.wav', 'hurt.wav', 'jump.wav', 'dodge.wav', 'shoot.wav',
-    'life.wav', 'chest.wav', 'card.wav', 'tick.wav', 'go.wav', 'run_end.wav',
+    'life.wav', 'chest.wav', 'card.wav', 'tick.wav', 'go.wav', 'run_end.wav', 'coin.wav',
   ];
 
   static Future<void> preload() async {

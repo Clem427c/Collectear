@@ -4,7 +4,9 @@ import 'dart:math';
 
 import 'package:collectear/core/cards.dart';
 import 'package:collectear/core/cloud_sync.dart';
+import 'package:collectear/core/collection.dart';
 import 'package:collectear/core/config.dart';
+import 'package:collectear/core/economy.dart';
 import 'package:collectear/core/noise.dart';
 import 'package:collectear/core/online_config.dart';
 import 'package:collectear/core/places.dart';
@@ -12,6 +14,7 @@ import 'package:collectear/core/run_state.dart';
 import 'package:collectear/core/terrain.dart';
 import 'package:collectear/core/variants.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 CardPool _pool() => CardPool.fromJsonString(File('assets/data/cards.json').readAsStringSync());
 
@@ -464,6 +467,83 @@ void main() {
       expect(authErrorMessage('Request rate limit reached', code: 'over_request_rate_limit'), contains('minutes'));
       expect(authErrorMessage('Token has expired or is invalid', code: 'otp_expired'), contains('expiré'));
       expect(authErrorMessage('Autre chose'), 'Autre chose');
+    });
+  });
+
+  group('Pièces et énergies', () {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    test('prix croissant, 5 énergies par jour au plus', () {
+      expect([for (var i = 0; i < 5; i++) Economy.energyPrice(i)], [60, 100, 140, 180, 220]);
+      expect(Economy.energyPrice(5), isNull);
+    });
+
+    test('pièces au sol : déterministes, aucune au départ, plus fréquentes que les cartes', () {
+      expect(Economy.coinsForChunk(42, 0, 0), isEmpty);
+      expect(Economy.coinsForChunk(42, 3, -2), Economy.coinsForChunk(42, 3, -2));
+      var total = 0;
+      var chunks = 0;
+      for (var cx = -15; cx <= 15; cx++) {
+        for (var cy = -15; cy <= 15; cy++) {
+          chunks++;
+          final coins = Economy.coinsForChunk(42, cx, cy);
+          for (final (tx, ty, v) in coins) {
+            expect(Terrain.chunkOf(tx), cx);
+            expect(Terrain.chunkOf(ty), cy);
+            expect(v, anyOf(Economy.coinValue, Economy.pileValue));
+            total += v;
+          }
+          expect(coins.map((c) => (c.$1, c.$2)).toSet().length, coins.length);
+        }
+      }
+      // ~2 pièces par chunk en moyenne (1,5 isolées + un tas de 5 une fois sur 8).
+      expect(total / chunks, closeTo(2.1, 0.4));
+    });
+
+    test('les pièces de la run ne bougent plus une fois la run finie', () {
+      final run = RunState(const RunRules());
+      run.addCoins(3);
+      run.addCoins(-2);
+      expect(run.coins, 3);
+      run.quit();
+      run.addCoins(5);
+      expect(run.coins, 3);
+    });
+
+    test('achat d\'énergie : seulement runs épuisées, assez de pièces, 5 par jour', () async {
+      SharedPreferences.setMockInitialValues({});
+      final col = await Collection.load();
+      expect(col.coins, 0);
+      expect(col.runsLeftToday, GameConfig.runsPerDay);
+      await col.addCoins(1000);
+      expect(col.canBuyEnergy, isFalse, reason: 'il reste des runs gratuites');
+      for (var i = 0; i < GameConfig.runsPerDay; i++) {
+        await col.registerRun();
+      }
+      expect(col.runsLeftToday, 0);
+      var spent = 0;
+      for (var i = 0; i < Economy.maxEnergyPurchasesPerDay; i++) {
+        spent += col.nextEnergyPrice!;
+        expect(await col.buyEnergy(), isTrue);
+        expect(col.runsLeftToday, 1);
+        expect(await col.buyEnergy(), isFalse, reason: 'une seule énergie d\'avance');
+        await col.registerRun();
+      }
+      expect(col.coins, 1000 - spent);
+      expect(col.energyBoughtToday, Economy.maxEnergyPurchasesPerDay);
+      expect(col.nextEnergyPrice, isNull);
+      expect(await col.buyEnergy(), isFalse);
+      expect(col.runsLeftToday, 0);
+    });
+
+    test('pas assez de pièces : pas d\'achat', () async {
+      SharedPreferences.setMockInitialValues({});
+      final col = await Collection.load();
+      for (var i = 0; i < GameConfig.runsPerDay; i++) {
+        await col.registerRun();
+      }
+      await col.addCoins(59);
+      expect(await col.buyEnergy(), isFalse);
+      expect(col.coins, 59);
     });
   });
 }

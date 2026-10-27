@@ -1,6 +1,9 @@
+import 'dart:math' as math;
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'config.dart';
+import 'economy.dart';
 
 /// Collection du joueur et compteur de runs du jour, stockés en local.
 /// (La sauvegarde en ligne via Supabase viendra à l'étape « En ligne ».)
@@ -16,6 +19,9 @@ class Collection {
   static const _kTotalCards = 'stat_cards';
   static const _kBestKills = 'stat_best_kills';
   static const _kFriendCode = 'friend_code';
+  static const _kCoins = 'coins';
+  static const _kEnergyDay = 'energy_day';
+  static const _kEnergyBought = 'energy_bought';
 
   static const _kVariants = 'owned_variants'; // "id:seed1,seed2,…"
 
@@ -89,7 +95,39 @@ class Collection {
 
   int get runsToday => _prefs.getString(_kRunsDay) == _today() ? (_prefs.getInt(_kRunsCount) ?? 0) : 0;
 
-  int get runsLeftToday => (GameConfig.runsPerDay - runsToday).clamp(0, GameConfig.runsPerDay);
+  /// Runs disponibles aujourd'hui : les gratuites + les énergies achetées avec des pièces.
+  int get runsLeftToday => math.max(0, GameConfig.runsPerDay + energyBoughtToday - runsToday);
+
+  // --- Pièces et énergies ---
+  int get coins => _prefs.getInt(_kCoins) ?? 0;
+
+  Future<void> addCoins(int amount) async {
+    if (amount <= 0) return;
+    await _prefs.setInt(_kCoins, coins + amount);
+  }
+
+  /// Énergies achetées aujourd'hui avec des pièces (au plus Economy.maxEnergyPurchasesPerDay).
+  int get energyBoughtToday => _prefs.getString(_kEnergyDay) == _today() ? (_prefs.getInt(_kEnergyBought) ?? 0) : 0;
+
+  /// Prix de la prochaine énergie (null : limite du jour atteinte).
+  int? get nextEnergyPrice => Economy.energyPrice(energyBoughtToday);
+
+  /// On n'achète une énergie que si toutes les runs du jour sont épuisées (elle ne se garde pas).
+  bool get canBuyEnergy {
+    final price = nextEnergyPrice;
+    return price != null && coins >= price && runsLeftToday == 0;
+  }
+
+  /// Achète une énergie : +1 run aujourd'hui. Renvoie false si ce n'est pas possible.
+  Future<bool> buyEnergy() async {
+    final price = nextEnergyPrice;
+    if (!canBuyEnergy || price == null) return false;
+    final bought = energyBoughtToday + 1;
+    await _prefs.setInt(_kCoins, coins - price);
+    await _prefs.setString(_kEnergyDay, _today());
+    await _prefs.setInt(_kEnergyBought, bought);
+    return true;
+  }
 
   /// Outil de test : remet le compteur du jour à zéro (appui long sur le titre).
   Future<void> resetRunsToday() async => _prefs.remove(_kRunsCount);
