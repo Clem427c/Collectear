@@ -218,13 +218,15 @@ class _Art extends StatelessWidget {
       if (kind == _ArtKind.sanctuaryLocked) {
         art = Stack(children: [
           Positioned.fill(child: art),
-          const Positioned(
+          Positioned(
             top: 2,
             left: 0,
             right: 0,
             child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
               for (var i = 0; i < 4; i++)
-                Padding(padding: EdgeInsets.symmetric(horizontal: 2), child: Icon(Icons.circle, size: 8, color: AppColors.gold)),
+                const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 2),
+                    child: Icon(Icons.circle, size: 8, color: AppColors.gold)),
             ]),
           ),
         ]);
