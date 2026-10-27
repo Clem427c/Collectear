@@ -62,7 +62,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               value: _haptics,
-              activeColor: AppColors.gold,
+              activeThumbColor: AppColors.gold,
               title: const Text('Vibrations', style: TextStyle(color: Colors.white)),
               subtitle: const Text('Quand on frappe, qu\'on est touché ou qu\'on gagne une carte',
                   style: TextStyle(color: Colors.white54, fontSize: 12)),

@@ -334,4 +334,3 @@ class _CardPopupState extends State<_CardPopup> with SingleTickerProviderStateMi
     );
   }
 }
-}
