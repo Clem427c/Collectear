@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
 import 'package:collectear/core/cards.dart';
 import 'package:collectear/core/config.dart';
 import 'package:collectear/core/noise.dart';
+import 'package:collectear/core/online_config.dart';
 import 'package:collectear/core/places.dart';
 import 'package:collectear/core/run_state.dart';
 import 'package:collectear/core/terrain.dart';
@@ -336,6 +338,44 @@ void main() {
       for (var i = 1; i < Rarity.values.length; i++) {
         expect(lo[Rarity.values[i]]!, greaterThan(hi[Rarity.values[i - 1]]!));
       }
+    });
+  });
+
+  group('Configuration en ligne', () {
+    String jwt(String role) {
+      String part(Object o) => base64Url.encode(utf8.encode(jsonEncode(o))).replaceAll('=', '');
+      return '${part({'alg': 'HS256', 'typ': 'JWT'})}.${part({'iss': 'supabase', 'role': role})}.signature';
+    }
+
+    test('absente en local', () {
+      expect(const OnlineConfig('', '').status, OnlineConfigStatus.absent);
+      expect(const OnlineConfig('', '').isUsable, isFalse);
+    });
+
+    test('clé publishable et URL valides', () {
+      const c = OnlineConfig(' https://abcd.supabase.co/ ', 'sb_publishable_AbCdEf123456789');
+      expect(c.status, OnlineConfigStatus.ok);
+      expect(c.cleanUrl, 'https://abcd.supabase.co');
+    });
+
+    test('ancienne clé anon acceptée, service_role refusée', () {
+      expect(OnlineConfig.isValidKey(jwt('anon')), isTrue);
+      expect(OnlineConfig.isValidKey(jwt('service_role')), isFalse);
+    });
+
+    test('clé secrète ou mal formée refusée', () {
+      expect(OnlineConfig.isValidKey('sb_secret_AbCdEf123456789'), isFalse);
+      expect(OnlineConfig.isValidKey('sb_publishable_'), isFalse);
+      expect(OnlineConfig.isValidKey('n_importe_quoi'), isFalse);
+      expect(const OnlineConfig('https://abcd.supabase.co', 'sb_secret_xxxxxxxxxxxx').status,
+          OnlineConfigStatus.invalidKey);
+    });
+
+    test('URL invalide', () {
+      expect(const OnlineConfig('abcd.supabase.co', 'sb_publishable_AbCdEf123456789').status,
+          OnlineConfigStatus.invalidUrl);
+      expect(const OnlineConfig('http://abcd.supabase.co', 'sb_publishable_AbCdEf123456789').status,
+          OnlineConfigStatus.invalidUrl);
     });
   });
 }

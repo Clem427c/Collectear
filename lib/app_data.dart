@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import 'core/cards.dart';
 import 'core/collection.dart';
+import 'online.dart';
 
 /// Données chargées au démarrage : les 300 cartes et la collection du joueur.
 class AppData {
@@ -16,6 +17,7 @@ class AppData {
     final pool = CardPool.fromJsonString(json);
     final collection = await Collection.load();
     await Illustrations.load();
+    await Online.init();
     return AppData(pool, collection);
   }
 

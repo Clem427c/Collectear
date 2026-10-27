@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../app_data.dart';
 import '../../core/cards.dart';
+import '../../core/online_config.dart';
+import '../../online.dart';
 import '../theme.dart';
 import '../widgets.dart';
 
@@ -53,6 +55,8 @@ class ProfileTab extends StatelessWidget {
             owned: cards.where((c) => c.rarity == r && col.owned.containsKey(c.id)).length,
             total: cards.where((c) => c.rarity == r).length,
           ),
+        const SectionTitle('Compte en ligne'),
+        const _ServerStatus(),
       ],
     );
   }
@@ -111,6 +115,49 @@ class _RarityBar extends StatelessWidget {
           ),
         ),
       ]),
+    );
+  }
+}
+
+/// État de la connexion au serveur (Supabase) : les comptes arrivent bientôt.
+class _ServerStatus extends StatefulWidget {
+  const _ServerStatus();
+
+  @override
+  State<_ServerStatus> createState() => _ServerStatusState();
+}
+
+class _ServerStatusState extends State<_ServerStatus> {
+  late final Future<bool> _ping = Online.ping();
+
+  @override
+  Widget build(BuildContext context) {
+    final status = Online.config.status;
+    return FutureBuilder<bool>(
+      future: _ping,
+      builder: (context, snap) {
+        final (IconData icon, Color color, String text) = switch (status) {
+          OnlineConfigStatus.ok when !snap.hasData => (Icons.cloud_sync, Colors.white60, 'Connexion au serveur…'),
+          OnlineConfigStatus.ok when snap.data == true => (Icons.cloud_done, AppColors.teal, 'Serveur joignable'),
+          OnlineConfigStatus.ok => (Icons.cloud_off, AppColors.coral, 'Serveur injoignable pour l\'instant'),
+          _ => (Icons.cloud_off, Colors.white60, status.label),
+        };
+        return Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(color: const Color(0xFF3A2D86), borderRadius: BorderRadius.circular(14)),
+          child: Row(children: [
+            Icon(icon, color: color),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(text, style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+                const Text('Comptes et sauvegarde en ligne : bientôt. Ta collection reste sur cet appareil.',
+                    style: TextStyle(color: Colors.white60, fontSize: 12)),
+              ]),
+            ),
+          ]),
+        );
+      },
     );
   }
 }

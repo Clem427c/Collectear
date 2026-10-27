@@ -36,11 +36,42 @@ jobs:
           flutter create . --platforms=web,android --project-name collectear --org com.clem427c --no-overwrite
           # flutter create ajoute un test d'exemple qui ne correspond pas à notre app
           git ls-files --error-unmatch test/widget_test.dart >/dev/null 2>&1 || rm -f test/widget_test.dart
+          # Accès Internet en release (serveur en ligne Supabase)
+          m=android/app/src/main/AndroidManifest.xml
+          grep -q 'android.permission.INTERNET' "$m" || \
+            sed -i 's|<application|<uses-permission android:name="android.permission.INTERNET"/>\n    <application|' "$m"
+          grep -n 'INTERNET' "$m"
 
       - name: Illustrations (art/raw → assets/cards)
         run: |
           python3 -m pip install --quiet pillow || python3 -m pip install --quiet --break-system-packages pillow
           python3 tool/process_art.py
+
+      - name: Vérifier les secrets Supabase (sans les afficher)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          url="$(printf '%s' "$SUPABASE_URL" | tr -d '[:space:]')"
+          key="$(printf '%s' "$SUPABASE_PUBLISHABLE_KEY" | tr -d '[:space:]')"
+          if [ -z "$url" ] || [ -z "$key" ]; then
+            echo "::warning::Secrets Supabase absents : l'app sera construite en mode hors ligne."
+            exit 0
+          fi
+          case "$url" in
+            https://*) echo "SUPABASE_URL : présente, commence par https:// (${#url} caractères)" ;;
+            *) echo "::warning::SUPABASE_URL ne commence pas par https://" ;;
+          esac
+          case "$url" in
+            *.supabase.co|*.supabase.co/) echo "SUPABASE_URL : domaine supabase.co" ;;
+            *) echo "::notice::SUPABASE_URL n'est pas un domaine *.supabase.co (domaine personnalisé ?)" ;;
+          esac
+          case "$key" in
+            sb_publishable_*) echo "SUPABASE_PUBLISHABLE_KEY : clé publique sb_publishable_ (${#key} caractères)" ;;
+            sb_secret_*) echo "::error::SUPABASE_PUBLISHABLE_KEY contient une clé SECRÈTE : remplace-la par la clé publishable"; exit 1 ;;
+            eyJ*) echo "SUPABASE_PUBLISHABLE_KEY : ancienne clé JWT (${#key} caractères)" ;;
+            *) echo "::warning::SUPABASE_PUBLISHABLE_KEY a un format inattendu" ;;
+          esac
 
       - name: Dépendances
         run: flutter pub get
@@ -52,10 +83,22 @@ jobs:
         run: flutter test
 
       - name: Build web
-        run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: >
+          flutter build web --release --base-href "/${{ github.event.repository.name }}/"
+          --dart-define=SUPABASE_URL="$SUPABASE_URL"
+          --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY"
 
       - name: Build APK
-        run: flutter build apk --release
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: >
+          flutter build apk --release
+          --dart-define=SUPABASE_URL="$SUPABASE_URL"
+          --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY"
 
       - name: Renommer l'APK
         run: cp build/app/outputs/flutter-apk/app-release.apk collectear.apk
