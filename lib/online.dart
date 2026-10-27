@@ -52,7 +52,7 @@ class Online {
     if (!_initialized) return;
     _authSub ??= _client.auth.onAuthStateChange.listen((s) {
       if (s.event == AuthChangeEvent.signedIn || s.event == AuthChangeEvent.initialSession) {
-        if (s.session != null) unawaited(sync());
+        if (s.session != null) Future<void>.delayed(const Duration(milliseconds: 300), sync);
       } else if (s.event == AuthChangeEvent.signedOut) {
         friendCode = null;
         onlineCount = 0;
@@ -142,29 +142,46 @@ class Online {
     if (u == null || col == null || syncState == SyncState.syncing) return;
     syncState = SyncState.syncing;
     lastError = null;
-    _bump();
+    var step = 'profil';
     try {
-      await _loadProfile(u.id);
+      _bump();
+      // Chaque appel au serveur a un délai maximal : la synchro ne peut plus rester bloquée.
+      await _loadProfile(u.id).timeout(_timeout);
+      step = 'lecture de la collection';
       final remote = <(int, int)>[];
       for (var from = 0;; from += _pageSize) {
-        final rows = await _client.from(_table).select('card_id, seed').order('id').range(from, from + _pageSize - 1);
+        final rows = await _client
+            .from(_table)
+            .select('card_id, seed')
+            .order('id')
+            .range(from, from + _pageSize - 1)
+            .timeout(_timeout);
         remote.addAll(fromRows(rows));
         if (rows.length < _pageSize) break;
       }
+      step = 'envoi des cartes';
       final plan = planSync(col.variants, remote);
       for (final batch in chunked(plan.toUpload, _batchSize)) {
-        await _client.from(_table).upsert(toRows(u.id, batch), onConflict: 'user_id,card_id,seed', ignoreDuplicates: true);
+        await _client
+            .from(_table)
+            .upsert(toRows(u.id, batch), onConflict: 'user_id,card_id,seed', ignoreDuplicates: true)
+            .timeout(_timeout);
       }
+      step = 'ajout local';
       if (plan.toAddLocally.isNotEmpty) await col.addAll(plan.toAddLocally);
       onlineCount = remote.toSet().length + plan.toUpload.length;
       syncState = SyncState.done;
     } catch (e) {
-      lastError = _syncMessage(e);
+      lastError = '${_syncMessage(e)} (étape : $step)';
       syncState = SyncState.error;
-      debugPrint('Synchro : $e');
+      debugPrint('Synchro ($step) : $e');
+    } finally {
+      if (syncState == SyncState.syncing) syncState = SyncState.error;
+      _bump();
     }
-    _bump();
   }
+
+  static const _timeout = Duration(seconds: 15);
 
   /// Envoie les cartes d'une run qui vient de finir (en cas d'échec, la prochaine synchro rattrape).
   static Future<void> pushCards(Iterable<(int, int)> items) async {
@@ -189,7 +206,8 @@ class Online {
     if (e is PostgrestException && (e.code == '42P01' || e.code == 'PGRST205' || e.message.contains('does not exist'))) {
       return 'Base pas encore créée : colle supabase/schema.sql dans l\'éditeur SQL de Supabase.';
     }
-    if (e is PostgrestException) return e.message;
-    return 'Serveur injoignable pour l\'instant.';
+    if (e is PostgrestException) return '${e.message} [${e.code}]';
+    if (e is TimeoutException) return 'Le serveur ne répond pas';
+    return 'Erreur : $e';
   }
 }
