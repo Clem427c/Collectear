@@ -1,5 +1,20 @@
 # Journal des versions
 
+## 0.7.0 – 27/10/2026 (soir) – retours de playtest
+- Cartes plus rares dans le monde : coffres simples sur 6 % des chunks (au lieu de 18 %) et jamais à
+  moins de 3 chunks du départ. Sanctuaires et ruines plus fréquents (10 % chacun), tours 6 %.
+- Ruines : 2 ennemis gardent chaque pierre runique.
+- L'attaque touche une cible un étage plus haut ou plus bas (même portée).
+- Pièces : au sol (parfois en tas de 5), +2 par ennemi vaincu, +10 par lieu ouvert. Compteur dans
+  le HUD, le récapitulatif et la barre du haut.
+- Boutique → Énergies : +1 run aujourd'hui pour 60 pièces, puis +40 à chaque achat, 5 par jour au plus,
+  quand les runs du jour sont épuisées. Aussi depuis le bouton Jouer.
+- Illustrations : les zones de fond blanc enfermées dans le dessin (entre les jambes, entre un bras et
+  une arme…) sont retirées, et tout le dessin, ombre comprise, tient dans le rond de fond.
+- Prompts ComfyUI pour les sols, décors, lieux, pièces, le personnage jouable et les ennemis
+  (`docs/prompts_decors.csv`, `comfy_batch.py --decors`).
+- Connexion : messages justes quand Supabase limite l'envoi d'e-mails ; la synchro ne reste plus bloquée.
+
 ## 0.6.0 – 27/10/2026 (après-midi)
 - En ligne : schéma de la base (`supabase/schema.sql`) avec RLS — profils créés automatiquement à
   l'inscription avec un code ami unique, collection (carte + variante) ; chacun ne voit et n'ajoute que

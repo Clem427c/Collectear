@@ -18,7 +18,10 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
 - [x] Interface à onglets : Profil, Boutique, Jouer, Bestiaire, Social
 - [x] Prototypes visuels : boutique (cosmétiques), échanges, combats (données d'exemple)
 - [x] Premiers retours de playtest de Clem (blocage terrain, vies, interface)
-- [ ] Nouveaux retours de playtest → réglages (vitesses, densité d'ennemis, zoom)
+- [x] Retours de playtest du 27/10 : cartes plus rares (coffres simples 18 → 6 %), 2 ennemis autour de
+  chaque pierre runique, lieux à défi plus fréquents, attaque qui passe d'un étage à l'étage voisin
+- [x] Pièces à ramasser (sol, ennemis, lieux) et énergies achetables en Boutique (5 par jour au plus) (P)
+- [ ] Nouveaux retours de playtest → réglages (vitesses, densité d'ennemis, zoom, prix des énergies)
 - [x] Sensations : sons, vibrations, particules, flash de dégâts, compte à rebours, carte obtenue animée
 - [x] Boost Portée (5e boost)
 
@@ -31,6 +34,10 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
 - [x] Écran de carte détaillé (grande illustration qui flotte et tourne au toucher, stats avec écart de la variante,
   qualité en étoiles, boost, défilement entre ses exemplaires) — depuis le bestiaire et le récapitulatif
 - [ ] Illustrations : intégrer les 16 images refaites quand Clem les aura poussées (rien à coder, la CI les traite)
+- [x] Détourage : fond blanc enfermé dans le dessin retiré (358 poches vérifiées), dessin entièrement dans le rond
+- [x] Prompts ComfyUI des sols, décors, lieux, pièces, personnage jouable et ennemis (`docs/prompts_decors.csv`)
+- [ ] **Clem** : générer les décors (`py tool\comfy_batch.py --decors`) et choisir les images
+- [ ] Intégrer les décors générés dans le jeu (sols par étage, arbres et rochers, lieux, perso, ennemis)
 
 ## Étape 3 – En ligne (Supabase) — prochaine étape
 Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et `SUPABASE_PUBLISHABLE_KEY` (26/10).
@@ -96,6 +103,18 @@ Priorité basse (à toi de juger) :
 - 241 Wilhelm le Druide : un petit fragment (griffe) flotte à ses pieds.
 - 204 Hélia la Pisteuse : visage enfantin, peu « dure à cuire ».
 - 262 Calixte le Chevalier (Épique) : petit et trapu, peu impressionnant pour une épique.
+
+### Pièces et énergies (27/10)
+- PROVISOIRE : une run rapporte ≈ 30 à 50 pièces (≈ 2 au sol par chunk, +2 par ennemi, +10 par lieu).
+  Énergie = 60 pièces, puis +40 à chaque achat du jour (60, 100, 140, 180, 220), 5 par jour au plus, et
+  seulement quand les runs gratuites sont épuisées (une énergie ne se garde pas). Ça te va ?
+- Les pièces restent sur l'appareil pour l'instant (pas encore sauvegardées en ligne).
+
+### Décors (27/10)
+- Lance `py tool\comfy_batch.py --decors` : 3 propositions par élément dans `art/decors/candidates/`.
+  Copie la meilleure dans `art/decors/raw/` sous le nom de la colonne « fichier » de
+  `docs/prompts_decors.csv` (ex. `tile_l0_vallee.png`), puis pousse. Ou `--decors --auto` pour tout
+  laisser faire (1 image chacun). Les sols doivent pouvoir se répéter : je les rendrai raccordables.
 
 ### En ligne
 - Pour la connexion Google, il faudra créer des identifiants OAuth dans Google Cloud et les coller dans
