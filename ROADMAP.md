@@ -26,8 +26,9 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
 - [x] Types de lieux du GDD : sanctuaire (4 gardiens), tour (pyramide à gravir), ruine (3 runes), coffre rare (loin du départ)
 - [x] Variantes procédurales des cartes (teinte, motifs, shiny, Dorée/Cristal/Ombre) + stats ±4 %
 - [x] Fiche de style IA + prompts des 300 cartes (docs/) ; intégration automatique depuis art/raw/
-- [ ] Clem : générer les illustrations et les déposer dans art/raw/
-- [ ] Écran de carte détaillé, animations d'obtention
+- [ ] Illustrations : Clem génère les 300 cartes avec `tool/comfy_batch.py --auto` (en cours la nuit du 26 au 27/10, push auto toutes les 25 cartes dans art/raw/)
+- [ ] **Prochaine session** : passer en revue les images de art/raw/ (les regarder une à une) et lister dans « Questions pour Clem » celles à refaire (numéro + défaut : fond non blanc, plusieurs personnages, texte, héros trop enfantin, créature rare/épique pas assez impressionnante…). Pour refaire : Clem supprime art/raw/NNN.png et relance `py tool\comfy_batch.py --auto`.
+- [ ] Écran de carte détaillé (grande illustration, stats, boost, variante), animations d'obtention — à faire après la revue des images
 
 ## Étape 3 – En ligne (Supabase) — prochaine étape
 Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et `SUPABASE_PUBLISHABLE_KEY` (26/10).
