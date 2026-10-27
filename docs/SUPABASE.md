@@ -31,7 +31,7 @@ ce sera à faire avant le lancement, voir plus bas.)
   si le compte a été créé.
 
 ## Tester
-1. Ouvrir le jeu → onglet **Profil** → « Compte en ligne ».
+1. Ouvrir le jeu : la fenêtre de connexion s'affiche au premier lancement (ensuite : roue crantée ⚙ → Compte).
 2. Saisir son adresse → **Recevoir un code** → ouvrir l'e-mail sur le même appareil et toucher « Sign in ».
-3. Le Profil affiche « Collection sauvegardée en ligne (N exemplaires) » et un code ami en ligne.
+3. Paramètres → Compte affiche « Collection sauvegardée en ligne (N exemplaires) » et un code ami en ligne.
 4. Se connecter avec la même adresse sur un autre appareil (APK ↔ web) : les cartes s'y ajoutent.

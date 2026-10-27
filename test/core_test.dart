@@ -11,6 +11,7 @@ import 'package:collectear/core/noise.dart';
 import 'package:collectear/core/online_config.dart';
 import 'package:collectear/core/places.dart';
 import 'package:collectear/core/run_state.dart';
+import 'package:collectear/core/settings.dart';
 import 'package:collectear/core/terrain.dart';
 import 'package:collectear/core/variants.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -544,6 +545,24 @@ void main() {
       await col.addCoins(59);
       expect(await col.buyEnergy(), isFalse);
       expect(col.coins, 59);
+    });
+  });
+
+  group('Réglages', () {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    test('valeurs par défaut, enregistrement, volume borné', () async {
+      SharedPreferences.setMockInitialValues({});
+      final s = await Settings.load();
+      expect(s.volume, 0.8);
+      expect(s.haptics, isTrue);
+      expect(s.loginPromptShown, isFalse);
+      await s.setVolume(1.7);
+      await s.setHaptics(false);
+      await s.markLoginPromptShown();
+      final again = await Settings.load();
+      expect(again.volume, 1.0);
+      expect(again.haptics, isFalse);
+      expect(again.loginPromptShown, isTrue);
     });
   });
 }

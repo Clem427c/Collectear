@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../app_data.dart';
 import '../online.dart';
+import 'guide_screen.dart';
+import 'settings_screen.dart';
 import 'tabs/bestiary_tab.dart';
 import 'tabs/play_tab.dart';
 import 'tabs/profile_tab.dart';
@@ -45,6 +47,10 @@ class _HomeShellState extends State<HomeShell> {
     super.initState();
     // Une synchro en ligne peut ajouter des cartes gagnées sur un autre appareil.
     Online.revision.addListener(_refresh);
+    // Premier lancement : proposer la connexion (une seule fois ; ensuite via la roue crantée).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) showFirstLaunchLogin(context, widget.data);
+    });
   }
 
   @override
@@ -102,11 +108,27 @@ class _TopBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
       child: Row(
         children: [
-          const Text('Collectear', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900)),
+          const Flexible(
+            child: Text('Collectear',
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900)),
+          ),
           const Spacer(),
           _Currency(icon: Icons.monetization_on, color: AppColors.gold, value: data.collection.coins),
           const SizedBox(width: 8),
           const _Currency(icon: Icons.diamond, color: Color(0xFF4DD6FF), value: 0),
+          IconButton(
+            tooltip: 'Guide',
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.help_outline, color: Colors.white70),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const GuideScreen())),
+          ),
+          IconButton(
+            tooltip: 'Paramètres',
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.settings, color: Colors.white),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => SettingsScreen(data: data))),
+          ),
         ],
       ),
     );

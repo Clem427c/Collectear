@@ -4,22 +4,28 @@ import 'package:flutter/services.dart';
 
 import 'core/cards.dart';
 import 'core/collection.dart';
+import 'core/settings.dart';
+import 'game/sfx.dart';
 import 'online.dart';
 
 /// Données chargées au démarrage : les 300 cartes et la collection du joueur.
 class AppData {
-  const AppData(this.pool, this.collection);
+  const AppData(this.pool, this.collection, this.settings);
   final CardPool pool;
   final Collection collection;
+  final Settings settings;
 
   static Future<AppData> load() async {
     final json = await rootBundle.loadString('assets/data/cards.json');
     final pool = CardPool.fromJsonString(json);
     final collection = await Collection.load();
+    final settings = await Settings.load();
+    Sfx.volumeLevel = settings.volume;
+    Sfx.hapticsEnabled = settings.haptics;
     await Illustrations.load();
     await Online.init();
     Online.attach(collection);
-    return AppData(pool, collection);
+    return AppData(pool, collection, settings);
   }
 
   /// Cartes possédées, triées de la plus rare à la plus commune.

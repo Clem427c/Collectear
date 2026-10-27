@@ -30,19 +30,6 @@ class PlaceComponent extends PositionComponent with HasGameReference<CollectearG
         _ => true,
       };
 
-  final _gold = Paint()..color = const Color(0xFFFFB627);
-  final _goldDark = Paint()..color = const Color(0xFFE09400);
-  final _purple = Paint()..color = const Color(0xFFB57BFF);
-  final _purpleDark = Paint()..color = const Color(0xFF6B3FD6);
-  final _stone = Paint()..color = const Color(0xFF9A93B5);
-  final _stoneDark = Paint()..color = const Color(0xFF5E577A);
-  final _outline = Paint()
-    ..color = const Color(0xFF2B1E10)
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = 2;
-  final _glow = Paint();
-  final _orbOff = Paint()..color = const Color(0xFF4A4466);
-
   @override
   void update(double dt) {
     super.update(dt);
@@ -59,9 +46,39 @@ class PlaceComponent extends PositionComponent with HasGameReference<CollectearG
 
   @override
   void render(Canvas canvas) {
-    final c = Offset(size.x / 2, size.y / 2);
-    final pulse = math.sin(_t * 4);
-    switch (spec.type) {
+    PlaceArt.draw(
+      canvas,
+      spec.type,
+      Offset(size.x / 2, size.y / 2),
+      pulse: math.sin(_t * 4),
+      unlocked: unlocked,
+      guardiansLeft: guardiansLeft,
+      runesLit: runesLit,
+      runeCount: spec.runes.length,
+    );
+  }
+}
+
+/// Dessins des lieux, partagés entre le jeu et le guide (même apparence partout).
+class PlaceArt {
+  PlaceArt._();
+
+  static final _gold = Paint()..color = const Color(0xFFFFB627);
+  static final _goldDark = Paint()..color = const Color(0xFFE09400);
+  static final _purple = Paint()..color = const Color(0xFFB57BFF);
+  static final _purpleDark = Paint()..color = const Color(0xFF6B3FD6);
+  static final _stone = Paint()..color = const Color(0xFF9A93B5);
+  static final _stoneDark = Paint()..color = const Color(0xFF5E577A);
+  static final _outline = Paint()
+    ..color = const Color(0xFF2B1E10)
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 2;
+  static final _glow = Paint();
+  static final _orbOff = Paint()..color = const Color(0xFF4A4466);
+
+  static void draw(Canvas canvas, PlaceType type, Offset c,
+      {double pulse = 0, bool unlocked = true, int guardiansLeft = 0, int runesLit = 0, int runeCount = 3}) {
+    switch (type) {
       case PlaceType.chest:
       case PlaceType.tower:
         _glow.color = const Color(0x33FFE066);
@@ -72,20 +89,20 @@ class PlaceComponent extends PositionComponent with HasGameReference<CollectearG
         canvas.drawCircle(c, 19 + 4 * pulse, _glow);
         _drawChest(canvas, c, _purple, _purpleDark);
       case PlaceType.sanctuary:
-        _drawAltar(canvas, c, pulse);
+        _drawAltar(canvas, c, pulse, unlocked, guardiansLeft);
       case PlaceType.ruin:
-        _drawRuin(canvas, c, pulse);
+        _drawRuin(canvas, c, pulse, unlocked, runesLit, runeCount);
     }
   }
 
-  void _drawChest(Canvas canvas, Offset c, Paint body, Paint lid) {
+  static void _drawChest(Canvas canvas, Offset c, Paint body, Paint lid) {
     final r = Rect.fromCenter(center: c + const Offset(0, 3), width: 20, height: 13);
     canvas.drawRect(r, body);
     canvas.drawRect(Rect.fromLTWH(r.left, r.top - 5, r.width, 6), lid);
     canvas.drawRect(Rect.fromLTWH(r.left, r.top - 5, r.width, r.height + 5), _outline);
   }
 
-  void _drawAltar(Canvas canvas, Offset c, double pulse) {
+  static void _drawAltar(Canvas canvas, Offset c, double pulse, bool unlocked, int guardiansLeft) {
     canvas.drawRect(Rect.fromCenter(center: c + const Offset(0, 6), width: 24, height: 10), _stoneDark);
     canvas.drawRect(Rect.fromCenter(center: c + const Offset(0, 2), width: 18, height: 8), _stone);
     if (unlocked) {
@@ -94,13 +111,14 @@ class PlaceComponent extends PositionComponent with HasGameReference<CollectearG
       canvas.drawCircle(c - const Offset(0, 6), 6, _gold);
     } else {
       canvas.drawCircle(c - const Offset(0, 6), 6, _orbOff);
+      // Un point par gardien encore en vie.
       for (var i = 0; i < guardiansLeft; i++) {
         canvas.drawCircle(Offset(c.dx - (guardiansLeft - 1) * 4 + i * 8, c.dy - 18), 2.5, _stoneDark);
       }
     }
   }
 
-  void _drawRuin(Canvas canvas, Offset c, double pulse) {
+  static void _drawRuin(Canvas canvas, Offset c, double pulse, bool unlocked, int runesLit, int runeCount) {
     // Arche de pierre ; l'intérieur s'illumine quand toutes les runes sont activées.
     canvas.drawRect(Rect.fromLTWH(c.dx - 13, c.dy - 10, 6, 20), _stone);
     canvas.drawRect(Rect.fromLTWH(c.dx + 7, c.dy - 10, 6, 20), _stone);
@@ -109,12 +127,29 @@ class PlaceComponent extends PositionComponent with HasGameReference<CollectearG
       _glow.color = Color.fromARGB((120 + 60 * pulse).round(), 120, 220, 255);
       canvas.drawRect(Rect.fromLTWH(c.dx - 7, c.dy - 8, 14, 18), _glow);
     }
-    for (var i = 0; i < spec.runes.length; i++) {
+    for (var i = 0; i < runeCount; i++) {
       final lit = i < runesLit;
       _glow.color = lit ? const Color(0xFF7FE9FF) : const Color(0xFF4A4466);
       canvas.drawCircle(Offset(c.dx - 8 + i * 8, c.dy + 15), 2.5, _glow);
     }
   }
+
+  /// Pierre runique (éteinte ou activée), centrée sur [c].
+  static void drawRune(Canvas canvas, Offset c, {required bool lit, double shimmer = 0}) {
+    canvas.drawCircle(c, 8, _runeStone);
+    _runeLine.color = lit ? const Color(0xFF7FE9FF) : Color.fromARGB((90 + 40 * shimmer).round(), 200, 200, 255);
+    final path = Path()
+      ..moveTo(c.dx, c.dy - 5)
+      ..lineTo(c.dx + 4, c.dy + 4)
+      ..lineTo(c.dx - 4, c.dy + 4)
+      ..close();
+    canvas.drawPath(path, _runeLine);
+  }
+
+  static final _runeStone = Paint()..color = const Color(0xFF6E678C);
+  static final _runeLine = Paint()
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 2;
 }
 
 /// Pierre runique d'une ruine : s'active quand le joueur passe dessus.
@@ -127,11 +162,6 @@ class RuneStone extends PositionComponent with HasGameReference<CollectearGame> 
   final PlaceComponent? ruin;
   bool lit = false;
   double _t = 0;
-
-  final _stone = Paint()..color = const Color(0xFF6E678C);
-  final _rune = Paint()
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = 2;
 
   @override
   void update(double dt) {
@@ -146,15 +176,5 @@ class RuneStone extends PositionComponent with HasGameReference<CollectearGame> 
   }
 
   @override
-  void render(Canvas canvas) {
-    const c = Offset(10, 10);
-    canvas.drawCircle(c, 8, _stone);
-    _rune.color = lit ? const Color(0xFF7FE9FF) : Color.fromARGB((90 + 40 * math.sin(_t * 2)).round(), 200, 200, 255);
-    final path = Path()
-      ..moveTo(c.dx, c.dy - 5)
-      ..lineTo(c.dx + 4, c.dy + 4)
-      ..lineTo(c.dx - 4, c.dy + 4)
-      ..close();
-    canvas.drawPath(path, _rune);
-  }
+  void render(Canvas canvas) => PlaceArt.drawRune(canvas, const Offset(10, 10), lit: lit, shimmer: math.sin(_t * 2));
 }
