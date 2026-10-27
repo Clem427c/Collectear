@@ -307,7 +307,11 @@ void main() {
 
     test('décors : déterministes, sur des cases libres, rien autour du départ', () {
       final t = Terrain(99);
-      expect(DecorRules.propsForChunk(t, 99, 0, 0), isEmpty);
+      for (final (cx, cy) in const [(0, 0), (-1, 0), (0, -1), (-1, -1)]) {
+        for (final p in DecorRules.propsForChunk(t, 99, cx, cy)) {
+          expect(p.tx.abs() > DecorRules.clearRadius || p.ty.abs() > DecorRules.clearRadius, isTrue);
+        }
+      }
       for (var cx = -6; cx <= 6; cx++) {
         for (var cy = -6; cy <= 6; cy++) {
           final props = DecorRules.propsForChunk(t, 99, cx, cy);
