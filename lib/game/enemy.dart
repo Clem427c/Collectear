@@ -85,8 +85,14 @@ class Enemy extends PositionComponent with HasGameReference<CollectearGame> {
     }
 
     final player = game.player;
-    final toPlayer = player.position - position;
-    final dist = toPlayer.length;
+    // Optimisation : un ennemi hors de l'écran qui patrouille ne fait rien (ni calcul, ni dessin).
+    final dx = player.position.x - position.x;
+    final dy = player.position.y - position.y;
+    final d2 = dx * dx + dy * dy;
+    _offscreen = d2 > _farDistance * _farDistance;
+    if (_offscreen && _state == _State.patrol && _knock.length2 <= 1) return;
+    final toPlayer = Vector2(dx, dy);
+    final dist = math.sqrt(d2);
     final sameLevel = player.level == level;
     // Période de grâce au début de la run : les ennemis ne repèrent pas encore le joueur.
     final sees = sameLevel && dist < GameConfig.detectRadius && game.run.elapsed > GameConfig.startGrace;
@@ -195,8 +201,14 @@ class Enemy extends PositionComponent with HasGameReference<CollectearGame> {
     }
   }
 
+  /// Au-delà, l'ennemi est hors de l'écran (vue ≈ 11 cases sur le petit côté).
+  static const double _farDistance = 16 * GameConfig.tileSize;
+  bool _offscreen = false;
+  Path? _diamond;
+
   @override
   void render(Canvas canvas) {
+    if (_offscreen) return;
     final c = Offset(size.x / 2, size.y / 2);
     canvas.drawOval(Rect.fromCenter(center: c + const Offset(0, 9), width: 20, height: 7), _shadow);
     final paint = _flash > 0 ? _flashPaint : (kind == EnemyKind.melee ? _meleePaint : _rangedPaint);
@@ -205,7 +217,7 @@ class Enemy extends PositionComponent with HasGameReference<CollectearGame> {
       canvas.drawRRect(r, paint);
       canvas.drawRRect(r, _outline);
     } else {
-      final path = Path()
+      final path = _diamond ??= Path()
         ..moveTo(c.dx, c.dy - 12)
         ..lineTo(c.dx + 11, c.dy)
         ..lineTo(c.dx, c.dy + 12)

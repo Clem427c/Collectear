@@ -35,45 +35,96 @@ class TerrainComponent extends Component with HasGameReference<CollectearGame> {
   final _highlight = Paint()..color = const Color(0x55FFFFFF);
   final _gridDot = Paint()..color = const Color(0x14000000);
 
-  @override
-  void render(Canvas canvas) {
-    final terrain = game.terrain;
-    const t = GameConfig.tileSize;
-    final rect = game.camera.visibleWorldRect.inflate(t);
-    final x0 = (rect.left / t).floor();
-    final x1 = (rect.right / t).ceil();
-    final y0 = (rect.top / t).floor();
-    final y1 = (rect.bottom / t).ceil();
+  /// Dessin de chaque chunk enregistré une fois (Picture), puis rejoué à chaque image.
+  /// Avant, les ~400 cases visibles étaient recalculées et redessinées 60 fois par seconde.
+  final Map<int, Picture> _chunks = {};
+  static const int _maxCachedChunks = 80;
 
-    for (var ty = y0; ty <= y1; ty++) {
-      for (var tx = x0; tx <= x1; tx++) {
-        final level = terrain.levelAt(tx, ty);
-        final left = tx * t;
-        final top = ty * t;
-        final tower = terrain.towerRing(tx, ty) != null;
-        canvas.drawRect(Rect.fromLTWH(left, top, t + 0.5, t + 0.5), tower ? _towerFills[level] : _fills[level]);
-        if ((tx + ty).isEven) {
-          canvas.drawRect(Rect.fromLTWH(left + t / 2 - 1, top + t / 2 - 1, 2, 2), _gridDot);
-        }
-        if (level > 0) {
-          // Bord éclairé en haut, falaise sombre en bas si la case du dessous est plus basse.
-          if (terrain.levelAt(tx, ty - 1) < level) {
-            canvas.drawRect(Rect.fromLTWH(left, top, t, 3), _highlight);
-          }
-          final below = terrain.levelAt(tx, ty + 1);
-          if (below < level) {
-            final h = 6.0 + 4.0 * (level - below);
-            canvas.drawRect(Rect.fromLTWH(left, top + t - h, t, h), _cliff);
-          }
-          if (terrain.levelAt(tx - 1, ty) < level) {
-            canvas.drawRect(Rect.fromLTWH(left, top, 3, t), _sideEdge);
-          }
-          if (terrain.levelAt(tx + 1, ty) < level) {
-            canvas.drawRect(Rect.fromLTWH(left + t - 3, top, 3, t), _sideEdge);
-          }
-        }
+  static int _chunkKey(int cx, int cy) => ((cx & 0xFFFF) << 16) | (cy & 0xFFFF);
+
+  Picture _chunkPicture(int cx, int cy) {
+    final key = _chunkKey(cx, cy);
+    final cached = _chunks[key];
+    if (cached != null) return cached;
+    if (_chunks.length >= _maxCachedChunks) {
+      // Libère les chunks les plus loin du joueur.
+      final p = game.player.position;
+      final pcx = Terrain.chunkOf(Terrain.tileOf(p.x));
+      final pcy = Terrain.chunkOf(Terrain.tileOf(p.y));
+      final far = _chunks.keys.where((k) {
+        final kx = (k >> 16).toSigned(16);
+        final ky = (k & 0xFFFF).toSigned(16);
+        return (kx - pcx).abs() > 3 || (ky - pcy).abs() > 3;
+      }).toList();
+      for (final k in far) {
+        _chunks.remove(k)?.dispose();
       }
     }
+    final recorder = PictureRecorder();
+    final canvas = Canvas(recorder);
+    const n = GameConfig.chunkTiles;
+    for (var ty = cy * n; ty < (cy + 1) * n; ty++) {
+      for (var tx = cx * n; tx < (cx + 1) * n; tx++) {
+        _drawTile(canvas, tx, ty);
+      }
+    }
+    final pic = recorder.endRecording();
+    _chunks[key] = pic;
+    return pic;
+  }
+
+  void _drawTile(Canvas canvas, int tx, int ty) {
+    final terrain = game.terrain;
+    const t = GameConfig.tileSize;
+    final level = terrain.levelAt(tx, ty);
+    final left = tx * t;
+    final top = ty * t;
+    final tower = terrain.towerRing(tx, ty) != null;
+    canvas.drawRect(Rect.fromLTWH(left, top, t + 0.5, t + 0.5), tower ? _towerFills[level] : _fills[level]);
+    if ((tx + ty).isEven) {
+      canvas.drawRect(Rect.fromLTWH(left + t / 2 - 1, top + t / 2 - 1, 2, 2), _gridDot);
+    }
+    if (level > 0) {
+      // Bord éclairé en haut, falaise sombre en bas si la case du dessous est plus basse.
+      if (terrain.levelAt(tx, ty - 1) < level) {
+        canvas.drawRect(Rect.fromLTWH(left, top, t, 3), _highlight);
+      }
+      final below = terrain.levelAt(tx, ty + 1);
+      if (below < level) {
+        final h = 6.0 + 4.0 * (level - below);
+        canvas.drawRect(Rect.fromLTWH(left, top + t - h, t, h), _cliff);
+      }
+      if (terrain.levelAt(tx - 1, ty) < level) {
+        canvas.drawRect(Rect.fromLTWH(left, top, 3, t), _sideEdge);
+      }
+      if (terrain.levelAt(tx + 1, ty) < level) {
+        canvas.drawRect(Rect.fromLTWH(left + t - 3, top, 3, t), _sideEdge);
+      }
+    }
+  }
+
+  @override
+  void render(Canvas canvas) {
+    const t = GameConfig.tileSize;
+    final rect = game.camera.visibleWorldRect.inflate(t);
+    final cx0 = Terrain.chunkOf((rect.left / t).floor());
+    final cx1 = Terrain.chunkOf((rect.right / t).ceil());
+    final cy0 = Terrain.chunkOf((rect.top / t).floor());
+    final cy1 = Terrain.chunkOf((rect.bottom / t).ceil());
+    for (var cy = cy0; cy <= cy1; cy++) {
+      for (var cx = cx0; cx <= cx1; cx++) {
+        canvas.drawPicture(_chunkPicture(cx, cy));
+      }
+    }
+  }
+
+  @override
+  void onRemove() {
+    for (final p in _chunks.values) {
+      p.dispose();
+    }
+    _chunks.clear();
+    super.onRemove();
   }
 
   /// Utilisé par les entités pour connaître le niveau sous une position monde.

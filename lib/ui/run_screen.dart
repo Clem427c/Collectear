@@ -290,8 +290,11 @@ class _CardPopup extends StatefulWidget {
 }
 
 class _CardPopupState extends State<_CardPopup> with SingleTickerProviderStateMixin {
+  // Retour de Clem (27/10) : la carte ne doit pas cacher l'action. Elle apparaît au centre
+  // (~150 ms), reste un instant, puis file en petit dans le coin haut droit (sous le compteur de
+  // cartes) et s'efface. Total ≈ 1,2 s, dont seulement ~0,4 s au centre.
   late final AnimationController _c =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 1900))..forward().whenComplete(widget.onDone);
+      AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))..forward().whenComplete(widget.onDone);
 
   @override
   void dispose() {
@@ -305,13 +308,15 @@ class _CardPopupState extends State<_CardPopup> with SingleTickerProviderStateMi
       animation: _c,
       builder: (context, child) {
         final t = _c.value;
-        final appear = Curves.easeOutBack.transform((t / 0.25).clamp(0.0, 1.0));
-        final leave = ((t - 0.8) / 0.2).clamp(0.0, 1.0);
+        final appear = Curves.easeOutBack.transform((t / 0.12).clamp(0.0, 1.0));
+        final fly = Curves.easeInOutCubic.transform(((t - 0.3) / 0.25).clamp(0.0, 1.0));
+        final fade = ((t - 0.8) / 0.2).clamp(0.0, 1.0);
+        final scale = (0.4 + 0.6 * appear) * (1 - 0.72 * fly);
         return Opacity(
-          opacity: 1 - leave,
+          opacity: 1 - fade,
           child: Align(
-            alignment: Alignment(0, -0.15 - leave * 0.6),
-            child: Transform.scale(scale: 0.3 + 0.7 * appear - leave * 0.4, child: child),
+            alignment: Alignment(0.92 * fly, -0.15 - 0.62 * fly),
+            child: Transform.scale(scale: scale, child: child),
           ),
         );
       },
@@ -328,4 +333,5 @@ class _CardPopupState extends State<_CardPopup> with SingleTickerProviderStateMi
       ]),
     );
   }
+}
 }

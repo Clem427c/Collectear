@@ -34,14 +34,20 @@ class CoinPickup extends PositionComponent with HasGameReference<CollectearGame>
     _t += dt;
     if (!game.active) return;
     final p = game.player;
-    if (p.level == level && p.position.distanceTo(position) < (isPile ? 18 : 15)) {
+    final d2 = p.position.distanceToSquared(position);
+    _visible = d2 < 256 * GameConfig.tileSize * GameConfig.tileSize; // 16 cases : hors écran au-delà
+    final r = isPile ? 18 : 15;
+    if (p.level == level && d2 < r * r) {
       removeFromParent();
       game.coinCollected(this);
     }
   }
 
+  bool _visible = true;
+
   @override
   void render(Canvas canvas) {
+    if (!_visible) return;
     final bob = math.sin(_t * 3) * 1.5;
     canvas.drawOval(const Rect.fromLTWH(3, 12, 10, 4), _shadow);
     if (isPile) {

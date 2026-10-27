@@ -62,6 +62,7 @@ class CardView extends StatelessWidget {
             ),
             padding: EdgeInsets.all(w * 0.05),
             child: Stack(
+              clipBehavior: Clip.none,
               children: [
                 Column(
                   children: [
@@ -146,8 +147,22 @@ class CardView extends StatelessWidget {
                     left: 0,
                     child: _Badge(text: '×$quantity', color: AppColors.ink),
                   ),
+                // Badge « Nouveau » collé dans le coin haut droit, comme un autocollant (ne cache aucun texte).
                 if (isNew)
-                  const Positioned(bottom: 18, left: 0, right: 0, child: Center(child: _Badge(text: 'NOUVEAU', color: AppColors.gold, dark: true))),
+                  Positioned(
+                    top: -w * 0.05 - 10,
+                    right: -w * 0.05 - 10,
+                    child: Transform.rotate(
+                      angle: 0.2,
+                      child: const DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                          boxShadow: [BoxShadow(color: Colors.black45, blurRadius: 4, offset: Offset(0, 2))],
+                        ),
+                        child: _Badge(text: 'NOUVEAU', color: AppColors.gold, dark: true),
+                      ),
+                    ),
+                  ),
               ],
             ),
           );

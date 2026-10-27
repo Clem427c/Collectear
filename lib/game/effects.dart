@@ -18,7 +18,10 @@ class Burst extends PositionComponent {
       _parts.add(_Part(Vector2(math.cos(a) * s, math.sin(a) * s), 2 + rng.nextDouble() * 3));
     }
     _paint.color = color;
+    _baseColor = color;
   }
+
+  late final Color _baseColor;
 
   final List<_Part> _parts = [];
   final Paint _paint = Paint();
@@ -33,16 +36,17 @@ class Burst extends PositionComponent {
       removeFromParent();
       return;
     }
+    final damping = math.pow(0.05, dt).toDouble();
     for (final p in _parts) {
-      p.pos.add(p.vel * dt);
-      p.vel.scale(math.pow(0.05, dt).toDouble());
+      p.pos.addScaled(p.vel, dt);
+      p.vel.scale(damping);
     }
   }
 
   @override
   void render(Canvas canvas) {
     final alpha = (_life / _maxLife).clamp(0.0, 1.0);
-    _paint.color = _paint.color.withValues(alpha: alpha);
+    _paint.color = _baseColor.withValues(alpha: alpha);
     for (final p in _parts) {
       canvas.drawCircle(Offset(p.pos.x, p.pos.y), p.size * alpha + 0.5, _paint);
     }
