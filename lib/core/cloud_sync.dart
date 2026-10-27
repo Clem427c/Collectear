@@ -60,3 +60,25 @@ bool isPlausibleEmail(String s) => RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]{2,}$').hasM
 
 /// Code reçu par e-mail : 6 chiffres par défaut chez Supabase (configurable jusqu'à 10).
 bool isPlausibleOtp(String s) => RegExp(r'^\d{6,10}$').hasMatch(s.replaceAll(' ', ''));
+
+/// Message en français pour une erreur de connexion renvoyée par Supabase.
+/// Deux limites différentes existent :
+/// - par adresse : un nouvel e-mail au plus toutes les 60 s (« For security purposes… after N seconds ») ;
+/// - pour tout le projet : quelques e-mails par HEURE avec l'envoi intégré de Supabase
+///   (« email rate limit exceeded ») — relevée en branchant un SMTP personnel.
+String authErrorMessage(String message, {String? code}) {
+  final m = message.toLowerCase();
+  if (code == 'over_email_send_rate_limit' || m.contains('email rate limit')) {
+    return 'Limite d\'e-mails du serveur atteinte (quelques-uns par heure pendant les tests). '
+        'Réessaie dans une heure.';
+  }
+  final wait = RegExp(r'after (\d+) seconds?').firstMatch(m);
+  if (wait != null) return 'Un e-mail vient d\'être envoyé : réessaie dans ${wait.group(1)} s.';
+  if (code == 'over_request_rate_limit' || m.contains('rate limit')) {
+    return 'Trop de demandes : réessaie dans quelques minutes.';
+  }
+  if (code == 'otp_expired' || m.contains('expired') || m.contains('invalid')) {
+    return 'Code ou lien invalide ou expiré : redemande un e-mail.';
+  }
+  return message;
+}

@@ -118,14 +118,7 @@ class Online {
     _bump();
   }
 
-  static String _authMessage(AuthException e) {
-    final m = e.message.toLowerCase();
-    if (e.statusCode == '429' || m.contains('rate limit') || m.contains('security purposes')) {
-      return 'Trop de demandes : attends une minute avant de redemander un code.';
-    }
-    if (m.contains('expired') || m.contains('invalid')) return 'Code invalide ou expiré.';
-    return e.message;
-  }
+  static String _authMessage(AuthException e) => authErrorMessage(e.message, code: e.code);
 
   // --- Synchronisation de la collection ---
 

@@ -429,5 +429,14 @@ void main() {
       expect(isPlausibleOtp('12345'), isFalse);
       expect(isPlausibleOtp('12a456'), isFalse);
     });
+
+    test('messages d\'erreur de connexion', () {
+      expect(authErrorMessage('email rate limit exceeded', code: 'over_email_send_rate_limit'), contains('heure'));
+      expect(authErrorMessage('Email rate limit exceeded'), contains('heure'));
+      expect(authErrorMessage('For security purposes, you can only request this after 42 seconds.'), contains('42 s'));
+      expect(authErrorMessage('Request rate limit reached', code: 'over_request_rate_limit'), contains('minutes'));
+      expect(authErrorMessage('Token has expired or is invalid', code: 'otp_expired'), contains('expiré'));
+      expect(authErrorMessage('Autre chose'), 'Autre chose');
+    });
   });
 }
