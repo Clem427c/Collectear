@@ -21,6 +21,9 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
 - [x] Retours de playtest du 27/10 : cartes plus rares (coffres simples 18 → 6 %), 2 ennemis autour de
   chaque pierre runique, lieux à défi plus fréquents, attaque qui passe d'un étage à l'étage voisin
 - [x] Pièces à ramasser (sol, ennemis, lieux) et énergies achetables en Boutique (5 par jour au plus) (P)
+- [x] Retours du 27/10 (soir) : carte gagnée qui file dans un coin, badge Nouveau dans le coin de la carte,
+  guide des lieux (bouton ?), roue crantée (son, vibrations, compte), connexion au premier lancement,
+  optimisation (sons réutilisés, sol mis en cache, ennemis hors écran figés)
 - [ ] Nouveaux retours de playtest → réglages (vitesses, densité d'ennemis, zoom, prix des énergies)
 - [x] Sensations : sons, vibrations, particules, flash de dégâts, compte à rebours, carte obtenue animée
 - [x] Boost Portée (5e boost)
@@ -119,7 +122,7 @@ Priorité basse (à toi de juger) :
 ### En ligne
 - Pour la connexion Google, il faudra créer des identifiants OAuth dans Google Cloud et les coller dans
   Supabase (Authentication → Providers → Google). Je commencerai par l'e-mail (aucun réglage). Tu valides ?
-- Dans le Profil, la ligne « Compte en ligne » doit afficher « Serveur joignable » : dis-moi si ce n'est pas le cas.
+- Le compte est maintenant dans la roue crantée ⚙ → Compte (et proposé au premier lancement).
 - **À faire (5 min)** : les 2 réglages de `docs/SUPABASE.md` (coller le SQL, ajouter les 2 adresses de retour).
   Plus besoin de toucher aux modèles d'e-mail.
 - PROVISOIRE : la collection locale appartient à l'appareil. Si un 2e compte se connecte sur le même

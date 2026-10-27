@@ -1,5 +1,16 @@
 # Journal des versions
 
+## 0.8.0 – 27/10/2026 (nuit) – confort et fluidité
+- Fluidité : chaque son créait un lecteur audio jamais libéré (ralentissement au fil de la run) ;
+  ils sont maintenant réutilisés. Le sol est dessiné une fois par zone puis rejoué ; les ennemis et
+  pièces hors écran ne sont plus ni calculés ni dessinés ; particules allégées.
+- Carte gagnée : ~0,4 s au centre, puis elle file en petit dans le coin haut droit.
+- Badge « Nouveau » collé dans le coin haut droit de la carte.
+- Guide (bouton ? en haut) : chaque lieu expliqué avec son dessin du jeu (sanctuaire : les points
+  au-dessus = gardiens à vaincre), pièces, ennemis, vies, étages.
+- Roue crantée ⚙ : volume, vibrations, compte en ligne, guide.
+- Connexion proposée dans une fenêtre au premier lancement ; le Profil ne garde que les statistiques.
+
 ## 0.7.0 – 27/10/2026 (soir) – retours de playtest
 - Cartes plus rares dans le monde : coffres simples sur 6 % des chunks (au lieu de 18 %) et jamais à
   moins de 3 chunks du départ. Sanctuaires et ruines plus fréquents (10 % chacun), tours 6 %.
