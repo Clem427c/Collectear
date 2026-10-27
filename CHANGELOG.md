@@ -1,5 +1,15 @@
 # Journal des versions
 
+## 0.9.0 – 27/10/2026 (fin de soirée) – le monde prend vie
+- Décors générés par Clem dans le jeu : un sol texturé par étage (vallée, prairie, plateau, roche,
+  neige, dalles des tours), arbres, buissons, fleurs, champignons, rochers et cristaux selon l'étage,
+  coffres, sanctuaires, ruines, pierres runiques, pièces, boules de feu, explorateur (face, dos,
+  profil, attaque) et ennemis. Le guide montre les mêmes images.
+- 15 dernières secondes : le chrono passe au centre, un peu plus bas, plus grand, en rouge, bat
+  chaque seconde, avec un son d'alerte unique.
+- Sanctuaires : gardiens toujours au même étage que l'autel (3 cases au plus), qui restent près de
+  leur poste ; en version élite avec un anneau doré, reliés à l'autel par un fil doré.
+
 ## 0.8.0 – 27/10/2026 (nuit) – confort et fluidité
 - Fluidité : chaque son créait un lecteur audio jamais libéré (ralentissement au fil de la run) ;
   ils sont maintenant réutilisés. Le sol est dessiné une fois par zone puis rejoué ; les ennemis et

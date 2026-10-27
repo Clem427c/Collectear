@@ -39,8 +39,9 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
 - [ ] Illustrations : intégrer les 16 images refaites quand Clem les aura poussées (rien à coder, la CI les traite)
 - [x] Détourage : fond blanc enfermé dans le dessin retiré (358 poches vérifiées), dessin entièrement dans le rond
 - [x] Prompts ComfyUI des sols, décors, lieux, pièces, personnage jouable et ennemis (`docs/prompts_decors.csv`)
-- [ ] **Clem** : générer les décors (`py tool\comfy_batch.py --decors`) et choisir les images
-- [ ] Intégrer les décors générés dans le jeu (sols par étage, arbres et rochers, lieux, perso, ennemis)
+- [x] Décors générés par Clem (41 images) et intégrés : sols par étage, décors, lieux, pièces, perso, ennemis (27/10)
+- [x] Chrono d'alerte des 15 dernières secondes ; gardiens de sanctuaire au même étage, tenus en laisse, en élite
+- [ ] Décors : collisions avec les arbres et rochers ? (aujourd'hui on passe à travers)
 
 ## Étape 3 – En ligne (Supabase) — prochaine étape
 Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et `SUPABASE_PUBLISHABLE_KEY` (26/10).
@@ -114,10 +115,9 @@ Priorité basse (à toi de juger) :
 - Les pièces restent sur l'appareil pour l'instant (pas encore sauvegardées en ligne).
 
 ### Décors (27/10)
-- Lance `py tool\comfy_batch.py --decors` : 3 propositions par élément dans `art/decors/candidates/`.
-  Copie la meilleure dans `art/decors/raw/` sous le nom de la colonne « fichier » de
-  `docs/prompts_decors.csv` (ex. `tile_l0_vallee.png`), puis pousse. Ou `--decors --auto` pour tout
-  laisser faire (1 image chacun). Les sols doivent pouvoir se répéter : je les rendrai raccordables.
+- Intégrés. PROVISOIRE : arbres, rochers et buissons sont décoratifs (on passe à travers). Veux-tu
+  qu'ils bloquent le passage (plus de stratégie, mais risque de se coincer) ?
+- Une image ne te plaît pas ? `py tool\comfy_batch.py --decors --redo N` (N = colonne « numero »).
 
 ### En ligne
 - Pour la connexion Google, il faudra créer des identifiants OAuth dans Google Cloud et les coller dans
