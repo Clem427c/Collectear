@@ -55,7 +55,8 @@ HERO_STYLE = (
 )
 FLUX_SUFFIX = (
     ", a single character only, isolated on a plain pure white background, no text, no letters, "
-    "no frame, no border, soft round shadow on the ground under the character, flat 2D illustration"
+    "no frame, no border, no scenery, no floating objects, the whole character including wings and weapons "
+    "fully inside the image with a white margin, soft round shadow on the ground under the character, flat 2D illustration"
 )
 NEGATIVE = (
     "text, letters, watermark, logo, signature, card frame, border, realistic, photo, 3d render, "
@@ -171,6 +172,15 @@ RARITY_ACCENT = {
     3: "epic, dynamic pose, magical glow,", 4: "legendary, heroic pose, radiant aura, ornate details,",
 }
 FEMININE = ("la ", "l'Apprentie", "l'Éclaireuse", "l'Archère", "Immortelle")
+# Prénoms féminins dont le titre est épicène (« l'Alchimiste », « l'Arcaniste »…) ou sans article.
+FEMALE_FIRST_NAMES = {"Rosa", "Rhéa", "Thaïs", "Ysolde", "Aurèle"}
+
+
+def hero_gender(name):
+    first = name.replace(",", " ").split()[0]
+    if first in FEMALE_FIRST_NAMES or any(f in name for f in FEMININE):
+        return "female"
+    return "male"
 
 
 def describe(card):
@@ -179,11 +189,10 @@ def describe(card):
     if name in MANUAL:
         subject = MANUAL[name]
         if card["family"] == "hero":
-            subject = f"human {subject}"
+            subject = f"{hero_gender(name)} human {subject}"
     elif card["family"] == "hero":
         role = next((v for k, v in sorted(ROLE_EN.items(), key=lambda kv: -len(kv[0])) if k in name), "adventurer")
-        gender = "female" if any(f in name for f in FEMININE) else "male"
-        subject = f"{gender} human {role}, {HERO_STAGE[r]}"
+        subject = f"{hero_gender(name)} human {role}, {HERO_STAGE[r]}"
     else:
         stem = max((s for s in list(ANIMALS) + list(ELEMENTS) if name.startswith(s)), key=len)
         if stem in ANIMALS:
