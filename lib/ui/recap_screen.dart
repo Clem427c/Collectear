@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/cards.dart';
 import '../core/run_state.dart';
+import 'card_detail_screen.dart';
 import 'widgets.dart';
 import 'theme.dart';
 
@@ -50,7 +51,15 @@ class RecapScreen extends StatelessWidget {
                     runSpacing: 10,
                     children: [
                       for (final c in run.cards)
-                        SizedBox(width: 130, child: CardView(card: c.card, instance: c, isNew: freshIds.contains(c.card.id))),
+                        SizedBox(
+                          width: 130,
+                          child: CardView(
+                            card: c.card,
+                            instance: c,
+                            isNew: freshIds.contains(c.card.id),
+                            onTap: () => openCardDetail(context, c.card, variantSeeds: [c.variantSeed]),
+                          ),
+                        ),
                     ],
                   ),
                 const SizedBox(height: 32),

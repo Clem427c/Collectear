@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app_data.dart';
 import '../../core/cards.dart';
 import '../../core/variants.dart';
+import '../card_detail_screen.dart';
 import '../theme.dart';
 import '../widgets.dart';
 
@@ -98,10 +99,9 @@ class _BestiaryTabState extends State<BestiaryTab> {
                 quantity: qty,
                 onTap: qty == null
                     ? null
-                    : () => showCardDetail(
+                    : () => openCardDetail(
                           context,
                           c,
-                          quantity: qty,
                           variantSeeds: seeds,
                           isCompanion: data.collection.companionId == c.id,
                           onEquip: () async {

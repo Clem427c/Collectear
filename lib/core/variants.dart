@@ -5,6 +5,10 @@ import 'cards.dart';
 /// Motif appliqué sur l'illustration d'une variante.
 enum VariantPattern { none, stripes, spots, stars, rings }
 
+extension VariantPatternInfo on VariantPattern {
+  String get label => const ['Uni', 'Rayures', 'Taches', 'Étoiles', 'Anneaux'][index];
+}
+
 /// Finition spéciale (très rare).
 enum VariantFinish { normal, golden, crystal, shadow }
 
@@ -84,6 +88,18 @@ class Variant {
 
   /// Plus la variante est spéciale, plus elle est recherchée (0 = ordinaire).
   int get prestige => (shiny ? 2 : 0) + (finish != VariantFinish.normal ? 3 : 0);
+
+  /// Qualité des stats de 0 (les trois au minimum, −4 %) à 1 (les trois au maximum, +4 %).
+  double get quality {
+    final avg = (hpMult + atkMult + defMult) / 3;
+    return ((avg - (1 - statSpread)) / (2 * statSpread)).clamp(0.0, 1.0);
+  }
+
+  /// Qualité en étoiles, de 1 à 5 (affichée sur la fiche détaillée).
+  int get stars => 1 + (quality * 5).floor().clamp(0, 4);
+
+  /// Écart d'un multiplicateur en pourcentage arrondi (ex. 1.031 → 3, 0.962 → −4).
+  static int deltaPercent(double mult) => ((mult - 1) * 100).round();
 
   /// Code court lisible (ex. « #4F2A »), unique à 1 chance sur 65 536.
   String get code => '#${(seed & 0xFFFF).toRadixString(16).toUpperCase().padLeft(4, '0')}';

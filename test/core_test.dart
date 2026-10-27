@@ -262,6 +262,43 @@ void main() {
   });
 
   group('Variantes', () {
+    test('qualité entre 0 et 1, étoiles entre 1 et 5, toutes atteintes', () {
+      final stars = <int>{};
+      for (var seed = 0; seed < 5000; seed++) {
+        final v = Variant.fromSeed(seed);
+        expect(v.quality, inInclusiveRange(0.0, 1.0));
+        expect(v.stars, inInclusiveRange(1, 5));
+        stars.add(v.stars);
+      }
+      expect(stars, {1, 2, 3, 4, 5});
+    });
+
+    test('la qualité suit la moyenne des stats', () {
+      Variant? best, worst;
+      for (var seed = 0; seed < 2000; seed++) {
+        final v = Variant.fromSeed(seed);
+        if (best == null || v.quality > best.quality) best = v;
+        if (worst == null || v.quality < worst.quality) worst = v;
+      }
+      double avg(Variant v) => (v.hpMult + v.atkMult + v.defMult) / 3;
+      expect(avg(best!), greaterThan(avg(worst!)));
+      expect(best.stars, greaterThanOrEqualTo(worst.stars));
+    });
+
+    test('écart en pourcentage', () {
+      expect(Variant.deltaPercent(1.031), 3);
+      expect(Variant.deltaPercent(0.962), -4);
+      expect(Variant.deltaPercent(1.0), 0);
+      for (var seed = 0; seed < 500; seed++) {
+        final v = Variant.fromSeed(seed);
+        expect(Variant.deltaPercent(v.hpMult).abs(), lessThanOrEqualTo(4));
+      }
+    });
+
+    test('chaque motif a un nom', () {
+      expect(VariantPattern.values.map((p) => p.label).toSet().length, VariantPattern.values.length);
+    });
+
     test('déterministes et variées', () {
       final a = Variant.fromSeed(1234), b = Variant.fromSeed(1234);
       expect(a.hue, b.hue);
