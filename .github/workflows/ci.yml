@@ -64,7 +64,7 @@ jobs:
 
       - name: Illustrations (art/raw → assets/cards)
         run: |
-          python3 -m pip install --quiet pillow || python3 -m pip install --quiet --break-system-packages pillow
+          python3 -m pip install --quiet pillow numpy scipy || python3 -m pip install --quiet --break-system-packages pillow numpy scipy
           python3 tool/process_art.py
 
       - name: Vérifier les secrets Supabase (sans les afficher)
