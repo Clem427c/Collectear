@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app_data.dart';
+import '../online.dart';
 import 'tabs/bestiary_tab.dart';
 import 'tabs/play_tab.dart';
 import 'tabs/profile_tab.dart';
@@ -35,7 +36,22 @@ class _HomeShellState extends State<HomeShell> {
 
   int _index = _playIndex;
 
-  void _refresh() => setState(() {});
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Une synchro en ligne peut ajouter des cartes gagnées sur un autre appareil.
+    Online.revision.addListener(_refresh);
+  }
+
+  @override
+  void dispose() {
+    Online.revision.removeListener(_refresh);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

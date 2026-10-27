@@ -18,6 +18,7 @@ class AppData {
     final collection = await Collection.load();
     await Illustrations.load();
     await Online.init();
+    Online.attach(collection);
     return AppData(pool, collection);
   }
 

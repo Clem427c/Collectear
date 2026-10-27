@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flame/game.dart';
@@ -10,6 +11,7 @@ import '../game/collectear_game.dart';
 import '../game/sfx.dart';
 import '../core/variants.dart';
 import '../app_data.dart';
+import '../online.dart';
 import 'recap_screen.dart';
 import 'theme.dart';
 import 'widgets.dart';
@@ -42,7 +44,9 @@ class _RunScreenState extends State<RunScreen> {
     if (_ended || !mounted) return;
     _ended = true;
     final col = widget.data.collection;
-    final fresh = await col.addAll(run.cards.map((c) => (c.card.id, c.variantSeed)));
+    final won = [for (final c in run.cards) (c.card.id, c.variantSeed)];
+    final fresh = await col.addAll(won);
+    unawaited(Online.pushCards(won));
     await col.recordRunResult(kills: run.kills, cards: run.cards.length);
     if (!mounted) return;
     Navigator.of(context).pushReplacement(MaterialPageRoute<void>(
