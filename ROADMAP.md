@@ -28,11 +28,16 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
 - [x] Fiche de style IA + prompts des 300 cartes (docs/) ; intégration automatique depuis art/raw/
 - [x] Illustrations : les 300 cartes générées par Clem avec `tool/comfy_batch.py --auto` (nuit du 26 au 27/10)
 - [x] Revue des 300 images (27/10) : 16 à refaire, listées dans « Questions pour Clem »
-- [ ] Écran de carte détaillé (grande illustration, stats, boost, variante), animations d'obtention — à faire après la revue des images
+- [x] Écran de carte détaillé (grande illustration qui flotte et tourne au toucher, stats avec écart de la variante,
+  qualité en étoiles, boost, défilement entre ses exemplaires) — depuis le bestiaire et le récapitulatif
+- [ ] Illustrations : intégrer les 16 images refaites quand Clem les aura poussées (rien à coder, la CI les traite)
 
 ## Étape 3 – En ligne (Supabase) — prochaine étape
 Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et `SUPABASE_PUBLISHABLE_KEY` (26/10).
-Première tâche : vérifier en CI que les secrets sont bien transmis (sans les afficher), puis brancher `supabase_flutter`.
+- [x] Secrets vérifiés en CI sans les afficher (présents, URL https, clé publishable) et injectés au build (27/10)
+- [x] `supabase_flutter` branché : client initialisé au démarrage, état du serveur dans le Profil
+- [ ] **Prochaine session** : schéma SQL (profils, collection) avec RLS dans `supabase/schema.sql`, à coller par Clem
+  dans l'éditeur SQL de Supabase ; puis connexion e-mail (lien magique) et synchro de la collection
 - [ ] Comptes (e-mail, Google), sauvegarde de la collection côté serveur
 - [ ] Validation serveur des récompenses (anti-triche)
 - [ ] Amis (code ami), échanges carte contre carte
@@ -87,5 +92,11 @@ Priorité basse (à toi de juger) :
 - 204 Hélia la Pisteuse : visage enfantin, peu « dure à cuire ».
 - 262 Calixte le Chevalier (Épique) : petit et trapu, peu impressionnant pour une épique.
 
+### En ligne
+- Pour la connexion Google, il faudra créer des identifiants OAuth dans Google Cloud et les coller dans
+  Supabase (Authentication → Providers → Google). Je commencerai par l'e-mail (aucun réglage). Tu valides ?
+- Dans le Profil, la ligne « Compte en ligne » doit afficher « Serveur joignable » : dis-moi si ce n'est pas le cas.
+
+### Illustrations (suite)
 Remarque : les 4 bûcherons (035 Hugo, 065 Pio, 070 Milo, 079 Anatole) se ressemblent beaucoup
 (barbe rousse, chemise à carreaux, hache). Faut-il en différencier certains (âge, coiffure, couleurs) ?

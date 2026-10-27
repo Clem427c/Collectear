@@ -1,5 +1,19 @@
 # Journal des versions
 
+## 0.5.0 – 27/10/2026
+- Revue des 300 illustrations générées par Clem : 284 validées, 16 à refaire (liste dans ROADMAP.md).
+  Bug corrigé dans les prompts : certaines héroïnes (Rosa, Rhéa, Nahia…) étaient demandées en homme.
+  Prompts renforcés : pas de décor, pas d'objets flottants, personnage entier dans l'image.
+  Nouvelle option `comfy_batch.py --redo 29,64,…` : refait des cartes avec une nouvelle graine
+  (avant, supprimer et relancer redonnait exactement la même image).
+- Écran de carte détaillé en plein écran : grande illustration teintée selon la variante, qui flotte
+  et fait un tour sur elle-même quand on la touche ; barres de PV/ATQ/DEF avec l'écart de la variante
+  (±4 %) ; qualité de l'exemplaire en étoiles (1 à 5) ; motif, finition, shiny ; on fait défiler ses
+  exemplaires. S'ouvre depuis le bestiaire et depuis le récapitulatif de run.
+- En ligne : secrets Supabase vérifiés en CI (sans les afficher) et injectés dans les builds web et APK,
+  client Supabase initialisé au démarrage, état du serveur affiché dans le Profil. Permission Internet
+  ajoutée à l'APK.
+
 ## 0.4.0 – 26/10/2026
 - Variantes procédurales : chaque carte obtenue a sa teinte, son motif (rayures, taches, anneaux, étoiles),
   parfois un éclat Shiny (1/40) ou une finition Dorée (1/100), Cristal ou Ombre (1/150), et des stats à ±4 %
