@@ -255,8 +255,9 @@ class _LoginFormState extends State<_LoginForm> {
       ),
       if (_codeSent) ...[
         const SizedBox(height: 8),
-        Text('E-mail envoyé à ${_email.text.trim()}. Saisis le code reçu'
-            '${kIsWeb ? ', ou clique sur le lien dans l\'e-mail depuis ce navigateur' : ''}.',
+        Text('E-mail envoyé à ${_email.text.trim()}. Ouvre-le '
+            '${kIsWeb ? 'dans ce navigateur' : 'sur ce téléphone'} et touche le lien « Sign in » : '
+            'tu seras connecté automatiquement. (S\'il contient un code, tu peux aussi le saisir ici.)',
             style: _small),
         const SizedBox(height: 8),
         TextField(
@@ -264,7 +265,7 @@ class _LoginFormState extends State<_LoginForm> {
           enabled: !_busy,
           keyboardType: TextInputType.number,
           style: const TextStyle(color: Colors.white, letterSpacing: 4, fontWeight: FontWeight.bold),
-          decoration: _field('Code à 6 chiffres', Icons.pin_outlined),
+          decoration: _field('Code (facultatif)', Icons.pin_outlined),
           onSubmitted: (_) => _verify(),
         ),
       ],

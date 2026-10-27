@@ -11,19 +11,18 @@ dans le projet Collectear. Aucune clé n'est à copier nulle part : les secrets 
 4. Vérification : menu **Table Editor** → les tables `profiles` et `owned_cards` apparaissent
    avec la mention « RLS enabled ».
 
-## 2. Adresse du jeu pour le lien de connexion (obligatoire pour le web)
+## 2. Adresses de retour du lien de connexion (obligatoire)
 Menu **Authentication** → **URL Configuration** :
 - **Site URL** : `https://clem427c.github.io/Collectear/`
-- **Redirect URLs** → **Add URL** : `https://clem427c.github.io/Collectear/**`
+- **Redirect URLs** → **Add URL**, deux fois :
+  - `https://clem427c.github.io/Collectear/**` (version web)
+  - `com.clem427c.collectear://login-callback` (APK : le lien ouvre directement l'appli)
 - **Save**.
 
-## 3. Code à 6 chiffres dans l'e-mail (obligatoire pour l'APK)
-Sur téléphone, l'appli ne peut pas recevoir le lien magique : on saisit le code reçu par e-mail.
-Menu **Authentication** → **Emails** (ou *Email Templates*) :
-- Modèle **Magic Link** : ajouter dans le corps la ligne
-  `<p>Ton code Collectear : <strong>{{ .Token }}</strong></p>`
-- Modèle **Confirm signup** : ajouter la même ligne (c'est l'e-mail reçu à la toute première connexion).
-- **Save** pour chacun.
+Rien à changer dans les modèles d'e-mail : l'e-mail par défaut (« Your sign-in link ») suffit.
+Sur téléphone, ouvrir l'e-mail **sur le téléphone où l'APK est installé** et toucher « Sign in ».
+(Modifier les modèles, par exemple pour ajouter un code à 6 chiffres, demande un SMTP personnel :
+ce sera à faire avant le lancement, voir plus bas.)
 
 ## Limites à connaître
 - L'envoi d'e-mails intégré de Supabase est limité (quelques e-mails par heure) : suffisant pour tester,
@@ -33,6 +32,6 @@ Menu **Authentication** → **Emails** (ou *Email Templates*) :
 
 ## Tester
 1. Ouvrir le jeu → onglet **Profil** → « Compte en ligne ».
-2. Saisir son adresse → **Recevoir un code** → saisir le code (ou, sur ordinateur, cliquer le lien).
+2. Saisir son adresse → **Recevoir un code** → ouvrir l'e-mail sur le même appareil et toucher « Sign in ».
 3. Le Profil affiche « Collection sauvegardée en ligne (N exemplaires) » et un code ami en ligne.
 4. Se connecter avec la même adresse sur un autre appareil (APK ↔ web) : les cartes s'y ajoutent.

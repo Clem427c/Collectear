@@ -8,7 +8,8 @@
   (ou un lien magique sur le web). Affiche le compte, le code ami en ligne et l'état de la synchro.
 - Synchro de la collection : union entre l'appareil et le serveur (rien n'est jamais supprimé), au
   démarrage, à la connexion, sur le bouton « Synchroniser » ; les cartes d'une run partent en ligne à la fin.
-- `docs/SUPABASE.md` : les 3 réglages à faire une fois dans le tableau de bord Supabase.
+- APK : le lien « Sign in » de l'e-mail ouvre directement l'appli et connecte (plus besoin de code).
+- `docs/SUPABASE.md` : les 2 réglages à faire une fois dans le tableau de bord Supabase.
 
 ## 0.5.0 – 27/10/2026
 - Revue des 300 illustrations générées par Clem : 284 validées, 16 à refaire (liste dans ROADMAP.md).

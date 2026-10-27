@@ -39,7 +39,8 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
 - [x] Schéma SQL (profils avec code ami, collection) avec RLS dans `supabase/schema.sql`, testé sur PostgreSQL (27/10)
 - [x] Connexion e-mail sans mot de passe (code à 6 chiffres, ou lien magique sur le web) dans le Profil (27/10)
 - [x] Synchro de la collection (union, rien n'est supprimé) au démarrage, à la connexion et en fin de run (27/10)
-- [ ] **Clem** : faire les 3 réglages de `docs/SUPABASE.md` (coller le SQL, adresse du site, code dans l'e-mail)
+- [x] APK : le lien de l'e-mail ouvre l'appli (Supabase n'autorise plus à modifier les modèles d'e-mail sans SMTP)
+- [ ] **Clem** : faire les 2 réglages de `docs/SUPABASE.md` (coller le SQL, adresses de retour)
 - [ ] **Prochaine session** (après les réglages de Clem) : pseudo modifiable, stats du profil en ligne,
   puis validation serveur des récompenses
 - [ ] Connexion Google (attend la réponse de Clem, voir « Questions »)
@@ -100,8 +101,8 @@ Priorité basse (à toi de juger) :
 - Pour la connexion Google, il faudra créer des identifiants OAuth dans Google Cloud et les coller dans
   Supabase (Authentication → Providers → Google). Je commencerai par l'e-mail (aucun réglage). Tu valides ?
 - Dans le Profil, la ligne « Compte en ligne » doit afficher « Serveur joignable » : dis-moi si ce n'est pas le cas.
-- **À faire (5 min)** : les 3 réglages de `docs/SUPABASE.md`. Sans eux, la connexion renvoie une erreur
-  « Base pas encore créée » et, sur l'APK, l'e-mail ne contient pas de code.
+- **À faire (5 min)** : les 2 réglages de `docs/SUPABASE.md` (coller le SQL, ajouter les 2 adresses de retour).
+  Plus besoin de toucher aux modèles d'e-mail.
 - PROVISOIRE : la collection locale appartient à l'appareil. Si un 2e compte se connecte sur le même
   téléphone, les cartes locales partent aussi sur ce compte. Préfères-tu qu'à la déconnexion on vide
   la collection locale (elle reviendra à la reconnexion) ?

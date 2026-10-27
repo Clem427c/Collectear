@@ -41,6 +41,26 @@ jobs:
           grep -q 'android.permission.INTERNET' "$m" || \
             sed -i 's|<application|<uses-permission android:name="android.permission.INTERNET"/>\n    <application|' "$m"
           grep -n 'INTERNET' "$m"
+          # Lien de connexion de l'e-mail → ouvre l'appli (com.clem427c.collectear://login-callback).
+          # Le deep linking de Flutter est coupé : c'est supabase_flutter (app_links) qui lit le lien.
+          python3 - "$m" <<'PY'
+          import sys
+          p = sys.argv[1]
+          s = open(p).read()
+          if 'login-callback' not in s:
+              block = '''            <intent-filter>
+                          <action android:name="android.intent.action.VIEW" />
+                          <category android:name="android.intent.category.DEFAULT" />
+                          <category android:name="android.intent.category.BROWSABLE" />
+                          <data android:scheme="com.clem427c.collectear" android:host="login-callback" />
+                      </intent-filter>
+                      <meta-data android:name="flutter_deeplinking_enabled" android:value="false" />
+                  </activity>'''
+              assert s.count('</activity>') == 1, 'une seule activité attendue'
+              s = s.replace('</activity>', block.strip(), 1)
+              open(p, 'w').write(s)
+          PY
+          grep -n 'login-callback\|deeplinking' "$m"
 
       - name: Illustrations (art/raw → assets/cards)
         run: |

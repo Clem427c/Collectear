@@ -79,10 +79,15 @@ class Online {
 
   // --- Connexion par e-mail (code à 6 chiffres ou lien magique) ---
 
-  /// Envoie l'e-mail de connexion. Sur le web, le lien ramène sur la page du jeu.
+  /// Lien de retour de l'APK : ouvre l'appli (intent-filter ajouté au manifeste par la CI).
+  /// À déclarer dans Supabase → Authentication → URL Configuration → Redirect URLs.
+  static const appRedirect = 'com.clem427c.collectear://login-callback';
+
+  /// Envoie l'e-mail de connexion. Le lien ramène sur la page du jeu (web) ou ouvre l'appli (APK) ;
+  /// supabase_flutter récupère alors la session tout seul.
   static Future<String?> sendCode(String email) async {
     try {
-      final redirect = kIsWeb ? '${Uri.base.origin}${Uri.base.path}' : null;
+      final redirect = kIsWeb ? '${Uri.base.origin}${Uri.base.path}' : appRedirect;
       await _client.auth.signInWithOtp(email: email.trim(), emailRedirectTo: redirect);
       return null;
     } on AuthException catch (e) {
