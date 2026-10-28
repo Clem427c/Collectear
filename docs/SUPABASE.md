@@ -24,14 +24,48 @@ Menu **Authentication** → **URL Configuration** :
   - `com.clem427c.collectear://login-callback` (APK : le lien ouvre directement l'appli)
 - **Save**.
 
-Rien à changer dans les modèles d'e-mail : l'e-mail par défaut (« Your sign-in link ») suffit.
-Sur téléphone, ouvrir l'e-mail **sur le téléphone où l'APK est installé** et toucher « Sign in ».
-(Modifier les modèles, par exemple pour ajouter un code à 6 chiffres, demande un SMTP personnel :
-ce sera à faire avant le lancement, voir plus bas.)
+Avec l'e-mail par défaut (« Your sign-in link »), il faut ouvrir l'e-mail **sur l'appareil qui l'a
+demandé** et toucher « Sign in ». Pour se connecter depuis n'importe quel appareil, voir le §3 (code).
+
+## 3. Recevoir un CODE dans l'e-mail (recommandé, ~10 min)
+Le lien « Sign in » de l'e-mail ne connecte **que l'appareil qui a demandé l'e-mail** (sécurité de
+Supabase) : demandé sur PC, ouvert sur le téléphone, il ne connecte pas le PC. Un code à 6 chiffres,
+lui, se recopie sur n'importe quel appareil. L'appli a déjà la case pour saisir le code ; il faut juste
+que l'e-mail le contienne. Supabase n'autorise à modifier l'e-mail qu'avec un serveur d'envoi
+personnel (SMTP). Le plus simple : ton Gmail (gratuit, ~500 e-mails par jour).
+
+**a. Mot de passe d'application Gmail** (ce n'est pas ton vrai mot de passe, il ne sert qu'à l'envoi)
+1. https://myaccount.google.com → **Sécurité** → active la **Validation en deux étapes** si ce n'est pas fait.
+2. Cherche « **Mots de passe des applications** » (barre de recherche du compte Google), crée-en un
+   nommé « Supabase » → Google affiche 16 lettres : copie-les (à ne mettre nulle part ailleurs).
+
+**b. Supabase → envoi par ton Gmail** : menu **Authentication** → **Emails** → onglet **SMTP Settings**
+(selon la version : Project Settings → Authentication → SMTP) → **Enable custom SMTP** :
+- Sender email : ton adresse Gmail · Sender name : `Collectear`
+- Host : `smtp.gmail.com` · Port : `587`
+- Username : ton adresse Gmail · Password : les 16 lettres du mot de passe d'application
+- **Save**.
+
+**c. Modèles d'e-mail** : même menu **Emails** → onglet **Templates**. Dans **Magic Link** ET dans
+**Confirm signup** (le 1er e-mail d'un nouveau compte utilise ce modèle), remplace le contenu par :
+
+```html
+<h2>Ton code Collectear</h2>
+<p>Saisis ce code dans le jeu :</p>
+<p style="font-size:32px;font-weight:bold;letter-spacing:6px">{{ .Token }}</p>
+<p>Ou, sur l'appareil où tu as demandé la connexion : <a href="{{ .ConfirmationURL }}">me connecter</a></p>
+```
+Sujet conseillé : `Ton code Collectear`. **Save** pour chaque modèle.
+
+**d. Tester** : web → ⚙ → Compte → ton adresse → **Recevoir un code** → recopie le code de l'e-mail
+(même s'il est lu sur le téléphone) → **Valider**.
+
+Bonus : avec ton SMTP, la limite de Supabase (2 ou 3 e-mails par heure) disparaît (réglable dans
+Authentication → Rate Limits).
 
 ## Limites à connaître
-- L'envoi d'e-mails intégré de Supabase est limité (quelques e-mails par heure) : suffisant pour tester,
-  pas pour le lancement. Avant la publication, il faudra brancher un service d'envoi (SMTP) — on en reparlera.
+- Sans le §3, l'envoi d'e-mails intégré de Supabase est limité (quelques e-mails par heure). Pour le
+  lancement public, un service d'envoi dédié (Brevo, Resend…) sera plus adapté que Gmail.
 - Si un e-mail n'arrive pas : regarder les indésirables, puis **Authentication → Users** pour voir
   si le compte a été créé.
 

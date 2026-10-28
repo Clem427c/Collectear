@@ -139,7 +139,7 @@ Future<void> showFirstLaunchLogin(BuildContext context, AppData data) async {
                   : const Column(mainAxisSize: MainAxisSize.min, children: [
                       Text(
                         'Connecte-toi avec ton adresse e-mail pour retrouver tes cartes sur tous tes appareils. '
-                        'Pas de mot de passe : tu reçois un lien par e-mail.',
+                        'Pas de mot de passe : tu reçois un code par e-mail.',
                         style: TextStyle(color: Colors.white70),
                       ),
                       SizedBox(height: 12),

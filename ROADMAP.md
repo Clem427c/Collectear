@@ -69,6 +69,8 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
 - [x] Classement entre amis (cartes différentes, exemplaires, record d'ennemis) (28/10)
 - [x] Échanges à plusieurs cartes : de 1 à 5 de chaque côté (2 contre 1…) (28/10)
 - [x] Cartes favorites (étoile sur la fiche d'un exemplaire) : ni offertes ni demandées, synchro en ligne (28/10)
+- [ ] **Clem** : code à 6 chiffres dans l'e-mail de connexion (`docs/SUPABASE.md` §3 : Gmail en SMTP +
+  modèles d'e-mail). Sans ça, le lien ne connecte que l'appareil qui l'a demandé.
 - [ ] Connexion Google (attend la réponse de Clem, voir « Questions »)
 - [x] Profil d'un ami : progression par rareté, sa collection en grille (filtres « il a, pas toi »,
   « ses doublons »), demander une carte directement depuis son profil (28/10)
@@ -136,7 +138,10 @@ Priorité basse (à toi de juger) :
 - PROVISOIRE : une run rapporte ≈ 30 à 50 pièces (≈ 2 au sol par chunk, +2 par ennemi, +10 par lieu).
   Énergie = 60 pièces, puis +40 à chaque achat du jour (60, 100, 140, 180, 220), 5 par jour au plus.
   Achat possible dès qu'il manque une énergie, sans dépasser 10 (décision de Clem du 28/10). Prix OK ?
-- Les pièces restent sur l'appareil pour l'instant (pas encore sauvegardées en ligne).
+- Les pièces et les énergies restent sur l'appareil pour l'instant : elles sont perdues si on
+  désinstalle l'appli. **Question** : je les sauvegarde en ligne (calculées par le serveur à partir des
+  runs, donc impossibles à tricher) ? Les stats du Profil, elles, sont en ligne depuis le 28/10 (les runs
+  jouées avant n'avaient pas été enregistrées par le serveur).
 
 ### Étoiles des exemplaires (28/10)
 - Les étoiles mesurent maintenant la rareté de l'APPARENCE (avant : seulement les stats ±4 %, d'où un

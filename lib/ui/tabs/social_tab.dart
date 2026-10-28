@@ -172,7 +172,9 @@ class _Online extends StatelessWidget {
 void _snack(BuildContext context, String text, {bool error = false}) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(text), backgroundColor: error ? AppColors.coral : AppColors.night));
+    ..showSnackBar(SnackBar(
+        content: Text(text, style: const TextStyle(color: Colors.white)),
+        backgroundColor: error ? AppColors.coral : AppColors.night));
 }
 
 Widget _avatar(String name) {

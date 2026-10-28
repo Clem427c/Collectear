@@ -1,5 +1,12 @@
 # Journal des versions
 
+## 0.13.4 – 28/10/2026 (soir) – connexion et lisibilité
+- Messages en bas d'écran lisibles partout (texte blanc sur fond violet foncé ; avant : gris foncé
+  sur bleu nuit, par exemple « Ajoute d'abord un ami »).
+- Connexion : l'écran parle maintenant du code reçu par e-mail ; il précise que le lien de l'e-mail ne
+  fonctionne que sur l'appareil qui l'a demandé. `docs/SUPABASE.md` §3 : mettre le code dans l'e-mail
+  (Gmail en serveur d'envoi + modèles d'e-mail).
+
 ## 0.13.3 – 28/10/2026 (soir) – étoiles des exemplaires
 - Les étoiles d'un exemplaire indiquent maintenant la rareté de son apparence : 1 ★ uni, rayures ou
   taches ; 2 ★ motif étoiles ou anneaux ; 3 ★ Shiny ; 4 ★ Dorée, Cristal ou Ombre ; 5 ★ finition + Shiny.

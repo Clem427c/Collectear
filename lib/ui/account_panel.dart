@@ -72,7 +72,8 @@ InputDecoration _field(String label, IconData icon) => InputDecoration(
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
     );
 
-/// Connexion sans mot de passe : on reçoit un e-mail avec un code (et un lien magique sur le web).
+/// Connexion sans mot de passe : on reçoit un e-mail avec un code à saisir (et un lien, valable
+/// seulement sur l'appareil qui a fait la demande).
 class _LoginForm extends StatefulWidget {
   const _LoginForm();
 
@@ -140,9 +141,12 @@ class _LoginFormState extends State<_LoginForm> {
       ),
       if (_codeSent) ...[
         const SizedBox(height: 8),
-        Text('E-mail envoyé à ${_email.text.trim()}. Ouvre-le '
-            '${kIsWeb ? 'dans ce navigateur' : 'sur ce téléphone'} et touche le lien « Sign in » : '
-            'tu seras connecté automatiquement. (S\'il contient un code, tu peux aussi le saisir ici.)',
+        // Retour de Clem du 28/10 : le lien de l'e-mail ne connecte que l'appareil qui l'a demandé
+        // (sécurité PKCE) ; le code, lui, se saisit n'importe où (il faut le modèle d'e-mail avec
+        // {{ .Token }}, voir docs/SUPABASE.md §3).
+        Text('E-mail envoyé à ${_email.text.trim()}. Saisis ci-dessous le code qu\'il contient. '
+            '(S\'il ne contient qu\'un lien, ouvre-le ${kIsWeb ? 'dans ce navigateur' : 'sur ce téléphone'} : '
+            'le lien ne marche que sur l\'appareil qui l\'a demandé.)',
             style: _small),
         const SizedBox(height: 8),
         TextField(
@@ -150,7 +154,7 @@ class _LoginFormState extends State<_LoginForm> {
           enabled: !_busy,
           keyboardType: TextInputType.number,
           style: const TextStyle(color: Colors.white, letterSpacing: 4, fontWeight: FontWeight.bold),
-          decoration: _field('Code (facultatif)', Icons.pin_outlined),
+          decoration: _field('Code reçu par e-mail', Icons.pin_outlined),
           onSubmitted: (_) => _verify(),
         ),
       ],

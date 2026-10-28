@@ -22,6 +22,12 @@ ThemeData buildTheme() {
   return ThemeData(
     colorScheme: scheme,
     scaffoldBackgroundColor: AppColors.ink,
+    // Retour de Clem du 28/10 : messages en bas d'écran illisibles (texte sombre sur fond sombre).
+    snackBarTheme: const SnackBarThemeData(
+      backgroundColor: AppColors.night,
+      contentTextStyle: TextStyle(color: Colors.white, fontSize: 14),
+      actionTextColor: AppColors.gold,
+    ),
     useMaterial3: true,
   );
 }
