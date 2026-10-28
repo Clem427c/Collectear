@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 import 'app_data.dart';
+import 'error_report.dart';
 import 'ui/home_shell.dart';
 import 'ui/theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  ErrorReport.install();
   runApp(const CollectearApp());
 }
 
@@ -25,6 +27,7 @@ class _CollectearAppState extends State<CollectearApp> {
       title: 'Collectear',
       debugShowCheckedModeBanner: false,
       theme: buildTheme(),
+      builder: (context, child) => ErrorBanner(child: child ?? const SizedBox.shrink()),
       home: FutureBuilder<AppData>(
         future: _data,
         builder: (context, snap) {

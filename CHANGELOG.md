@@ -1,5 +1,15 @@
 # Journal des versions
 
+## 0.14.0 – 28/10/2026 (soir) – variantes spectaculaires, pseudo, test web
+- Variantes bien plus visibles : motifs marqués, anneaux en ondes et étoiles en orbite (animés),
+  finitions Dorée / Cristal / Ombre avec aura, cadre et reflet qui balaie la carte, Shiny avec cadre
+  arc-en-ciel tournant et éclats qui scintillent.
+- Guide → « Voir toutes les variantes » : n'importe quelle carte dans ses 10 apparences.
+- Première connexion : on choisit son pseudo (fini les « Explorateur » qui s'ajoutent entre eux).
+- Vitrine de test (`supabase/showcase.sql`) : donne à un compte les 300 cartes en 10 exemplaires.
+- CI : la version web est testée à chaque build dans un navigateur (téléphone et PC) : une run est
+  lancée, on vérifie que l'image bouge avec les flèches, captures dans le journal.
+
 ## 0.13.4 – 28/10/2026 (soir) – connexion et lisibilité
 - Messages en bas d'écran lisibles partout (texte blanc sur fond violet foncé ; avant : gris foncé
   sur bleu nuit, par exemple « Ajoute d'abord un ami »).

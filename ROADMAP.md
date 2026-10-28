@@ -71,6 +71,9 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
 - [x] Cartes favorites (étoile sur la fiche d'un exemplaire) : ni offertes ni demandées, synchro en ligne (28/10)
 - [ ] **Clem** : code à 6 chiffres dans l'e-mail de connexion (`docs/SUPABASE.md` §3 : Gmail en SMTP +
   modèles d'e-mail). Sans ça, le lien ne connecte que l'appareil qui l'a demandé.
+- [x] Pseudo choisi à la première connexion (28/10)
+- [x] Variantes plus visibles + galerie des variantes dans le Guide (28/10)
+- [ ] **Clem** : vitrine de test sur son compte (`supabase/showcase.sql` puis `select public.grant_showcase('…')`)
 - [ ] Connexion Google (attend la réponse de Clem, voir « Questions »)
 - [x] Profil d'un ami : progression par rareté, sa collection en grille (filtres « il a, pas toi »,
   « ses doublons »), demander une carte directement depuis son profil (28/10)

@@ -109,6 +109,11 @@ def session(p, url: str, width: int, height: int, tag: str, problems: list, gall
     after = grab()
     ratio = changed_ratio(before, after)
     print(f"MOUVEMENT ({tag}) : {ratio:.0%} de l'image a changé après les flèches")
+    try:
+        if page.get_by_text("Erreur technique", exact=False).count() > 0:
+            problems.append(f"{tag} : bandeau « Erreur technique » affiché")
+    except Exception:
+        pass
     if ratio < 0.05:
         problems.append(f"{tag} : l'image ne change presque pas après les flèches ({ratio:.0%})")
     shot("2-run-avant", before)
