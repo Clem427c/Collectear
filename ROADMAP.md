@@ -59,8 +59,8 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
 - [x] Stats du profil en ligne (fonction `my_stats`, fusionnées avec celles de l'appareil) (28/10)
 - [x] Anti-triche, 1re partie : runs ouvertes/fermées par le serveur (`start_run`/`finish_run`) qui ajoute
   lui-même les cartes ; 15 runs/jour, 3 cartes/run, ennemis plausibles ; schéma testé en CI sur PostgreSQL (28/10)
-- [ ] **Clem** : recoller `supabase/schema.sql` (mise à jour 0.10 : table `runs` absente au 28/10) — la CI dit si la base est à jour
-- [ ] **Clem** : vérifier les adresses de retour (`docs/SUPABASE.md` §2), invérifiables depuis la CI
+- [x] **Clem** : schéma recollé (28/10) : toutes les tables et fonctions présentes, vérifié par la CI
+- [x] **Clem** : adresses de retour vérifiées (28/10)
 - [ ] Anti-triche, 2e partie : fermer l'ajout direct de cartes (attend la réponse de Clem sur les cartes
   gagnées hors ligne), puis tirage des cartes par le serveur (rareté contrôlée)
 - [x] Amis : ajout par code ami, demandes (accepter/refuser/annuler), retrait (28/10)
