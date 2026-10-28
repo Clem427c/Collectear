@@ -1,5 +1,10 @@
 # Journal des versions
 
+## 0.14.1 – 28/10/2026 (soir)
+- Fiche d'une carte (depuis le bestiaire) : glisser à gauche / à droite passe à la carte possédée
+  suivante / précédente, dans l'ordre des numéros (les cartes pas encore obtenues sont sautées).
+  Pour changer d'exemplaire : les flèches de part et d'autre des points sous l'illustration.
+
 ## 0.14.0 – 28/10/2026 (soir) – variantes spectaculaires, pseudo, test web
 - Variantes bien plus visibles : motifs marqués, anneaux en ondes et étoiles en orbite (animés),
   finitions Dorée / Cristal / Ombre avec aura, cadre et reflet qui balaie la carte, Shiny avec cadre

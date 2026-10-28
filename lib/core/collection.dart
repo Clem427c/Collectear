@@ -70,6 +70,9 @@ class Collection {
 
   int get distinctCount => variants.length;
 
+  /// Numéros des cartes possédées, du plus petit au plus grand (défilement des fiches).
+  List<int> get ownedIdsInOrder => [for (final e in variants.entries) if (e.value.isNotEmpty) e.key]..sort();
+
   int? get companionId => _prefs.getInt(_kCompanion);
 
   Future<void> setCompanion(int? id) async {

@@ -721,6 +721,15 @@ void main() {
       expect(leaderboardRanks(rows), [1, 2, 2]);
     });
 
+    test('fiches : défilement dans l\'ordre des numéros, cartes non possédées sautées', () async {
+      SharedPreferences.setMockInitialValues({});
+      final col = await Collection.load();
+      await col.addAll(const [(250, 1), (12, 2), (7, 3), (12, 4)]);
+      expect(col.ownedIdsInOrder, [7, 12, 250]);
+      await col.removeAll(const [(7, 3)]);
+      expect(col.ownedIdsInOrder, [12, 250]);
+    });
+
     test('favoris : seulement des exemplaires possédés, union, retirés avec la carte', () async {
       SharedPreferences.setMockInitialValues({});
       final col = await Collection.load();

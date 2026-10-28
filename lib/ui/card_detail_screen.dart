@@ -48,6 +48,48 @@ Future<void> openCardDetail(
   ));
 }
 
+/// Fiche détaillée qu'on fait défiler d'une carte possédée à l'autre en glissant vers la gauche ou
+/// la droite, dans l'ordre des numéros (retour de Clem du 28/10). Les cartes pas encore obtenues sont
+/// sautées : on passe directement au numéro possédé le plus proche.
+Future<void> openCardBrowser(BuildContext context, AppData data, int startId, {VoidCallback? onChanged}) {
+  final ids = data.collection.ownedIdsInOrder;
+  final start = ids.indexOf(startId);
+  final controller = PageController(initialPage: start < 0 ? 0 : start);
+  return Navigator.of(context).push(PageRouteBuilder<void>(
+    opaque: false,
+    barrierColor: Colors.black54,
+    transitionDuration: const Duration(milliseconds: 380),
+    reverseTransitionDuration: const Duration(milliseconds: 220),
+    pageBuilder: (_, __, ___) => PageView.builder(
+      controller: controller,
+      itemCount: ids.length,
+      itemBuilder: (_, i) {
+        final card = data.pool.byId(ids[i]);
+        if (card == null) return const SizedBox.shrink();
+        return CardDetailScreen(
+          key: ValueKey(card.id),
+          card: card,
+          variantSeeds: data.collection.variants[card.id] ?? const [],
+          canFavorite: true,
+          swipeExemplaires: false,
+          isCompanion: data.collection.companionId == card.id,
+          onEquip: () async {
+            await data.collection.setCompanion(card.id);
+            onChanged?.call();
+          },
+        );
+      },
+    ),
+    transitionsBuilder: (_, anim, __, child) {
+      final curved = CurvedAnimation(parent: anim, curve: Curves.easeOutBack, reverseCurve: Curves.easeIn);
+      return FadeTransition(
+        opacity: anim,
+        child: ScaleTransition(scale: Tween(begin: 0.85, end: 1.0).animate(curved), child: child),
+      );
+    },
+  )).whenComplete(controller.dispose);
+}
+
 /// Écran de carte détaillé : grande illustration (teintée selon la variante), stats, boost et variante.
 class CardDetailScreen extends StatefulWidget {
   const CardDetailScreen({
@@ -58,6 +100,7 @@ class CardDetailScreen extends StatefulWidget {
     this.isCompanion = false,
     this.onEquip,
     this.canFavorite = false,
+    this.swipeExemplaires = true,
   });
   final GameCard card;
   final List<int> variantSeeds;
@@ -67,6 +110,10 @@ class CardDetailScreen extends StatefulWidget {
 
   /// Exemplaires du joueur : bouton étoile pour mettre l'exemplaire affiché en favori.
   final bool canFavorite;
+
+  /// Glisser sur l'illustration change d'exemplaire. Coupé dans le défilement des cartes
+  /// ([openCardBrowser]) : là, glisser change de carte et des flèches changent d'exemplaire.
+  final bool swipeExemplaires;
 
   @override
   State<CardDetailScreen> createState() => _CardDetailScreenState();
@@ -143,6 +190,7 @@ class _CardDetailScreenState extends State<CardDetailScreen> with TickerProvider
                           height: 300,
                           child: PageView.builder(
                             controller: _pages,
+                            physics: widget.swipeExemplaires ? null : const NeverScrollableScrollPhysics(),
                             itemCount: _items.length,
                             onPageChanged: (i) => setState(() => _index = i),
                             itemBuilder: (_, i) => _illustration(_items[i], active: i == _index),
@@ -260,12 +308,23 @@ class _CardDetailScreenState extends State<CardDetailScreen> with TickerProvider
     ]);
   }
 
+  void _goTo(int i) =>
+      _pages.animateToPage(i.clamp(0, _items.length - 1), duration: const Duration(milliseconds: 280), curve: Curves.easeOut);
+
   Widget _dots(Color color) {
+    final arrows = !widget.swipeExemplaires;
     return Padding(
       padding: const EdgeInsets.only(top: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          if (arrows)
+            IconButton(
+              tooltip: 'Exemplaire précédent',
+              visualDensity: VisualDensity.compact,
+              onPressed: _index > 0 ? () => _goTo(_index - 1) : null,
+              icon: const Icon(Icons.chevron_left, color: Colors.white),
+            ),
           for (var i = 0; i < math.min(_items.length, 12); i++)
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
@@ -276,6 +335,13 @@ class _CardDetailScreenState extends State<CardDetailScreen> with TickerProvider
                 color: i == _index ? color : Colors.white24,
                 borderRadius: BorderRadius.circular(4),
               ),
+            ),
+          if (arrows)
+            IconButton(
+              tooltip: 'Exemplaire suivant',
+              visualDensity: VisualDensity.compact,
+              onPressed: _index < _items.length - 1 ? () => _goTo(_index + 1) : null,
+              icon: const Icon(Icons.chevron_right, color: Colors.white),
             ),
         ],
       ),
