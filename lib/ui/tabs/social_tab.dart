@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -13,6 +15,9 @@ import '../widgets.dart';
 
 const _onlineNote = 'Prototype : le format des combats reste à définir.';
 const _panel = Color(0xFF3A2D86);
+
+/// Nombre d'actions qui attendent le joueur (demandes d'ami, échanges reçus) : pastille de l'onglet Social en bas.
+final socialPending = ValueNotifier<int>(0);
 
 /// Amis et échanges chargés depuis le serveur, partagés par les onglets Amis et Échanges.
 class _SocialModel extends ChangeNotifier {
@@ -37,6 +42,7 @@ class _SocialModel extends ChangeNotifier {
     leaderboard = l ?? leaderboard;
     error = e1 ?? e2;
     loading = false;
+    socialPending.value = pending;
     notifyListeners();
   }
 }
@@ -53,12 +59,19 @@ class SocialTab extends StatefulWidget {
 class _SocialTabState extends State<SocialTab> {
   final _model = _SocialModel();
   String? _lastUser;
+  Timer? _poll;
 
   @override
   void initState() {
     super.initState();
     Online.revision.addListener(_onOnline);
     _onOnline();
+    // Pas encore de notifications push : on regarde régulièrement s'il y a du nouveau
+    // (seulement quand l'appli est au premier plan), pour les pastilles.
+    _poll = Timer.periodic(socialRefreshInterval, (_) {
+      final state = WidgetsBinding.instance.lifecycleState;
+      if (state == null || state == AppLifecycleState.resumed) _model.refresh();
+    });
   }
 
   /// Recharge à la connexion (ou au changement de compte).
@@ -69,6 +82,7 @@ class _SocialTabState extends State<SocialTab> {
       _model.friends = [];
       _model.trades = [];
       _model.leaderboard = [];
+      socialPending.value = 0;
       if (u != null) _model.refresh();
       if (mounted) setState(() {});
     }
@@ -76,6 +90,7 @@ class _SocialTabState extends State<SocialTab> {
 
   @override
   void dispose() {
+    _poll?.cancel();
     Online.revision.removeListener(_onOnline);
     _model.dispose();
     super.dispose();

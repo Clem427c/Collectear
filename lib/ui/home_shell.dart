@@ -35,6 +35,7 @@ class _HomeShellState extends State<HomeShell> {
     _Tab('Social', Icons.groups),
   ];
   static const _playIndex = 2;
+  static const _socialIndex = 4;
 
   int _index = _playIndex;
 
@@ -88,11 +89,15 @@ class _HomeShellState extends State<HomeShell> {
           ),
         ),
       ),
-      bottomNavigationBar: _BottomBar(
-        tabs: _tabs,
-        index: _index,
-        playIndex: _playIndex,
-        onTap: (i) => setState(() => _index = i),
+      bottomNavigationBar: ValueListenableBuilder<int>(
+        valueListenable: socialPending,
+        builder: (context, pending, _) => _BottomBar(
+          tabs: _tabs,
+          index: _index,
+          playIndex: _playIndex,
+          badges: {_socialIndex: pending},
+          onTap: (i) => setState(() => _index = i),
+        ),
       ),
     );
   }
@@ -160,10 +165,19 @@ class _Currency extends StatelessWidget {
 }
 
 class _BottomBar extends StatelessWidget {
-  const _BottomBar({required this.tabs, required this.index, required this.playIndex, required this.onTap});
+  const _BottomBar({
+    required this.tabs,
+    required this.index,
+    required this.playIndex,
+    required this.onTap,
+    this.badges = const {},
+  });
   final List<_Tab> tabs;
   final int index;
   final int playIndex;
+
+  /// Pastille rouge (nombre) par onglet.
+  final Map<int, int> badges;
   final ValueChanged<int> onTap;
 
   @override
@@ -186,6 +200,7 @@ class _BottomBar extends StatelessWidget {
                     tab: tabs[i],
                     selected: i == index,
                     highlight: i == playIndex,
+                    badge: badges[i] ?? 0,
                     onTap: () => onTap(i),
                   ),
                 ),
@@ -198,10 +213,17 @@ class _BottomBar extends StatelessWidget {
 }
 
 class _TabButton extends StatelessWidget {
-  const _TabButton({required this.tab, required this.selected, required this.highlight, required this.onTap});
+  const _TabButton({
+    required this.tab,
+    required this.selected,
+    required this.highlight,
+    required this.onTap,
+    this.badge = 0,
+  });
   final _Tab tab;
   final bool selected;
   final bool highlight;
+  final int badge;
   final VoidCallback onTap;
 
   @override
@@ -220,7 +242,12 @@ class _TabButton extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(tab.icon, color: color, size: highlight ? 32 : (selected ? 28 : 24)),
+            Badge(
+              isLabelVisible: badge > 0,
+              label: Text('$badge'),
+              backgroundColor: AppColors.coral,
+              child: Icon(tab.icon, color: color, size: highlight ? 32 : (selected ? 28 : 24)),
+            ),
             const SizedBox(height: 2),
             Text(tab.label,
                 style: TextStyle(

@@ -8,6 +8,9 @@ import 'cards.dart';
 const String friendCodeAlphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const int friendCodeLength = 8;
 
+/// Fréquence à laquelle l'onglet Social recharge amis et échanges (en attendant les notifications push).
+const Duration socialRefreshInterval = Duration(seconds: 90);
+
 /// Code ami saisi par le joueur : majuscules, sans espaces ni tirets.
 String normalizeFriendCode(String s) => s.toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
 
