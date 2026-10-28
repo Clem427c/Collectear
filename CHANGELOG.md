@@ -1,5 +1,13 @@
 # Journal des versions
 
+## 0.12.1 – 28/10/2026 (après-midi) – profil des amis
+- Toucher un ami (ou sa ligne du classement) ouvre son profil : code ami, cartes, exemplaires, record,
+  progression par rareté, et combien de cartes il a que tu n'as pas (et l'inverse).
+- Sa collection en grille, filtrable (toutes / il a, pas toi / ses doublons). Toucher une carte montre
+  ses exemplaires : les voir en grand, ou en demander un (l'échange s'ouvre avec la carte déjà cochée).
+- Pastille rouge sur l'onglet Social de la barre du bas quand une demande d'ami ou un échange attend
+  ta réponse ; amis et échanges rechargés toutes les 90 s quand l'appli est ouverte.
+
 ## 0.12.0 – 28/10/2026 (après-midi) – échanges à plusieurs cartes et favoris
 - Échanges de 1 à 5 cartes de chaque côté (2 contre 1, 3 contre 2…) : on coche les cartes de chaque
   côté, l'échange se fait en une fois quand l'ami accepte.

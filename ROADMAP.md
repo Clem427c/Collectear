@@ -67,7 +67,10 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
 - [x] Échanges à plusieurs cartes : de 1 à 5 de chaque côté (2 contre 1…) (28/10)
 - [x] Cartes favorites (étoile sur la fiche d'un exemplaire) : ni offertes ni demandées, synchro en ligne (28/10)
 - [ ] Connexion Google (attend la réponse de Clem, voir « Questions »)
-- [ ] Profil d'un ami (voir sa collection en détail) ; notifications d'échange (push) — plus tard
+- [x] Profil d'un ami : progression par rareté, sa collection en grille (filtres « il a, pas toi »,
+  « ses doublons »), demander une carte directement depuis son profil (28/10)
+- [x] Pastille Social dans la barre du bas, amis et échanges rechargés toutes les 90 s (28/10)
+- [ ] Notifications d'échange (push) — plus tard
 - [ ] **Prochaine session** : traiter les réponses de Clem (hors ligne, pseudos, collisions, énergies) ;
   sinon la pub (étape 4, demande un compte AdMob créé par Clem)
 
