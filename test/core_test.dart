@@ -520,6 +520,72 @@ void main() {
     });
   });
 
+  group('Profil en ligne', () {
+    test('pseudo : nettoyage et validation', () {
+      expect(normalizePseudo('  Clem   le   Grand '), 'Clem le Grand');
+      expect(pseudoError('Clem'), isNull);
+      expect(pseudoError('Élodie-Marie'), isNull);
+      expect(pseudoError("L'Explorateur_2"), isNull);
+      expect(pseudoError('   '), isNotNull);
+      expect(pseudoError('A'), isNotNull);
+      expect(pseudoError('A' * 24), isNull);
+      expect(pseudoError('A' * 25), isNotNull);
+      expect(pseudoError('Clem<script>'), isNotNull);
+      expect(pseudoError('Clem 😀'), isNotNull);
+    });
+
+    test('pseudo : le pseudo choisi l\'emporte sur celui par défaut', () {
+      expect(reconcilePseudo(local: defaultPseudo, remote: 'Clem'), ('Clem', false));
+      expect(reconcilePseudo(local: 'Clem', remote: defaultPseudo), ('Clem', true));
+      expect(reconcilePseudo(local: 'Clem', remote: null), ('Clem', true));
+      expect(reconcilePseudo(local: 'Clem', remote: 'Clémence'), ('Clémence', false));
+      expect(reconcilePseudo(local: defaultPseudo, remote: null), (defaultPseudo, false));
+    });
+
+    test('statistiques : lecture du serveur et fusion avec l\'appareil', () {
+      final online = ProfileStats.fromRpc([
+        {'runs': 4, 'kills': '30', 'cards': 5, 'best_kills': 12},
+      ])!;
+      expect(online.kills, 30);
+      expect(ProfileStats.fromRpc([]), isNull);
+      expect(ProfileStats.fromRpc('x'), isNull);
+      final merged = const ProfileStats(runs: 10, kills: 20, cards: 6, bestKills: 9).merge(online);
+      expect([merged.runs, merged.kills, merged.cards, merged.bestKills], [10, 30, 6, 12]);
+      expect(const ProfileStats(runs: 1).merge(null).runs, 1);
+    });
+
+    test('cartes d\'une run pour finish_run', () {
+      expect(runCardsPayload(const [(12, 345), (300, 0)]), [
+        {'card_id': 12, 'seed': 345},
+        {'card_id': 300, 'seed': 0},
+      ]);
+    });
+  });
+
+  group('Serveur', () {
+    // Les limites de la base (supabase/schema.sql) doivent suivre celles du jeu.
+    final sql = File('supabase/schema.sql').readAsStringSync();
+    int sqlConst(String name) =>
+        int.parse(RegExp('$name constant int := (\\d+);').firstMatch(sql)!.group(1)!);
+
+    test('limites de schema.sql identiques à config.dart et economy.dart', () {
+      expect(sqlConst('runs_per_day'), GameConfig.runsPerDay);
+      expect(sqlConst('max_energies_per_day'), Economy.maxEnergyPurchasesPerDay);
+      expect(sqlConst('max_cards'), GameConfig.maxCardsPerRun);
+      expect(sql, contains('check (cards between 0 and ${GameConfig.maxCardsPerRun})'));
+      expect(sql, contains("display_name text not null default '$defaultPseudo'"));
+      expect(sql, contains('char_length(display_name) between 1 and $maxPseudoLength'));
+    });
+
+    test('RLS activé sur toutes les tables', () {
+      final tables = RegExp(r'create table if not exists public\.(\w+)').allMatches(sql).map((m) => m.group(1)!).toList();
+      expect(tables, containsAll(['profiles', 'owned_cards', 'runs']));
+      for (final t in tables) {
+        expect(sql, contains('alter table public.$t enable row level security'), reason: t);
+      }
+    });
+  });
+
   group('Pièces et énergies', () {
     TestWidgetsFlutterBinding.ensureInitialized();
     test('prix croissant, 5 énergies par jour au plus', () {

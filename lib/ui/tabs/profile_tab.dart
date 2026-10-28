@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app_data.dart';
 import '../../core/cards.dart';
+import '../../core/cloud_sync.dart';
 import '../../online.dart';
 import '../theme.dart';
 import '../widgets.dart';
@@ -12,9 +13,20 @@ class ProfileTab extends StatelessWidget {
   final AppData data;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ValueListenableBuilder<int>(
+        valueListenable: Online.revision,
+        builder: (context, _, __) => _build(context),
+      );
+
+  Widget _build(BuildContext context) {
     final col = data.collection;
     final cards = data.pool.cards;
+    final stats = ProfileStats(
+      runs: col.totalRuns,
+      kills: col.totalKills,
+      cards: col.totalCards,
+      bestKills: col.bestKills,
+    ).merge(Online.user == null ? null : Online.stats);
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -27,7 +39,19 @@ class ProfileTab extends StatelessWidget {
           const SizedBox(width: 14),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('Explorateur', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900)),
+              InkWell(
+                onTap: () => _editPseudo(context, col.pseudo),
+                borderRadius: BorderRadius.circular(8),
+                child: Row(children: [
+                  Flexible(
+                    child: Text(col.pseudo,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900)),
+                  ),
+                  const SizedBox(width: 6),
+                  const Icon(Icons.edit, color: Colors.white54, size: 18),
+                ]),
+              ),
               Text('Code ami : ${Online.friendCode ?? col.friendCode}', style: const TextStyle(color: Colors.white60)),
               if (Online.user?.email != null)
                 Text(Online.user!.email!, style: const TextStyle(color: Colors.white38, fontSize: 12)),
@@ -43,10 +67,10 @@ class ProfileTab extends StatelessWidget {
           mainAxisSpacing: 10,
           crossAxisSpacing: 10,
           children: [
-            _StatBox(icon: Icons.explore, label: 'Runs jouées', value: '${col.totalRuns}'),
-            _StatBox(icon: Icons.sports_martial_arts, label: 'Ennemis vaincus', value: '${col.totalKills}'),
-            _StatBox(icon: Icons.style, label: 'Cartes gagnées', value: '${col.totalCards}'),
-            _StatBox(icon: Icons.emoji_events, label: 'Record de kills', value: '${col.bestKills}'),
+            _StatBox(icon: Icons.explore, label: 'Runs jouées', value: '${stats.runs}'),
+            _StatBox(icon: Icons.sports_martial_arts, label: 'Ennemis vaincus', value: '${stats.kills}'),
+            _StatBox(icon: Icons.style, label: 'Cartes gagnées', value: '${stats.cards}'),
+            _StatBox(icon: Icons.emoji_events, label: 'Record de kills', value: '${stats.bestKills}'),
           ],
         ),
         const SectionTitle('Bestiaire par rareté'),
@@ -56,6 +80,78 @@ class ProfileTab extends StatelessWidget {
             owned: cards.where((c) => c.rarity == r && col.owned.containsKey(c.id)).length,
             total: cards.where((c) => c.rarity == r).length,
           ),
+      ],
+    );
+  }
+}
+
+/// Fenêtre de changement de pseudo (enregistré sur l'appareil, et en ligne si connecté).
+Future<void> _editPseudo(BuildContext context, String current) async {
+  await showDialog<void>(context: context, builder: (_) => _PseudoDialog(current: current));
+}
+
+class _PseudoDialog extends StatefulWidget {
+  const _PseudoDialog({required this.current});
+  final String current;
+
+  @override
+  State<_PseudoDialog> createState() => _PseudoDialogState();
+}
+
+class _PseudoDialogState extends State<_PseudoDialog> {
+  late final _ctrl = TextEditingController(text: widget.current == defaultPseudo ? '' : widget.current);
+  String? _error;
+  bool _busy = false;
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    setState(() => _busy = true);
+    final err = await Online.setPseudo(_ctrl.text);
+    if (!mounted) return;
+    if (err == null) {
+      Navigator.of(context).pop();
+    } else {
+      setState(() {
+        _busy = false;
+        _error = err;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: const Color(0xFF2A1F66),
+      title: const Text('Ton pseudo', style: TextStyle(color: Colors.white)),
+      content: TextField(
+        controller: _ctrl,
+        autofocus: true,
+        maxLength: maxPseudoLength,
+        enabled: !_busy,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          hintText: defaultPseudo,
+          hintStyle: const TextStyle(color: Colors.white38),
+          errorText: _error,
+          counterStyle: const TextStyle(color: Colors.white38),
+        ),
+        onSubmitted: (_) => _save(),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _busy ? null : () => Navigator.of(context).pop(),
+          child: const Text('Annuler', style: TextStyle(color: Colors.white70)),
+        ),
+        FilledButton(
+          style: FilledButton.styleFrom(backgroundColor: AppColors.violet),
+          onPressed: _busy ? null : _save,
+          child: const Text('Valider'),
+        ),
       ],
     );
   }

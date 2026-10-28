@@ -82,3 +82,74 @@ String authErrorMessage(String message, {String? code}) {
   }
   return message;
 }
+
+// --- Profil en ligne : pseudo et statistiques ---
+
+/// Pseudo par défaut (même valeur que la colonne profiles.display_name du serveur).
+const String defaultPseudo = 'Explorateur';
+
+/// Longueur maximale d'un pseudo (contrainte du serveur : 1 à 24 caractères).
+const int maxPseudoLength = 24;
+
+/// Pseudo nettoyé : espaces en trop retirés au début, à la fin et entre les mots.
+String normalizePseudo(String s) => s.trim().replaceAll(RegExp(r'\s+'), ' ');
+
+/// Message d'erreur si le pseudo (déjà nettoyé) n'est pas accepté, sinon null.
+/// Lettres (accents compris), chiffres, espaces, tiret, apostrophe, point et souligné.
+String? pseudoError(String pseudo) {
+  final p = normalizePseudo(pseudo);
+  if (p.isEmpty) return 'Choisis un pseudo.';
+  if (p.runes.length < 2) return 'Au moins 2 caractères.';
+  if (p.runes.length > maxPseudoLength) return 'Au plus $maxPseudoLength caractères.';
+  if (!RegExp(r"^[\p{L}\p{N} '’._-]+$", unicode: true).hasMatch(p)) {
+    return 'Lettres, chiffres, espaces et - \' . _ seulement.';
+  }
+  return null;
+}
+
+/// Quel pseudo garder quand on retrouve son profil en ligne ?
+/// Le pseudo choisi (différent de celui par défaut) l'emporte ; si les deux ont été choisis,
+/// c'est celui du serveur (il a pu être changé sur un autre appareil).
+/// Renvoie (pseudo à garder, faut-il l'envoyer au serveur).
+(String, bool) reconcilePseudo({required String local, required String? remote}) {
+  final r = remote == null ? defaultPseudo : normalizePseudo(remote);
+  final l = normalizePseudo(local);
+  if (r != defaultPseudo && r.isNotEmpty) return (r, false);
+  if (l != defaultPseudo && pseudoError(l) == null) return (l, true);
+  return (defaultPseudo, false);
+}
+
+/// Statistiques du profil d'explorateur.
+class ProfileStats {
+  const ProfileStats({this.runs = 0, this.kills = 0, this.cards = 0, this.bestKills = 0});
+
+  final int runs;
+  final int kills;
+  final int cards;
+  final int bestKills;
+
+  /// Lit la ligne renvoyée par la fonction serveur my_stats() (liste d'une ligne ou ligne seule).
+  static ProfileStats? fromRpc(Object? data) {
+    final row = data is List ? (data.isEmpty ? null : data.first) : data;
+    if (row is! Map) return null;
+    int n(String k) => switch (row[k]) { final int v => v, final num v => v.toInt(), final String v => int.tryParse(v) ?? 0, _ => 0 };
+    return ProfileStats(runs: n('runs'), kills: n('kills'), cards: n('cards'), bestKills: n('best_kills'));
+  }
+
+  /// Fusion appareil + serveur. Le serveur ne compte que les runs jouées connecté (depuis la
+  /// version 0.10), l'appareil que celles jouées sur lui : on garde le plus grand de chaque.
+  // PROVISOIRE : quand toutes les runs passeront par le serveur, ses chiffres feront foi.
+  ProfileStats merge(ProfileStats? other) => other == null
+      ? this
+      : ProfileStats(
+          runs: runs > other.runs ? runs : other.runs,
+          kills: kills > other.kills ? kills : other.kills,
+          cards: cards > other.cards ? cards : other.cards,
+          bestKills: bestKills > other.bestKills ? bestKills : other.bestKills,
+        );
+}
+
+/// Cartes d'une run au format attendu par la fonction serveur finish_run().
+List<Map<String, int>> runCardsPayload(Iterable<(int, int)> items) => [
+      for (final (id, seed) in items) {'card_id': id, 'seed': seed},
+    ];

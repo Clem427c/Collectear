@@ -28,6 +28,9 @@ class Online {
   static int onlineCount = 0;
   static String? friendCode;
 
+  /// Statistiques calculées par le serveur (runs jouées connecté), null si indisponibles.
+  static ProfileStats? stats;
+
   /// Vrai si le client Supabase est prêt (secrets présents et valides au build).
   static bool get ready => _initialized;
 
@@ -55,6 +58,7 @@ class Online {
         if (s.session != null) Future<void>.delayed(const Duration(milliseconds: 300), sync);
       } else if (s.event == AuthChangeEvent.signedOut) {
         friendCode = null;
+        stats = null;
         onlineCount = 0;
         syncState = SyncState.idle;
         _bump();
@@ -191,8 +195,89 @@ class Online {
   }
 
   static Future<void> _loadProfile(String userId) async {
-    final row = await _client.from('profiles').select('friend_code').eq('id', userId).maybeSingle();
+    final row = await _client.from('profiles').select('friend_code, display_name').eq('id', userId).maybeSingle();
     friendCode = row?['friend_code'] as String?;
+    final col = _collection;
+    if (col != null && row != null) {
+      final (pseudo, push) = reconcilePseudo(local: col.pseudo, remote: row['display_name'] as String?);
+      if (pseudo != col.pseudo) await col.setPseudo(pseudo);
+      if (push) await _client.from('profiles').update({'display_name': pseudo}).eq('id', userId);
+    }
+    await _loadStats();
+  }
+
+  /// Statistiques du serveur (fonction my_stats). Sans effet si la base n'est pas encore à jour.
+  static Future<void> _loadStats() async {
+    try {
+      stats = ProfileStats.fromRpc(await _client.rpc<dynamic>('my_stats').timeout(_timeout));
+    } catch (e) {
+      debugPrint('Statistiques en ligne : $e');
+    }
+  }
+
+  // --- Pseudo ---
+
+  /// Change le pseudo sur l'appareil, et en ligne si on est connecté.
+  /// Renvoie un message d'erreur, ou null si c'est bon.
+  static Future<String?> setPseudo(String raw) async {
+    final pseudo = normalizePseudo(raw);
+    final err = pseudoError(pseudo);
+    if (err != null) return err;
+    final col = _collection;
+    final u = user;
+    if (u != null) {
+      try {
+        await _client.from('profiles').update({'display_name': pseudo}).eq('id', u.id).timeout(_timeout);
+      } catch (e) {
+        debugPrint('Pseudo en ligne : $e');
+        return 'Pseudo non enregistré en ligne : ${_syncMessage(e)}';
+      }
+    }
+    await col?.setPseudo(pseudo);
+    _bump();
+    return null;
+  }
+
+  // --- Runs validées par le serveur (supabase/schema.sql : start_run, finish_run) ---
+
+  /// Ouvre une run côté serveur. Renvoie son identifiant, ou null (hors ligne, pas connecté,
+  /// base pas à jour, limite du jour atteinte) : la run se joue quand même.
+  static Future<String?> startRun() async {
+    if (user == null) return null;
+    try {
+      final id = await _client.rpc<dynamic>('start_run').timeout(_timeout);
+      return id is String ? id : null;
+    } catch (e) {
+      debugPrint('Début de run en ligne : $e');
+      return null;
+    }
+  }
+
+  /// Ferme la run côté serveur, qui ajoute lui-même ses cartes à la collection en ligne.
+  /// Si la run n'a pas pu être ouverte ou est refusée, envoi direct comme avant.
+  // PROVISOIRE : l'envoi direct (et la synchro de la collection de l'appareil) reste permis
+  // tant que Clem n'a pas décidé du sort des cartes gagnées hors ligne (ROADMAP, Questions).
+  static Future<void> finishRun(Future<String?> runId,
+      {required int kills, required int coins, required List<(int, int)> cards}) async {
+    if (user == null) return;
+    final id = await runId;
+    if (id != null) {
+      try {
+        final added = await _client.rpc<dynamic>('finish_run', params: {
+          'p_run': id,
+          'p_kills': kills,
+          'p_coins': coins,
+          'p_cards': runCardsPayload(cards),
+        }).timeout(_timeout);
+        if (added is int) onlineCount += added;
+        await _loadStats();
+        _bump();
+        return;
+      } catch (e) {
+        debugPrint('Fin de run en ligne : $e');
+      }
+    }
+    await pushCards(cards);
   }
 
   static String _syncMessage(Object e) {

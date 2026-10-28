@@ -8,8 +8,13 @@ dans le projet Collectear. Aucune clé n'est à copier nulle part : les secrets 
 2. Copier tout le contenu de [`supabase/schema.sql`](../supabase/schema.sql) et le coller.
 3. Cliquer **Run**. Résultat attendu : « Success. No rows returned ».
    (Le script peut être relancé sans risque, il ne supprime rien.)
-4. Vérification : menu **Table Editor** → les tables `profiles` et `owned_cards` apparaissent
+4. Vérification : menu **Table Editor** → les tables `profiles`, `owned_cards` et `runs` apparaissent
    avec la mention « RLS enabled ».
+
+### Mise à jour du schéma
+Quand le jeu évolue (par exemple la 0.10 qui ajoute les runs vérifiées par le serveur), il suffit de
+recoller **tout** `supabase/schema.sql` et de cliquer **Run** : rien n'est supprimé.
+La CI indique à chaque build si la base est à jour (étape « Base Supabase installée ? »).
 
 ## 2. Adresses de retour du lien de connexion (obligatoire)
 Menu **Authentication** → **URL Configuration** :

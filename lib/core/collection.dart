@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'cloud_sync.dart' show defaultPseudo, normalizePseudo;
 import 'config.dart';
 import 'economy.dart';
 
@@ -19,6 +20,7 @@ class Collection {
   static const _kTotalCards = 'stat_cards';
   static const _kBestKills = 'stat_best_kills';
   static const _kFriendCode = 'friend_code';
+  static const _kPseudo = 'pseudo';
   static const _kCoins = 'coins';
   static const _kEnergyDay = 'energy_day';
   static const _kEnergyBought = 'energy_bought';
@@ -150,6 +152,10 @@ class Collection {
     await _prefs.setInt(_kTotalCards, totalCards + cards);
     if (kills > bestKills) await _prefs.setInt(_kBestKills, kills);
   }
+
+  /// Pseudo affiché dans le Profil (et en ligne une fois connecté).
+  String get pseudo => _prefs.getString(_kPseudo) ?? defaultPseudo;
+  Future<void> setPseudo(String p) => _prefs.setString(_kPseudo, normalizePseudo(p));
 
   /// Code ami local (prototype ; deviendra l'identifiant du compte en ligne).
   String get friendCode {

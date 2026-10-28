@@ -29,6 +29,9 @@ class _RunScreenState extends State<RunScreen> {
   late final CollectearGame _game;
   bool _ended = false;
 
+  /// Run ouverte côté serveur (null si hors ligne) : le serveur valide ses cartes à la fin.
+  late final Future<String?> _onlineRun = Online.startRun();
+
   @override
   void initState() {
     super.initState();
@@ -38,6 +41,7 @@ class _RunScreenState extends State<RunScreen> {
       seed: math.Random().nextInt(1 << 31),
       onRunEnd: _onRunEnd,
     );
+    unawaited(_onlineRun);
   }
 
   Future<void> _onRunEnd(RunState run) async {
@@ -46,7 +50,7 @@ class _RunScreenState extends State<RunScreen> {
     final col = widget.data.collection;
     final won = [for (final c in run.cards) (c.card.id, c.variantSeed)];
     final fresh = await col.addAll(won);
-    unawaited(Online.pushCards(won));
+    unawaited(Online.finishRun(_onlineRun, kills: run.kills, coins: run.coins, cards: won));
     await col.recordRunResult(kills: run.kills, cards: run.cards.length);
     await col.addCoins(run.coins);
     if (!mounted) return;
