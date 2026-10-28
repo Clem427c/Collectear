@@ -140,7 +140,7 @@ class Enemy extends PositionComponent with HasGameReference<CollectearGame> {
             _move(toPlayer.normalized() * _speed * dt);
           }
         } else {
-          final pref = GameConfig.rangedPreferredDistance;
+          const pref = GameConfig.rangedPreferredDistance;
           if (dist < pref - 24) {
             _move(-toPlayer.normalized() * _speed * dt);
           } else if (dist > pref + 24) {

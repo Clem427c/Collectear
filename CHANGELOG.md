@@ -1,5 +1,19 @@
 # Journal des versions
 
+## 0.10.0 – 28/10/2026 – profil en ligne et premières protections anti-triche
+- Pseudo modifiable : toucher son nom dans le Profil. Enregistré sur l'appareil et en ligne ; sur un
+  nouvel appareil, le pseudo choisi est retrouvé à la connexion.
+- Statistiques du Profil complétées par celles du serveur (runs, ennemis, cartes, record).
+- Anti-triche, 1re partie : quand on est connecté, chaque run est ouverte puis fermée par le serveur,
+  qui ajoute lui-même les cartes gagnées et refuse ce qui est impossible (plus de 3 cartes, plus de
+  15 runs par jour, carte inconnue, trop d'ennemis pour la durée, run déjà terminée ou d'un autre joueur).
+  Hors ligne ou si la base n'est pas à jour, l'envoi se fait comme avant.
+- Sécurité : la commande TRUNCATE (qui échappe au RLS et que Supabase accorde par défaut) est retirée
+  sur toutes les tables.
+- CI : le schéma de la base est testé à chaque push sur un PostgreSQL vierge (23 vérifications), et le
+  build indique si la base Supabase en ligne est à jour.
+- **À faire par Clem** : recoller `supabase/schema.sql` dans le SQL Editor de Supabase (rien n'est supprimé).
+
 ## 0.9.0 – 27/10/2026 (fin de soirée) – le monde prend vie
 - Décors générés par Clem dans le jeu : un sol texturé par étage (vallée, prairie, plateau, roche,
   neige, dalles des tours), arbres, buissons, fleurs, champignons, rochers et cristaux selon l'étage,

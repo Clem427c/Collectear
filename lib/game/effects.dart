@@ -2,7 +2,6 @@ import 'dart:math' as math;
 import 'dart:ui' show Canvas, Color, Offset, Paint;
 
 import 'package:flame/components.dart';
-import 'package:flame/text.dart' show TextPaint;
 import 'package:flutter/painting.dart' show FontWeight, Shadow, TextStyle;
 
 /// Gerbe de particules (impact, mort d'ennemi, coffre ouvert).

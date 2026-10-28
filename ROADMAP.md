@@ -43,7 +43,7 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
 - [x] Chrono d'alerte des 15 dernières secondes ; gardiens de sanctuaire au même étage, tenus en laisse, en élite
 - [ ] Décors : collisions avec les arbres et rochers ? (aujourd'hui on passe à travers)
 
-## Étape 3 – En ligne (Supabase) — prochaine étape
+## Étape 3 – En ligne (Supabase) — en cours
 Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et `SUPABASE_PUBLISHABLE_KEY` (26/10).
 - [x] Secrets vérifiés en CI sans les afficher (présents, URL https, clé publishable) et injectés au build (27/10)
 - [x] `supabase_flutter` branché : client initialisé au démarrage, état du serveur dans le Profil
@@ -51,11 +51,17 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
 - [x] Connexion e-mail sans mot de passe (code à 6 chiffres, ou lien magique sur le web) dans le Profil (27/10)
 - [x] Synchro de la collection (union, rien n'est supprimé) au démarrage, à la connexion et en fin de run (27/10)
 - [x] APK : le lien de l'e-mail ouvre l'appli (Supabase n'autorise plus à modifier les modèles d'e-mail sans SMTP)
-- [ ] **Clem** : faire les 2 réglages de `docs/SUPABASE.md` (coller le SQL, adresses de retour)
-- [ ] **Prochaine session** (après les réglages de Clem) : pseudo modifiable, stats du profil en ligne,
-  puis validation serveur des récompenses
+- [x] **Clem** : SQL collé (tables `profiles` et `owned_cards` présentes, vérifié par la CI le 28/10)
+- [x] Pseudo modifiable (toucher le nom dans le Profil), enregistré en ligne (28/10)
+- [x] Stats du profil en ligne (fonction `my_stats`, fusionnées avec celles de l'appareil) (28/10)
+- [x] Anti-triche, 1re partie : runs ouvertes/fermées par le serveur (`start_run`/`finish_run`) qui ajoute
+  lui-même les cartes ; 15 runs/jour, 3 cartes/run, ennemis plausibles ; schéma testé en CI sur PostgreSQL (28/10)
+- [ ] **Clem** : recoller `supabase/schema.sql` (mise à jour 0.10 : table `runs` absente au 28/10) — la CI dit si la base est à jour
+- [ ] **Clem** : vérifier les adresses de retour (`docs/SUPABASE.md` §2), invérifiables depuis la CI
+- [ ] Anti-triche, 2e partie : fermer l'ajout direct de cartes (attend la réponse de Clem sur les cartes
+  gagnées hors ligne), puis tirage des cartes par le serveur (rareté contrôlée)
+- [ ] **Prochaine session** : amis (ajout par code ami, liste d'amis), si pas de retour de playtest à traiter
 - [ ] Connexion Google (attend la réponse de Clem, voir « Questions »)
-- [ ] Validation serveur des récompenses (anti-triche)
 - [ ] Amis (code ami), échanges carte contre carte
 - [ ] Profil d'explorateur, classement entre amis
 
@@ -128,8 +134,17 @@ Priorité basse (à toi de juger) :
 - PROVISOIRE : la collection locale appartient à l'appareil. Si un 2e compte se connecte sur le même
   téléphone, les cartes locales partent aussi sur ce compte. Préfères-tu qu'à la déconnexion on vide
   la collection locale (elle reviendra à la reconnexion) ?
-- PROVISOIRE : en attendant l'anti-triche, c'est l'appli qui ajoute les cartes en ligne (une appli
-  modifiée pourrait tricher). La validation serveur est la prochaine grosse tâche de l'étape 3.
+- Anti-triche (28/10) : les runs jouées connecté sont maintenant ouvertes et fermées par le serveur, qui
+  ajoute lui-même les cartes (3 au plus, 15 runs par jour au plus). PROVISOIRE : l'appli peut encore
+  ajouter des cartes directement (cartes gagnées hors ligne, collection d'avant la connexion), donc une
+  appli modifiée pourrait toujours tricher. **Question** : les cartes gagnées **hors ligne** doivent-elles
+  compter en ligne ? (a) oui, comme aujourd'hui (pratique mais trichable) ; (b) non : sans connexion, la
+  run se joue mais ses cartes restent sur l'appareil ; (c) on exige la connexion pour lancer une run.
+  Je recommande (b) : c'est la seule option qui rend les échanges entre joueurs sûrs.
+- PROVISOIRE : le jour des 15 runs est compté en heure de Paris côté serveur (l'appli compte en heure
+  du téléphone). Les énergies ne sont pas encore vérifiées par le serveur (les pièces sont sur l'appareil).
+- Pseudo : 2 à 24 caractères, lettres (accents compris), chiffres, espaces, - ' . _ — pas d'émojis.
+  Pas encore de filtre des gros mots ni d'unicité : à prévoir avant les amis/classements ? 
 
 ### Illustrations (suite)
 Remarque : les 4 bûcherons (035 Hugo, 065 Pio, 070 Milo, 079 Anatole) se ressemblent beaucoup
