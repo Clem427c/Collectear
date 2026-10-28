@@ -643,13 +643,14 @@ void main() {
 
     test('classement entre amis : tri et ex æquo', () {
       final rows = LeaderboardEntry.fromRows([
-        {'display_name': 'Tom', 'is_me': false, 'species': 10, 'copies': 12, 'best_kills': 5},
+        {'user_id': 't', 'display_name': 'Tom', 'is_me': false, 'species': 10, 'copies': 12, 'best_kills': 5},
         {'display_name': 'Clem', 'is_me': true, 'species': 20, 'copies': 25, 'best_kills': 9},
         {'display_name': 'Nyx', 'is_me': false, 'species': '10', 'copies': 12, 'best_kills': 3},
         {'species': 99},
       ]);
       expect(rows.map((e) => e.name), ['Clem', 'Nyx', 'Tom']);
       expect(rows.first.isMe, isTrue);
+      expect(rows.last.userId, 't');
       expect(leaderboardRanks(rows), [1, 2, 2]);
     });
 
@@ -664,6 +665,40 @@ void main() {
       expect(col.variants, {12: [346]});
       expect(col.companionId, isNull);
       expect(await col.removeAll(const [(12, 999)]), 0);
+    });
+  });
+
+  group('Profil d\'un ami', () {
+    test('collection regroupée par espèce et comparée à la mienne', () {
+      final pool = _pool();
+      final legend = pool.cards.firstWhere((c) => c.rarity == Rarity.legendaire);
+      final common = pool.cards.firstWhere((c) => c.rarity == Rarity.commune);
+      final rare = pool.cards.firstWhere((c) => c.rarity == Rarity.rare);
+      final fc = FriendCollection([
+        ServerCard(1, common.id, 10),
+        ServerCard(2, common.id, 11),
+        ServerCard(3, legend.id, 12),
+        ServerCard(4, 9999, 1), // carte inconnue : ignorée
+      ], pool, {common.id: 1, rare.id: 2, 9999: 1});
+      expect(fc.species, 2);
+      expect(fc.copies, 3);
+      expect(fc.iLackCount, 1); // la légendaire
+      expect(fc.heLacksCount, 1); // ma rare
+      expect(fc.byRarity[Rarity.legendaire]!.$1, 1);
+      expect(fc.byRarity[Rarity.commune]!.$2, pool.cards.where((c) => c.rarity == Rarity.commune).length);
+      // Tri : la plus rare d'abord.
+      expect(fc.cards(FriendCardFilter.all).map((c) => c.id), [legend.id, common.id]);
+      expect(fc.cards(FriendCardFilter.iLack).map((c) => c.id), [legend.id]);
+      expect(fc.cards(FriendCardFilter.duplicates).map((c) => c.id), [common.id]);
+      expect(fc.bySpecies[common.id]!.map((c) => c.rowId), [1, 2]);
+      expect(FriendCardFilter.iLack.label, 'Il a, pas toi');
+    });
+
+    test('collection vide', () {
+      final fc = FriendCollection(const [], _pool(), const {});
+      expect(fc.species, 0);
+      expect(fc.copies, 0);
+      expect(fc.cards(FriendCardFilter.all), isEmpty);
     });
   });
 

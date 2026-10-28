@@ -7,6 +7,7 @@ import '../../core/social.dart';
 import '../../core/variants.dart';
 import '../../online.dart';
 import '../account_panel.dart';
+import '../friend_profile_screen.dart';
 import '../theme.dart';
 import '../widgets.dart';
 
@@ -214,6 +215,11 @@ class _FriendsViewState extends State<_FriendsView> {
     await widget.model.refresh();
   }
 
+  void _openProfile(Friend f) {
+    final best = widget.model.leaderboard.where((e) => e.userId == f.userId).firstOrNull?.bestKills;
+    openFriendProfile(context, widget.data, f, widget.model.refresh, bestKills: best);
+  }
+
   Future<void> _confirmRemove(Friend f) async {
     final ok = await showDialog<bool>(
       context: context,
@@ -331,7 +337,8 @@ class _FriendsViewState extends State<_FriendsView> {
               for (final f in friends)
                 _row(
                   f,
-                  subtitle: '${f.species} / ${widget.data.pool.cards.length} cartes',
+                  subtitle: '${f.species} / ${widget.data.pool.cards.length} cartes · voir sa collection',
+                  onTap: () => _openProfile(f),
                   actions: [
                     IconButton(
                       tooltip: 'Échanger',
@@ -347,7 +354,14 @@ class _FriendsViewState extends State<_FriendsView> {
                 ),
               if (friends.isNotEmpty && m.leaderboard.length > 1) ...[
                 const SectionTitle('Classement entre amis'),
-                _Leaderboard(entries: m.leaderboard, total: widget.data.pool.cards.length),
+                _Leaderboard(
+                  entries: m.leaderboard,
+                  total: widget.data.pool.cards.length,
+                  onTap: (e) {
+                    final f = friends.where((f) => f.userId == e.userId).firstOrNull;
+                    if (f != null) _openProfile(f);
+                  },
+                ),
               ],
               if (outgoing.isNotEmpty) ...[
                 const SectionTitle('Demandes envoyées'),
@@ -370,9 +384,10 @@ class _FriendsViewState extends State<_FriendsView> {
     );
   }
 
-  Widget _row(Friend f, {required String subtitle, required List<Widget> actions}) => Card(
+  Widget _row(Friend f, {required String subtitle, required List<Widget> actions, VoidCallback? onTap}) => Card(
         color: _panel,
         child: ListTile(
+          onTap: onTap,
           leading: _avatar(f.name),
           title: Text(f.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           subtitle: Text(subtitle, style: const TextStyle(color: Colors.white60)),
@@ -383,9 +398,10 @@ class _FriendsViewState extends State<_FriendsView> {
 
 /// Classement : moi et mes amis, par nombre de cartes différentes.
 class _Leaderboard extends StatelessWidget {
-  const _Leaderboard({required this.entries, required this.total});
+  const _Leaderboard({required this.entries, required this.total, required this.onTap});
   final List<LeaderboardEntry> entries;
   final int total;
+  final void Function(LeaderboardEntry) onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -396,6 +412,7 @@ class _Leaderboard extends StatelessWidget {
         for (var i = 0; i < entries.length; i++)
           ListTile(
             dense: true,
+            onTap: entries[i].isMe ? null : () => onTap(entries[i]),
             tileColor: entries[i].isMe ? AppColors.gold.withValues(alpha: 0.12) : null,
             leading: SizedBox(
               width: 34,
@@ -612,16 +629,31 @@ class _TradeTileState extends State<_TradeTile> {
 }
 
 /// Ouvre l'écran de composition d'un échange avec [friend].
-Future<void> openTradeComposer(BuildContext context, AppData data, Friend friend, Future<void> Function() onSent) =>
+/// [request] : carte de l'ami déjà choisie (depuis son profil).
+Future<void> openTradeComposer(BuildContext context, AppData data, Friend friend, Future<void> Function() onSent,
+        {ServerCard? request}) =>
     Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (_) => _TradeComposer(data: data, friend: friend, onSent: onSent),
+      builder: (_) => _TradeComposer(data: data, friend: friend, onSent: onSent, request: request),
+    ));
+
+/// Ouvre le profil d'un ami (sa collection en détail), d'où l'on peut lancer un échange.
+Future<void> openFriendProfile(BuildContext context, AppData data, Friend friend, Future<void> Function() onSent,
+        {int? bestKills}) =>
+    Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (ctx) => FriendProfileScreen(
+        data: data,
+        friend: friend,
+        bestKills: bestKills,
+        onTrade: (request) => openTradeComposer(ctx, data, friend, onSent, request: request),
+      ),
     ));
 
 class _TradeComposer extends StatefulWidget {
-  const _TradeComposer({required this.data, required this.friend, required this.onSent});
+  const _TradeComposer({required this.data, required this.friend, required this.onSent, this.request});
   final AppData data;
   final Friend friend;
   final Future<void> Function() onSent;
+  final ServerCard? request;
 
   @override
   State<_TradeComposer> createState() => _TradeComposerState();
@@ -651,6 +683,9 @@ class _TradeComposerState extends State<_TradeComposer> {
       _mine = mine;
       _theirs = theirs;
       _error = e1 ?? e2;
+      // Carte demandée depuis le profil de l'ami, si elle est toujours à lui.
+      final req = widget.request;
+      if (req != null && _get == null) _get = theirs?.where((c) => c.rowId == req.rowId).firstOrNull;
     });
   }
 

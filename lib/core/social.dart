@@ -2,6 +2,8 @@
 /// Côté serveur : supabase/schema.sql (friendships, trades, traded_away et leurs fonctions).
 library;
 
+import 'cards.dart';
+
 /// Alphabet des codes ami (sans 0/O ni 1/I), comme public.new_friend_code() côté serveur.
 const String friendCodeAlphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const int friendCodeLength = 8;
@@ -168,7 +170,15 @@ int pendingActions(List<Friend> friends, List<Trade> trades) =>
 
 /// Une ligne du classement entre amis (fonction serveur friends_leaderboard).
 class LeaderboardEntry {
-  const LeaderboardEntry({required this.name, required this.isMe, required this.species, required this.copies, required this.bestKills});
+  const LeaderboardEntry({
+    this.userId = '',
+    required this.name,
+    required this.isMe,
+    required this.species,
+    required this.copies,
+    required this.bestKills,
+  });
+  final String userId;
   final String name;
   final bool isMe;
 
@@ -183,6 +193,7 @@ class LeaderboardEntry {
       for (final r in rows)
         if (r is Map && r['display_name'] is String)
           LeaderboardEntry(
+            userId: (r['user_id'] as String?) ?? '',
             name: r['display_name'] as String,
             isMe: r['is_me'] == true,
             species: _int(r['species']) ?? 0,
@@ -208,4 +219,63 @@ List<int> leaderboardRanks(List<LeaderboardEntry> entries) {
     ranks.add(same ? ranks[i - 1] : i + 1);
   }
   return ranks;
+}
+
+/// Filtres de la collection d'un ami.
+enum FriendCardFilter { all, iLack, duplicates }
+
+extension FriendCardFilterInfo on FriendCardFilter {
+  String get label => const ['Toutes', 'Il a, pas toi', 'Ses doublons'][index];
+}
+
+/// Collection d'un ami vue depuis son profil : regroupée par espèce, comparée à la mienne.
+class FriendCollection {
+  /// [cards] : exemplaires de l'ami (fonction serveur friend_cards) ; [mine] : mes quantités par carte.
+  /// Les cartes inconnues du jeu (id hors du classeur) sont ignorées.
+  FriendCollection(Iterable<ServerCard> cards, this.pool, Map<int, int> mine) : _mine = Map.unmodifiable(mine) {
+    for (final c in cards) {
+      if (pool.byId(c.cardId) == null) continue;
+      bySpecies.putIfAbsent(c.cardId, () => []).add(c);
+    }
+  }
+
+  final CardPool pool;
+  final Map<int, int> _mine;
+
+  /// Exemplaires de l'ami par espèce (id de carte).
+  final Map<int, List<ServerCard>> bySpecies = {};
+
+  int get species => bySpecies.length;
+  int get copies => bySpecies.values.fold(0, (n, l) => n + l.length);
+
+  /// Espèces de l'ami que je n'ai pas encore (cartes à lui demander).
+  int get iLackCount => bySpecies.keys.where((id) => (_mine[id] ?? 0) == 0).length;
+
+  /// Mes espèces qu'il n'a pas (cartes que je peux lui proposer).
+  int get heLacksCount => _mine.entries.where((e) => e.value > 0 && !bySpecies.containsKey(e.key) && pool.byId(e.key) != null).length;
+
+  /// Par rareté : (espèces possédées par l'ami, espèces existantes).
+  Map<Rarity, (int, int)> get byRarity => {
+        for (final r in Rarity.values)
+          r: (
+            bySpecies.keys.where((id) => pool.byId(id)!.rarity == r).length,
+            pool.cards.where((c) => c.rarity == r).length,
+          ),
+      };
+
+  bool _keep(int id, FriendCardFilter f) => switch (f) {
+        FriendCardFilter.all => true,
+        FriendCardFilter.iLack => (_mine[id] ?? 0) == 0,
+        FriendCardFilter.duplicates => bySpecies[id]!.length > 1,
+      };
+
+  /// Espèces à afficher pour un filtre : de la plus rare à la plus commune, puis par nom.
+  List<GameCard> cards(FriendCardFilter filter) {
+    final list = [for (final id in bySpecies.keys) if (_keep(id, filter)) pool.byId(id)!];
+    list.sort((a, b) {
+      final r = b.rarity.index.compareTo(a.rarity.index);
+      return r != 0 ? r : a.name.compareTo(b.name);
+    });
+    return list;
+  }
 }
