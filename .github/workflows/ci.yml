@@ -11,6 +11,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  sql:
+    # Schéma de la base en ligne testé sur un PostgreSQL vierge (RLS, anti-triche, ré-exécutable).
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tester supabase/schema.sql
+        env:
+          PGHOST: localhost
+          PGUSER: postgres
+          PGPASSWORD: postgres
+        run: supabase/test/run.sh
+
   build:
     runs-on: ubuntu-latest
     permissions:
@@ -92,6 +112,31 @@ jobs:
             sb_secret_*) echo "::error::SUPABASE_PUBLISHABLE_KEY contient une clé SECRÈTE : remplace-la par la clé publishable"; exit 1 ;;
             eyJ*) echo "SUPABASE_PUBLISHABLE_KEY : ancienne clé JWT (${#key} caractères)" ;;
             *) echo "::warning::SUPABASE_PUBLISHABLE_KEY a un format inattendu" ;;
+          esac
+
+      - name: Base Supabase installée ? (lecture anonyme, sans rien afficher de secret)
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          url="$(printf '%s' "$SUPABASE_URL" | tr -d '[:space:]')"; url="${url%/}"
+          key="$(printf '%s' "$SUPABASE_PUBLISHABLE_KEY" | tr -d '[:space:]')"
+          [ -n "$url" ] && [ -n "$key" ] || { echo "Secrets absents : vérification ignorée."; exit 0; }
+          # Chaque objet attendu de supabase/schema.sql : table (GET) ou fonction (POST rpc, sans session → refus attendu).
+          check() {
+            code=$(curl -s -o /tmp/r.json -w '%{http_code}' --max-time 15 "$@" -H "apikey: $key" -H "Authorization: Bearer $key" -H 'Content-Type: application/json')
+            if grep -q 'PGRST205\|PGRST202\|42P01\|42883' /tmp/r.json; then echo "absent"; else echo "présent (HTTP $code)"; fi
+          }
+          for t in profiles owned_cards runs; do
+            echo "Table $t : $(check "$url/rest/v1/$t?select=*&limit=0")"
+          done
+          for f in start_run finish_run my_stats; do
+            echo "Fonction $f : $(check -X POST "$url/rest/v1/rpc/$f" -d '{}')"
+          done
+          r=$(check "$url/rest/v1/runs?select=*&limit=0")
+          case "$r" in
+            absent*) echo "::notice::Base Supabase pas à jour : coller supabase/schema.sql dans le SQL Editor (docs/SUPABASE.md)." ;;
           esac
 
       - name: Dépendances
