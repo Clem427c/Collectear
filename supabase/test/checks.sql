@@ -96,10 +96,12 @@ select pg_temp.check((select count(*) from public.friend_cards('22222222-2222-22
 select id as a12 from public.my_cards() where card_id = 12 \gset
 select id as b50 from public.friend_cards('22222222-2222-2222-2222-222222222222') where card_id = 50 \gset
 select id as b51 from public.friend_cards('22222222-2222-2222-2222-222222222222') where card_id = 51 \gset
-select pg_temp.check(pg_temp.fails(format('select public.propose_trade(%L, %s, %s)', '22222222-2222-2222-2222-222222222222', :b50, :a12)), 'échange : offrir la carte d''un autre refusé');
-select pg_temp.check(pg_temp.fails(format('select public.propose_trade(%L, %s, %s)', '33333333-3333-3333-3333-333333333333', :a12, :b50)), 'échange : seulement entre amis');
-select public.propose_trade('22222222-2222-2222-2222-222222222222', :a12, :b50) as t1 \gset
-select public.propose_trade('22222222-2222-2222-2222-222222222222', :a12, :b51) as t2 \gset
+select pg_temp.check(pg_temp.fails(format('select public.propose_trade(%L, array[%s]::bigint[], array[%s]::bigint[])', '22222222-2222-2222-2222-222222222222', :b50, :a12)), 'échange : offrir la carte d''un autre refusé');
+select pg_temp.check(pg_temp.fails(format('select public.propose_trade(%L, array[%s]::bigint[], array[%s]::bigint[])', '33333333-3333-3333-3333-333333333333', :a12, :b50)), 'échange : seulement entre amis');
+select pg_temp.check(pg_temp.fails(format('select public.propose_trade(%L, array[]::bigint[], array[%s]::bigint[])', '22222222-2222-2222-2222-222222222222', :b50)), 'échange : au moins une carte de chaque côté');
+select pg_temp.check(pg_temp.fails(format('select public.propose_trade(%L, array[%s, %s]::bigint[], array[%s]::bigint[])', '22222222-2222-2222-2222-222222222222', :a12, :a12, :b50)), 'échange : même carte deux fois refusée');
+select public.propose_trade('22222222-2222-2222-2222-222222222222', array[:a12]::bigint[], array[:b50]::bigint[]) as t1 \gset
+select public.propose_trade('22222222-2222-2222-2222-222222222222', array[:a12]::bigint[], array[:b51]::bigint[]) as t2 \gset
 select pg_temp.check(pg_temp.fails(format('select public.accept_trade(%s)', :t1)), 'échange : l''auteur ne peut pas accepter');
 select pg_temp.check(pg_temp.fails($q$update public.trades set status = 'accepted' where true$q$), 'échange : pas d''écriture directe');
 
@@ -120,11 +122,44 @@ select pg_temp.check(exists (select 1 from public.owned_cards where card_id = 50
 select pg_temp.check(not exists (select 1 from public.owned_cards where card_id = 12 and seed = 345), 'échange : A n''a plus 12');
 select pg_temp.check((select count(*) from public.friends_leaderboard()) = 2, 'classement : moi et mon ami');
 select pg_temp.check((select is_me and species = 2 from public.friends_leaderboard() order by species desc limit 1), 'classement : trié (cartes différentes, puis exemplaires, puis pseudo)');
+-- 2 contre 1 et favoris. A possède 300/0 et 50/7 ; B possède 51/8 et 12/345.
+select id as a300 from public.my_cards() where card_id = 300 \gset
+select id as a50 from public.my_cards() where card_id = 50 \gset
+select public.propose_trade('22222222-2222-2222-2222-222222222222', array[:a300, :a50]::bigint[], array[:b51]::bigint[]) as t5 \gset
+select pg_temp.check((select jsonb_array_length(offered) = 2 and jsonb_array_length(requested) = 1 from public.my_trades() where id = :t5), 'échange 2 contre 1 : proposé');
+select pg_temp.check(pg_temp.fails($q$update public.owned_cards set favorite = true where true$q$), 'favori : pas de modification directe');
+select pg_temp.check(public.set_favorite(300::smallint, 0, true), 'favori : 300 mise en favori');
+select pg_temp.check((select status from public.trades where id = :t5) = 'expired', 'favori : échanges en attente sur la carte expirés');
+select pg_temp.check(pg_temp.fails(format('select public.propose_trade(%L, array[%s]::bigint[], array[%s]::bigint[])', '22222222-2222-2222-2222-222222222222', :a300, :b51)), 'favori : ne peut pas être offert');
+select pg_temp.check(not public.set_favorite(299::smallint, 0, true), 'favori : carte non possédée ignorée');
+select public.set_favorite(300::smallint, 0, false);
+select public.propose_trade('22222222-2222-2222-2222-222222222222', array[:a300, :a50]::bigint[], array[:b51]::bigint[]) as t6 \gset
+-- B met 51 en favori par la synchro : l'échange expire, et A ne peut plus la demander.
+select set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', false);
+select pg_temp.check((select favorite from public.my_cards() where card_id = 51) = false, 'favori : pas en favori par défaut');
+select pg_temp.check(public.add_favorites('[{"card_id":51,"seed":8},{"card_id":1,"seed":1}]') = 1, 'favori : ajout par la synchro');
+select pg_temp.check((select status from public.trades where id = :t6) = 'expired', 'favori : expiration aussi par la synchro');
+select pg_temp.check(public.add_favorites('[{"card_id":51,"seed":8}]') = 0, 'favori : déjà en favori');
+select set_config('request.jwt.claim.sub', '11111111-1111-1111-1111-111111111111', false);
+select pg_temp.check((select favorite from public.friend_cards('22222222-2222-2222-2222-222222222222') where card_id = 51), 'favori : visible par l''ami');
+select pg_temp.check(pg_temp.fails(format('select public.propose_trade(%L, array[%s]::bigint[], array[%s]::bigint[])', '22222222-2222-2222-2222-222222222222', :a50, :b51)), 'favori : ne peut pas être demandé');
+-- B retire le favori ; A propose 2 contre 1, B accepte.
+select set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', false);
+select public.set_favorite(51::smallint, 8, false);
+select set_config('request.jwt.claim.sub', '11111111-1111-1111-1111-111111111111', false);
+select public.propose_trade('22222222-2222-2222-2222-222222222222', array[:a300, :a50]::bigint[], array[:b51]::bigint[]) as t7 \gset
+select set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', false);
+select pg_temp.check(public.accept_trade(:t7) = 'accepted', 'échange 2 contre 1 : accepté');
+select pg_temp.check((select count(*) from public.owned_cards where card_id in (300, 50)) = 2
+                     and not exists (select 1 from public.owned_cards where card_id = 51), 'échange 2 contre 1 : B reçoit 2 cartes, donne 51');
+select pg_temp.check(not exists (select 1 from public.traded_away where card_id = 50), 'échange retour : 50 n''est plus notée comme donnée par B');
+select set_config('request.jwt.claim.sub', '11111111-1111-1111-1111-111111111111', false);
+select pg_temp.check((select count(*) from public.owned_cards) = 1 and exists (select 1 from public.owned_cards where card_id = 51), 'échange 2 contre 1 : A a 51');
 -- Proposition puis annulation ; retrait d'ami.
-select public.propose_trade('22222222-2222-2222-2222-222222222222', (select id from public.my_cards() where card_id = 50), :b51) as t3 \gset
+select public.propose_trade('22222222-2222-2222-2222-222222222222', array[(select id from public.my_cards() where card_id = 51)], array[(select id from public.friend_cards('22222222-2222-2222-2222-222222222222') where card_id = 12)]) as t3 \gset
 select public.close_trade(:t3);
 select pg_temp.check((select status from public.trades where id = :t3) = 'cancelled', 'échange : annulé par l''auteur');
-select public.propose_trade('22222222-2222-2222-2222-222222222222', (select id from public.my_cards() where card_id = 50), :b51) as t4 \gset
+select public.propose_trade('22222222-2222-2222-2222-222222222222', array[(select id from public.my_cards() where card_id = 51)], array[(select id from public.friend_cards('22222222-2222-2222-2222-222222222222') where card_id = 12)]) as t4 \gset
 select public.remove_friend('22222222-2222-2222-2222-222222222222');
 select pg_temp.check((select status from public.trades where id = :t4) = 'cancelled', 'ami retiré : échanges en attente annulés');
 select pg_temp.check((select count(*) from public.list_friends()) = 0, 'ami retiré');

@@ -128,13 +128,14 @@ jobs:
             code=$(curl -s -o /tmp/r.json -w '%{http_code}' --max-time 15 "$@" -H "apikey: $key" -H "Authorization: Bearer $key" -H 'Content-Type: application/json')
             if grep -q 'PGRST205\|PGRST202\|42P01\|42883' /tmp/r.json; then echo "absent"; else echo "présent (HTTP $code)"; fi
           }
-          for t in profiles owned_cards runs; do
+          for t in profiles owned_cards runs friendships trades trade_items; do
             echo "Table $t : $(check "$url/rest/v1/$t?select=*&limit=0")"
           done
-          for f in start_run finish_run my_stats; do
+          # Seulement des fonctions sans paramètre : avec {} une fonction à paramètres répondrait « introuvable ».
+          for f in start_run my_stats my_trades friends_leaderboard; do
             echo "Fonction $f : $(check -X POST "$url/rest/v1/rpc/$f" -d '{}')"
           done
-          r=$(check "$url/rest/v1/runs?select=*&limit=0")
+          r=$(check "$url/rest/v1/trade_items?select=*&limit=0")
           case "$r" in
             absent*) echo "::notice::Base Supabase pas à jour : coller supabase/schema.sql dans le SQL Editor (docs/SUPABASE.md)." ;;
           esac

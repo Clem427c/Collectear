@@ -302,27 +302,31 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------------
--- Échanges : une carte contre une carte, entre amis, sans restriction de rareté
--- (décision de Clem). Les exemplaires changent de propriétaire seulement quand le
--- destinataire accepte ; les autres propositions sur ces exemplaires expirent alors.
+-- Favoris : un exemplaire en favori ne peut être ni offert ni demandé dans un échange
+-- (décision de Clem du 28/10). Le joueur ne modifie la colonne que via set_favorite.
+-- ---------------------------------------------------------------------------
+alter table public.owned_cards add column if not exists favorite boolean not null default false;
+
+-- ---------------------------------------------------------------------------
+-- Échanges : des exemplaires contre des exemplaires (1 à 5 de chaque côté), entre amis, sans
+-- restriction de rareté (décisions de Clem). Les exemplaires changent de propriétaire seulement
+-- quand le destinataire accepte ; les autres propositions sur ces exemplaires expirent alors.
 -- ---------------------------------------------------------------------------
 create table if not exists public.trades (
-  id             bigint generated always as identity primary key,
-  from_user      uuid not null references auth.users (id) on delete cascade,
-  to_user        uuid not null references auth.users (id) on delete cascade,
-  offered        bigint not null references public.owned_cards (id) on delete cascade,
-  requested      bigint not null references public.owned_cards (id) on delete cascade,
-  -- Copie de la carte et de sa variante, pour l'affichage et l'historique.
-  offered_card   smallint not null,
-  offered_seed   bigint not null,
-  requested_card smallint not null,
-  requested_seed bigint not null,
-  status         text not null default 'pending'
-                 check (status in ('pending', 'accepted', 'declined', 'cancelled', 'expired')),
-  created_at     timestamptz not null default now(),
-  resolved_at    timestamptz,
+  id          bigint generated always as identity primary key,
+  from_user   uuid not null references auth.users (id) on delete cascade,
+  to_user     uuid not null references auth.users (id) on delete cascade,
+  status      text not null default 'pending'
+              check (status in ('pending', 'accepted', 'declined', 'cancelled', 'expired')),
+  created_at  timestamptz not null default now(),
+  resolved_at timestamptz,
   check (from_user <> to_user)
 );
+
+-- Version 0.11 (une carte contre une carte) : colonnes remplacées par trade_items.
+alter table public.trades drop column if exists offered, drop column if exists requested,
+  drop column if exists offered_card, drop column if exists offered_seed,
+  drop column if exists requested_card, drop column if exists requested_seed;
 
 create index if not exists trades_from_idx on public.trades (from_user, status);
 create index if not exists trades_to_idx on public.trades (to_user, status);
@@ -334,6 +338,32 @@ create policy "échanges : lecture des siens" on public.trades
   for select to authenticated using ((select auth.uid()) in (from_user, to_user));
 
 revoke insert, update, delete, truncate on public.trades from authenticated, anon;
+
+-- Exemplaires d'un échange. side = 'offered' (de l'auteur) ou 'requested' (du destinataire).
+-- La carte et sa variante sont recopiées pour l'affichage et l'historique.
+create table if not exists public.trade_items (
+  trade_id   bigint not null references public.trades (id) on delete cascade,
+  owned_card bigint not null references public.owned_cards (id) on delete cascade,
+  side       text not null check (side in ('offered', 'requested')),
+  card_id    smallint not null,
+  seed       bigint not null,
+  primary key (trade_id, owned_card)
+);
+
+create index if not exists trade_items_card_idx on public.trade_items (owned_card);
+
+alter table public.trade_items enable row level security;
+
+drop policy if exists "échanges : lecture de leurs cartes" on public.trade_items;
+create policy "échanges : lecture de leurs cartes" on public.trade_items
+  for select to authenticated using (exists (
+    select 1 from public.trades t where t.id = trade_id and (select auth.uid()) in (t.from_user, t.to_user)));
+
+revoke insert, update, delete, truncate on public.trade_items from authenticated, anon;
+
+-- Propositions de la version 0.11 restées en attente : elles n'ont plus de cartes, on les clôt.
+update public.trades t set status = 'expired', resolved_at = now()
+where t.status = 'pending' and not exists (select 1 from public.trade_items i where i.trade_id = t.id);
 
 -- Exemplaires donnés lors d'un échange : l'appli de celui qui l'a donné le retire de sa
 -- collection locale, et le serveur refuse qu'il soit renvoyé en ligne par la synchro.
@@ -367,74 +397,143 @@ create trigger owned_cards_skip_traded
   before insert on public.owned_cards
   for each row execute function public.skip_traded_away();
 
--- Propose un échange : p_offered = un de mes exemplaires (owned_cards.id), p_requested = un
--- exemplaire de l'ami. Renvoie l'identifiant de l'échange.
-create or replace function public.propose_trade(p_to uuid, p_offered bigint, p_requested bigint) returns bigint
+-- Fait expirer les échanges en attente qui portent sur ces exemplaires.
+create or replace function public.expire_trades_on(p_cards bigint[], p_except bigint default null) returns void
+language sql volatile security definer set search_path = '' as $$
+  update public.trades t set status = 'expired', resolved_at = now()
+  where t.status = 'pending' and t.id is distinct from p_except
+    and exists (select 1 from public.trade_items i where i.trade_id = t.id and i.owned_card = any (p_cards))
+$$;
+
+-- Met un de mes exemplaires (carte + variante) en favori, ou l'en retire. Mettre en favori fait
+-- expirer les échanges en attente qui le concernent. Renvoie false si l'exemplaire n'est pas en ligne.
+create or replace function public.set_favorite(p_card smallint, p_seed bigint, p_favorite boolean) returns boolean
+language plpgsql volatile security definer set search_path = '' as $$
+declare
+  uid uuid := auth.uid();
+  rid bigint;
+begin
+  if uid is null then raise exception 'non connecté' using errcode = '28000'; end if;
+  update public.owned_cards set favorite = p_favorite
+  where user_id = uid and card_id = p_card and seed = p_seed
+  returning id into rid;
+  if rid is null then return false; end if;
+  if p_favorite then perform public.expire_trades_on(array[rid]); end if;
+  return true;
+end $$;
+
+-- Synchro : met en favori tous ces exemplaires (union avec les favoris déjà en ligne).
+-- p_cards = [{"card_id": 12, "seed": 345}, …]. Renvoie le nombre d'exemplaires concernés.
+create or replace function public.add_favorites(p_cards jsonb) returns int
+language plpgsql volatile security definer set search_path = '' as $$
+declare
+  uid uuid := auth.uid();
+  ids bigint[];
+begin
+  if uid is null then raise exception 'non connecté' using errcode = '28000'; end if;
+  if p_cards is null or jsonb_typeof(p_cards) <> 'array' then return 0; end if;
+  with targets as (
+    update public.owned_cards c set favorite = true
+    from jsonb_array_elements(p_cards) e
+    where c.user_id = uid and not c.favorite
+      and jsonb_typeof(e -> 'card_id') = 'number' and jsonb_typeof(e -> 'seed') = 'number'
+      and c.card_id = (e ->> 'card_id')::numeric and c.seed = (e ->> 'seed')::numeric
+    returning c.id
+  )
+  select array_agg(id) into ids from targets;
+  if ids is null then return 0; end if;
+  perform public.expire_trades_on(ids);
+  return cardinality(ids);
+end $$;
+
+-- Propose un échange : p_offered = mes exemplaires (owned_cards.id), p_requested = ceux de l'ami.
+-- 1 à 5 de chaque côté, aucun en favori. Renvoie l'identifiant de l'échange.
+drop function if exists public.propose_trade(uuid, bigint, bigint);
+create or replace function public.propose_trade(p_to uuid, p_offered bigint[], p_requested bigint[]) returns bigint
 language plpgsql volatile security definer set search_path = '' as $$
 declare
   uid uuid := auth.uid();
   max_pending constant int := 20;
-  o public.owned_cards%rowtype;
-  r public.owned_cards%rowtype;
+  max_side constant int := 5;
+  n_off int := coalesce(cardinality(p_offered), 0);
+  n_req int := coalesce(cardinality(p_requested), 0);
   tid bigint;
 begin
   if uid is null then raise exception 'non connecté' using errcode = '28000'; end if;
   if not public.are_friends(uid, p_to) then raise exception 'pas_ami' using errcode = 'P0001'; end if;
-  select * into o from public.owned_cards where id = p_offered and user_id = uid;
-  if not found then raise exception 'carte_offerte_absente' using errcode = 'P0001'; end if;
-  select * into r from public.owned_cards where id = p_requested and user_id = p_to;
-  if not found then raise exception 'carte_demandee_absente' using errcode = 'P0001'; end if;
+  if n_off < 1 or n_req < 1 or n_off > max_side or n_req > max_side then
+    raise exception 'nombre_cartes' using errcode = 'P0001';
+  end if;
+  if (select count(distinct x) from unnest(p_offered) x) <> n_off
+     or (select count(distinct x) from unnest(p_requested) x) <> n_req then
+    raise exception 'carte_en_double' using errcode = 'P0001';
+  end if;
+  if (select count(*) from public.owned_cards c where c.id = any (p_offered) and c.user_id = uid) <> n_off then
+    raise exception 'carte_offerte_absente' using errcode = 'P0001';
+  end if;
+  if (select count(*) from public.owned_cards c where c.id = any (p_requested) and c.user_id = p_to) <> n_req then
+    raise exception 'carte_demandee_absente' using errcode = 'P0001';
+  end if;
+  if exists (select 1 from public.owned_cards c where c.id = any (p_offered || p_requested) and c.favorite) then
+    raise exception 'carte_favorite' using errcode = 'P0001';
+  end if;
   if (select count(*) from public.trades t where t.from_user = uid and t.status = 'pending') >= max_pending then
     raise exception 'trop_propositions' using errcode = 'P0001';
   end if;
-  if exists (select 1 from public.trades t where t.status = 'pending' and t.from_user = uid
-             and t.offered = p_offered and t.requested = p_requested) then
-    raise exception 'deja_propose' using errcode = 'P0001';
-  end if;
-  insert into public.trades (from_user, to_user, offered, requested, offered_card, offered_seed, requested_card, requested_seed)
-  values (uid, p_to, o.id, r.id, o.card_id, o.seed, r.card_id, r.seed)
-  returning id into tid;
+  insert into public.trades (from_user, to_user) values (uid, p_to) returning id into tid;
+  insert into public.trade_items (trade_id, owned_card, side, card_id, seed)
+  select tid, c.id, case when c.user_id = uid then 'offered' else 'requested' end, c.card_id, c.seed
+  from public.owned_cards c where c.id = any (p_offered || p_requested);
   return tid;
 end $$;
 
--- Accepte un échange reçu : les deux exemplaires changent de propriétaire.
--- Renvoie 'accepted', ou 'expired' si l'un des exemplaires n'est plus disponible.
+-- Accepte un échange reçu : tous ses exemplaires changent de propriétaire.
+-- Renvoie 'accepted', ou 'expired' si l'un d'eux n'est plus disponible (donné, mis en favori…).
 create or replace function public.accept_trade(p_trade bigint) returns text
 language plpgsql volatile security definer set search_path = '' as $$
 declare
   uid uuid := auth.uid();
   t public.trades%rowtype;
-  o public.owned_cards%rowtype;
-  r public.owned_cards%rowtype;
+  ids bigint[];
 begin
   if uid is null then raise exception 'non connecté' using errcode = '28000'; end if;
   select * into t from public.trades where id = p_trade and to_user = uid and status = 'pending' for update;
   if not found then raise exception 'echange_inconnu' using errcode = 'P0002'; end if;
-  -- Verrouille les deux exemplaires dans un ordre fixe (pas d'interblocage entre deux acceptations).
-  perform 1 from public.owned_cards where id in (t.offered, t.requested) order by id for update;
-  select * into o from public.owned_cards where id = t.offered;
-  select * into r from public.owned_cards where id = t.requested;
-  if o.user_id is distinct from t.from_user or r.user_id is distinct from t.to_user
-     or not public.are_friends(t.from_user, t.to_user)
-     or exists (select 1 from public.owned_cards c where c.user_id = t.to_user and c.card_id = o.card_id and c.seed = o.seed)
-     or exists (select 1 from public.owned_cards c where c.user_id = t.from_user and c.card_id = r.card_id and c.seed = r.seed)
+  select array_agg(i.owned_card order by i.owned_card) into ids from public.trade_items i where i.trade_id = t.id;
+  -- Verrouille les exemplaires dans un ordre fixe (pas d'interblocage entre deux acceptations).
+  perform 1 from public.owned_cards where id = any (ids) order by id for update;
+  if ids is null or not public.are_friends(t.from_user, t.to_user)
+     or exists (
+       select 1 from public.trade_items i join public.owned_cards c on c.id = i.owned_card
+       where i.trade_id = t.id
+         and (c.favorite
+              or c.user_id is distinct from case i.side when 'offered' then t.from_user else t.to_user end
+              -- le receveur a déjà exactement le même exemplaire (même carte, même variante)
+              or exists (select 1 from public.owned_cards d
+                         where d.user_id = case i.side when 'offered' then t.to_user else t.from_user end
+                           and d.card_id = c.card_id and d.seed = c.seed))
+     )
+     or (select count(*) from public.owned_cards c where c.id = any (ids)) <> cardinality(ids)
   then
     update public.trades set status = 'expired', resolved_at = now() where id = t.id;
     return 'expired';
   end if;
 
-  update public.owned_cards set user_id = t.to_user, obtained_at = now() where id = o.id;
-  update public.owned_cards set user_id = t.from_user, obtained_at = now() where id = r.id;
-  insert into public.traded_away (user_id, card_id, seed) values
-    (t.from_user, o.card_id, o.seed), (t.to_user, r.card_id, r.seed)
+  -- Donneurs : l'exemplaire est noté comme donné ; receveurs : il ne l'est plus (échange retour).
+  insert into public.traded_away (user_id, card_id, seed)
+  select case i.side when 'offered' then t.from_user else t.to_user end, i.card_id, i.seed
+  from public.trade_items i where i.trade_id = t.id
   on conflict do nothing;
-  delete from public.traded_away
-  where (user_id = t.to_user and card_id = o.card_id and seed = o.seed)
-     or (user_id = t.from_user and card_id = r.card_id and seed = r.seed);
+  delete from public.traded_away a
+  using public.trade_items i
+  where i.trade_id = t.id and a.card_id = i.card_id and a.seed = i.seed
+    and a.user_id = case i.side when 'offered' then t.to_user else t.from_user end;
+  update public.owned_cards c
+  set user_id = case i.side when 'offered' then t.to_user else t.from_user end, obtained_at = now()
+  from public.trade_items i
+  where i.trade_id = t.id and c.id = i.owned_card;
   update public.trades set status = 'accepted', resolved_at = now() where id = t.id;
-  update public.trades set status = 'expired', resolved_at = now()
-  where status = 'pending' and id <> t.id
-    and (offered in (o.id, r.id) or requested in (o.id, r.id));
+  perform public.expire_trades_on(ids, t.id);
   return 'accepted';
 end $$;
 
@@ -463,32 +562,41 @@ language sql stable security definer set search_path = '' as $$
   order by f.status desc, p.display_name
 $$;
 
--- Collection d'un ami (pour choisir la carte à lui demander). Vide si vous n'êtes pas amis.
+-- Collection d'un ami (pour choisir les cartes à lui demander ; ses favoris sont signalés).
+-- Vide si vous n'êtes pas amis.
+drop function if exists public.friend_cards(uuid);
 create or replace function public.friend_cards(p_friend uuid)
-returns table (id bigint, card_id smallint, seed bigint)
+returns table (id bigint, card_id smallint, seed bigint, favorite boolean)
 language sql stable security definer set search_path = '' as $$
-  select c.id, c.card_id, c.seed from public.owned_cards c
+  select c.id, c.card_id, c.seed, c.favorite from public.owned_cards c
   where c.user_id = p_friend and public.are_friends((select auth.uid()), p_friend)
   order by c.card_id, c.id
 $$;
 
--- Mes exemplaires avec leur identifiant serveur (pour choisir la carte à offrir).
+-- Mes exemplaires avec leur identifiant serveur et leur état de favori.
+drop function if exists public.my_cards();
 create or replace function public.my_cards()
-returns table (id bigint, card_id smallint, seed bigint)
+returns table (id bigint, card_id smallint, seed bigint, favorite boolean)
 language sql stable security invoker set search_path = '' as $$
-  select c.id, c.card_id, c.seed from public.owned_cards c
+  select c.id, c.card_id, c.seed, c.favorite from public.owned_cards c
   where c.user_id = (select auth.uid()) order by c.card_id, c.id
 $$;
 
--- Mes échanges : en attente, et ceux des 30 derniers jours.
+-- Mes échanges : en attente, et ceux des 30 derniers jours. offered / requested =
+-- [{"card_id": …, "seed": …}, …] (offered = cartes de l'auteur de la proposition).
+drop function if exists public.my_trades();
 create or replace function public.my_trades()
 returns table (id bigint, incoming boolean, other_user uuid, other_name text,
-               offered_card smallint, offered_seed bigint, requested_card smallint, requested_seed bigint,
-               status text, created_at timestamptz)
+               offered jsonb, requested jsonb, status text, created_at timestamptz)
 language sql stable security definer set search_path = '' as $$
   select t.id, t.to_user = (select auth.uid()),
          case when t.to_user = (select auth.uid()) then t.from_user else t.to_user end,
-         p.display_name, t.offered_card, t.offered_seed, t.requested_card, t.requested_seed, t.status, t.created_at
+         p.display_name,
+         coalesce((select jsonb_agg(jsonb_build_object('card_id', i.card_id, 'seed', i.seed) order by i.card_id)
+                   from public.trade_items i where i.trade_id = t.id and i.side = 'offered'), '[]'::jsonb),
+         coalesce((select jsonb_agg(jsonb_build_object('card_id', i.card_id, 'seed', i.seed) order by i.card_id)
+                   from public.trade_items i where i.trade_id = t.id and i.side = 'requested'), '[]'::jsonb),
+         t.status, t.created_at
   from public.trades t
   join public.profiles p on p.id = case when t.to_user = (select auth.uid()) then t.from_user else t.to_user end
   where (select auth.uid()) in (t.from_user, t.to_user)
@@ -497,15 +605,18 @@ language sql stable security definer set search_path = '' as $$
   limit 100
 $$;
 
-revoke execute on function public.are_friends(uuid, uuid), public.skip_traded_away() from public, anon, authenticated;
+revoke execute on function public.are_friends(uuid, uuid), public.skip_traded_away(),
+  public.expire_trades_on(bigint[], bigint) from public, anon, authenticated;
 revoke execute on function
   public.add_friend(text), public.respond_friend(uuid, boolean), public.remove_friend(uuid),
-  public.propose_trade(uuid, bigint, bigint), public.accept_trade(bigint), public.close_trade(bigint),
+  public.propose_trade(uuid, bigint[], bigint[]), public.accept_trade(bigint), public.close_trade(bigint),
+  public.set_favorite(smallint, bigint, boolean), public.add_favorites(jsonb),
   public.list_friends(), public.friend_cards(uuid), public.my_cards(), public.my_trades()
   from public, anon;
 grant execute on function
   public.add_friend(text), public.respond_friend(uuid, boolean), public.remove_friend(uuid),
-  public.propose_trade(uuid, bigint, bigint), public.accept_trade(bigint), public.close_trade(bigint),
+  public.propose_trade(uuid, bigint[], bigint[]), public.accept_trade(bigint), public.close_trade(bigint),
+  public.set_favorite(smallint, bigint, boolean), public.add_favorites(jsonb),
   public.list_friends(), public.friend_cards(uuid), public.my_cards(), public.my_trades()
   to authenticated;
 
