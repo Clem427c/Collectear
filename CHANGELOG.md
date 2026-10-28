@@ -1,5 +1,10 @@
 # Journal des versions
 
+## 0.14.2 – 28/10/2026 (nuit)
+- Attaque : collé à un ennemi ou en le chevauchant, le coup le touche quelle que soit la direction
+  du personnage (avant, il fallait être tourné vers lui, ce qui ratait souvent au contact). À distance,
+  rien ne change : l'ennemi doit être devant et à portée. Guide mis à jour.
+
 ## 0.14.1 – 28/10/2026 (soir)
 - Fiche d'une carte (depuis le bestiaire) : glisser à gauche / à droite passe à la carte possédée
   suivante / précédente, dans l'ordre des numéros (les cartes pas encore obtenues sont sautées).

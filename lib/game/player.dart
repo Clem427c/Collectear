@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 
+import '../core/combat.dart';
 import '../core/config.dart';
 import '../core/terrain.dart';
 import 'collectear_game.dart';
@@ -115,9 +116,16 @@ class Player extends PositionComponent with HasGameReference<CollectearGame> {
     for (final enemy in game.world.children.whereType<Enemy>().toList()) {
       if (!HeightRules.playerCanHit(attacker: level, target: enemy.level)) continue;
       final toEnemy = enemy.position - position;
-      final dist = toEnemy.length;
-      if (dist > game.run.rules.attackRange + enemy.radius) continue;
-      if (dist > 1 && toEnemy.normalized().dot(facing) < GameConfig.attackArcCos) continue;
+      if (!playerAttackHits(
+        dx: toEnemy.x,
+        dy: toEnemy.y,
+        facingX: facing.x,
+        facingY: facing.y,
+        range: game.run.rules.attackRange,
+        enemyRadius: enemy.radius,
+      )) {
+        continue;
+      }
       enemy.hit(toEnemy.length2 > 0 ? toEnemy.normalized() : facing);
     }
   }

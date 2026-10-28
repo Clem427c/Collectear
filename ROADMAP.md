@@ -102,6 +102,7 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
 - Échanges à plusieurs cartes (2 contre 1…) : oui. On peut échanger sa dernière carte d'une espèce : oui.
 - Classement entre amis : par nombre de cartes différentes, pas d'autre critère pour l'instant (28/10).
 - Favoris : une carte en favori ne peut être ni offerte ni demandée tant qu'elle n'est pas retirée des favoris.
+- Attaque : au contact (ou en chevauchant un ennemi), le coup touche dans toutes les directions (28/10).
 - Énergies : achetables dès qu'il en manque une, sans jamais dépasser 10 (28/10).
 - Tours : dernier étage plus large (3×3) pour qu'on comprenne qu'il faut un dernier saut (28/10).
 - Sols : herbe douce et claire, sur laquelle personnages et ennemis ressortent (28/10).

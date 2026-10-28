@@ -35,6 +35,10 @@ class GameConfig {
   static const double attackRange = 40;
   static const double attackRangeBoosted = 68; // boost Portée
   static const double attackArcCos = 0.2; // ~78° de chaque côté
+  /// Distance (centre à centre) en dessous de laquelle le joueur est collé à l'ennemi ou le chevauche :
+  /// le coup touche alors dans toutes les directions (retour de Clem du 28/10). Les dessins font
+  /// environ une case ; 28 = les deux silhouettes se touchent.
+  static const double attackContactDistance = 28;
   static const int attackMaxLevelDiff = 1; // on touche une cible un étage plus haut ou plus bas
   static const double dodgeDuration = 0.22;
   static const double dodgeSpeed = 360;

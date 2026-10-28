@@ -118,7 +118,8 @@ class GuideScreen extends StatelessWidget {
             art: _Art(_ArtKind.levels),
             title: 'Monter, descendre, frapper',
             text: 'Plus le sol est clair, plus il est haut. SAUT pour monter d\'un étage ; on redescend en '
-                'marchant. Ton attaque touche aussi un ennemi un étage au-dessus ou en dessous.',
+                'marchant. Ton attaque touche aussi un ennemi un étage au-dessus ou en dessous. Collé à un '
+                'ennemi (ou sur lui), ton coup le touche quelle que soit la direction.',
           ),
           SectionTitle('Tes cartes'),
           _Entry(

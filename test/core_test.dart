@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:collectear/core/cards.dart';
 import 'package:collectear/core/cloud_sync.dart';
 import 'package:collectear/core/collection.dart';
+import 'package:collectear/core/combat.dart';
 import 'package:collectear/core/config.dart';
 import 'package:collectear/core/decor.dart';
 import 'package:collectear/core/economy.dart';
@@ -150,6 +151,25 @@ void main() {
     test('boost dégâts : ennemis en 2 coups', () {
       expect(const RunRules().enemyHitsToKill, GameConfig.enemyHitsToKill);
       expect(const RunRules(boost: Boost.damage).enemyHitsToKill, 2);
+    });
+  });
+
+  group('Attaque du joueur', () {
+    bool hits(double dx, double dy, {double fx = 1, double fy = 0}) => playerAttackHits(
+        dx: dx, dy: dy, facingX: fx, facingY: fy, range: GameConfig.attackRange, enemyRadius: 11);
+
+    test('collé ou chevauché : touché dans toutes les directions', () {
+      expect(hits(0, 0), isTrue);
+      expect(hits(-10, 0), isTrue); // derrière, en chevauchement
+      expect(hits(0, GameConfig.attackContactDistance), isTrue); // sur le côté, au contact
+      expect(hits(-GameConfig.attackContactDistance + 1, 0), isTrue); // dans le dos, collé
+    });
+
+    test('à distance : seulement devant et à portée', () {
+      expect(hits(40, 0), isTrue);
+      expect(hits(-40, 0), isFalse); // derrière
+      expect(hits(0, 40), isFalse); // sur le côté
+      expect(hits(GameConfig.attackRange + 20, 0), isFalse); // trop loin
     });
   });
 
