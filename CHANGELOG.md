@@ -1,5 +1,11 @@
 # Journal des versions
 
+## 0.13.2 – 28/10/2026 (soir) – sols doux
+- Nouveaux sols de Clem (prompts doux) intégrés : vallée, prairie et plateau clairs, peu contrastés,
+  sans contours. Comme ils sortaient tous crème très pâle, chaque étage est ramené à sa teinte (vert
+  sauge, vert tendre, paille) sans toucher au motif : on distingue les hauteurs, et personnages et
+  ennemis ressortent nettement.
+
 ## 0.13.1 – 28/10/2026 (soir)
 - Sols régénérés par Clem intégrés (vallée, prairie, plateau). Ils sortaient encore des anciens prompts
   (la copie locale des prompts n'était pas à jour) : la vallée, toujours très sombre, reste adoucie

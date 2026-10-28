@@ -55,19 +55,28 @@ def mirror_tile(img: Image.Image) -> Image.Image:
 
 
 # Sols trop saturés : on adoucit un peu pour que personnages et objets ressortent.
-SATURATION = {"tile_l1_prairie.png": 0.75, "tile_l2_plateau.png": 0.7}
+# (Vide depuis le 28/10 : prairie et plateau sont maintenant ramenés à leur teinte par SOFT_GROUND.)
+SATURATION: dict[str, float] = {}
 MIRROR = {"tile_tour.png"}
 
 # Lisibilité (retour de Clem du 28/10) : un sol d'herbe trop sombre ou trop chargé noie personnages et
 # ennemis. S'il est plus sombre que ce seuil, on garde seulement son relief (très atténué) et on le
 # recolore dans une teinte douce. Les sols régénérés avec les nouveaux prompts doux passent tels quels.
 SOFT_GROUND = {
-    "tile_l0_vallee.png": (136, 186, 104),   # vert sauge doux
-    "tile_l1_prairie.png": (160, 204, 120),  # vert tendre
-    "tile_l2_plateau.png": (196, 204, 138),  # paille
+    "tile_l0_vallee.png": (150, 196, 120),   # vert sauge doux
+    "tile_l1_prairie.png": (184, 214, 130),  # vert tendre, plus clair
+    "tile_l2_plateau.png": (224, 208, 150),  # paille
 }
 DARK_LUMINANCE = 110  # luminance moyenne (0-255) en dessous de laquelle le sol est adouci
 SOFT_RELIEF = 9       # amplitude du relief gardé, en niveaux de couleur
+
+
+def grade_ground(img: Image.Image, target) -> Image.Image:
+    """Ramène la couleur moyenne du sol sur la teinte de son étage, sans toucher au motif : les sols
+    doux régénérés le 28/10 étaient tous crème très pâle, on ne distinguait plus les étages."""
+    a = np.asarray(img).astype(float)
+    a = a - a.reshape(-1, 3).mean(axis=0) + np.array(target, float)
+    return Image.fromarray(np.clip(a, 0, 255).astype(np.uint8))
 
 
 def soften_ground(img: Image.Image, target) -> Image.Image:
@@ -83,9 +92,12 @@ def make_tile(f: Path) -> Image.Image:
     img = center_crop(Image.open(f).convert("RGB"))
     img = mirror_tile(img) if f.name in MIRROR else seamless(img)
     target = SOFT_GROUND.get(f.name)
-    if target is not None and np.asarray(img).mean() < DARK_LUMINANCE:
-        print(f"  {f.name} : sol trop sombre, adouci (régénère-le avec le nouveau prompt doux)")
-        img = soften_ground(img, target)
+    if target is not None:
+        if np.asarray(img).mean() < DARK_LUMINANCE:
+            print(f"  {f.name} : sol trop sombre, adouci (régénère-le avec le nouveau prompt doux)")
+            img = soften_ground(img, target)
+        else:
+            img = grade_ground(img, target)
     sat = SATURATION.get(f.name)
     if sat is not None:
         from PIL import ImageEnhance

@@ -44,9 +44,7 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
 - [ ] Décors : collisions avec les arbres et rochers ? (aujourd'hui on passe à travers)
 - [x] Retours du 28/10 : herbe plus douce (prompts + adoucissement auto), sommet des tours en 3×3,
   énergie achetable dès qu'il en manque une (max 10)
-- [ ] **Clem** : relancer `py tool\comfy_batch.py --decors --redo 1,2,3` — la génération du 28/10 a utilisé
-  les anciens prompts (copie locale pas à jour : trèfles, herbe dense). Le script se met maintenant à jour
-  tout seul avant de lire les prompts.
+- [x] **Clem** : sols 1, 2, 3 régénérés avec les prompts doux (28/10) ; teinte de chaque étage ajustée en CI
 
 ## Étape 3 – En ligne (Supabase) — en cours
 Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et `SUPABASE_PUBLISHABLE_KEY` (26/10).
