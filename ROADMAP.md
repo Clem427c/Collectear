@@ -60,10 +60,14 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
 - [ ] **Clem** : vérifier les adresses de retour (`docs/SUPABASE.md` §2), invérifiables depuis la CI
 - [ ] Anti-triche, 2e partie : fermer l'ajout direct de cartes (attend la réponse de Clem sur les cartes
   gagnées hors ligne), puis tirage des cartes par le serveur (rareté contrôlée)
-- [ ] **Prochaine session** : amis (ajout par code ami, liste d'amis), si pas de retour de playtest à traiter
+- [x] Amis : ajout par code ami, demandes (accepter/refuser/annuler), retrait (28/10)
+- [x] Échanges carte contre carte entre amis : proposer, accepter (atomique côté serveur), refuser,
+  annuler, historique ; la carte donnée quitte l'appareil et ne peut pas être renvoyée par la synchro (28/10)
+- [x] Classement entre amis (cartes différentes, exemplaires, record d'ennemis) (28/10)
 - [ ] Connexion Google (attend la réponse de Clem, voir « Questions »)
-- [ ] Amis (code ami), échanges carte contre carte
-- [ ] Profil d'explorateur, classement entre amis
+- [ ] Profil d'un ami (voir sa collection en détail) ; notifications d'échange (push) — plus tard
+- [ ] **Prochaine session** : traiter les réponses de Clem (hors ligne, pseudos, collisions, énergies) ;
+  sinon la pub (étape 4, demande un compte AdMob créé par Clem)
 
 ## Étape 4 – Monétisation
 - [ ] AdMob : run bonus au-delà de 10/jour, résurrection (vidéos récompensées)
@@ -143,6 +147,11 @@ Priorité basse (à toi de juger) :
   Je recommande (b) : c'est la seule option qui rend les échanges entre joueurs sûrs.
 - PROVISOIRE : le jour des 15 runs est compté en heure de Paris côté serveur (l'appli compte en heure
   du téléphone). Les énergies ne sont pas encore vérifiées par le serveur (les pièces sont sur l'appareil).
+- Échanges (28/10) : un exemplaire contre un exemplaire, uniquement entre amis. PROVISOIRE :
+  20 propositions en attente au plus, 200 amis au plus, pas d'expiration automatique des propositions
+  (seulement quand une des cartes change de main). Veux-tu des échanges à plusieurs cartes (2 contre 1…) ?
+  Faut-il pouvoir échanger sa dernière carte d'une espèce (aujourd'hui oui) ?
+- Classement entre amis : trié par nombre de cartes différentes. Autre critère préféré (rareté, points) ?
 - Pseudo : 2 à 24 caractères, lettres (accents compris), chiffres, espaces, - ' . _ — pas d'émojis.
   Pas encore de filtre des gros mots ni d'unicité : à prévoir avant les amis/classements ? 
 

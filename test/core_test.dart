@@ -641,6 +641,18 @@ void main() {
       expect(cards.single.rowId, 9);
     });
 
+    test('classement entre amis : tri et ex æquo', () {
+      final rows = LeaderboardEntry.fromRows([
+        {'display_name': 'Tom', 'is_me': false, 'species': 10, 'copies': 12, 'best_kills': 5},
+        {'display_name': 'Clem', 'is_me': true, 'species': 20, 'copies': 25, 'best_kills': 9},
+        {'display_name': 'Nyx', 'is_me': false, 'species': '10', 'copies': 12, 'best_kills': 3},
+        {'species': 99},
+      ]);
+      expect(rows.map((e) => e.name), ['Clem', 'Nyx', 'Tom']);
+      expect(rows.first.isMe, isTrue);
+      expect(leaderboardRanks(rows), [1, 2, 2]);
+    });
+
     test('carte donnée : retirée de la collection locale, compagnon compris', () async {
       SharedPreferences.setMockInitialValues({});
       final col = await Collection.load();

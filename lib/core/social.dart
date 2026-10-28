@@ -165,3 +165,47 @@ List<(int, int)> givenAwayStillLocal(Map<int, List<int>> local, Iterable<(int, i
 int pendingActions(List<Friend> friends, List<Trade> trades) =>
     friends.where((f) => f.status == FriendStatus.incoming).length +
     trades.where((t) => t.incoming && t.isPending).length;
+
+/// Une ligne du classement entre amis (fonction serveur friends_leaderboard).
+class LeaderboardEntry {
+  const LeaderboardEntry({required this.name, required this.isMe, required this.species, required this.copies, required this.bestKills});
+  final String name;
+  final bool isMe;
+
+  /// Cartes différentes, exemplaires au total, record d'ennemis vaincus en une run.
+  final int species;
+  final int copies;
+  final int bestKills;
+
+  /// Lit les lignes du serveur et les range : cartes différentes, puis exemplaires, puis pseudo.
+  static List<LeaderboardEntry> fromRows(Iterable<dynamic> rows) {
+    final out = [
+      for (final r in rows)
+        if (r is Map && r['display_name'] is String)
+          LeaderboardEntry(
+            name: r['display_name'] as String,
+            isMe: r['is_me'] == true,
+            species: _int(r['species']) ?? 0,
+            copies: _int(r['copies']) ?? 0,
+            bestKills: _int(r['best_kills']) ?? 0,
+          ),
+    ];
+    out.sort((a, b) {
+      final s = b.species.compareTo(a.species);
+      if (s != 0) return s;
+      final c = b.copies.compareTo(a.copies);
+      return c != 0 ? c : a.name.compareTo(b.name);
+    });
+    return out;
+  }
+}
+
+/// Rang affiché de chaque ligne (déjà triée) : les ex æquo (mêmes cartes et exemplaires) partagent le rang.
+List<int> leaderboardRanks(List<LeaderboardEntry> entries) {
+  final ranks = <int>[];
+  for (var i = 0; i < entries.length; i++) {
+    final same = i > 0 && entries[i].species == entries[i - 1].species && entries[i].copies == entries[i - 1].copies;
+    ranks.add(same ? ranks[i - 1] : i + 1);
+  }
+  return ranks;
+}

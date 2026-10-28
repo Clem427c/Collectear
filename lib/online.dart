@@ -322,6 +322,14 @@ class Online {
     }
   }
 
+  static Future<(List<LeaderboardEntry>?, String?)> leaderboard() async {
+    try {
+      return (LeaderboardEntry.fromRows(await _call<List<dynamic>>('friends_leaderboard')), null);
+    } catch (e) {
+      return (null, _socialMessage(e));
+    }
+  }
+
   static Future<(List<Trade>?, String?)> myTrades() async {
     try {
       return (Trade.fromRows(await _call<List<dynamic>>('my_trades')), null);

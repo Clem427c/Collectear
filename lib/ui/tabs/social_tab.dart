@@ -17,6 +17,7 @@ const _panel = Color(0xFF3A2D86);
 class _SocialModel extends ChangeNotifier {
   List<Friend> friends = [];
   List<Trade> trades = [];
+  List<LeaderboardEntry> leaderboard = [];
   bool loading = false;
   String? error;
 
@@ -29,8 +30,10 @@ class _SocialModel extends ChangeNotifier {
     notifyListeners();
     final (f, e1) = await Online.listFriends();
     final (t, e2) = await Online.myTrades();
+    final (l, _) = await Online.leaderboard();
     friends = f ?? friends;
     trades = t ?? trades;
+    leaderboard = l ?? leaderboard;
     error = e1 ?? e2;
     loading = false;
     notifyListeners();
@@ -64,6 +67,7 @@ class _SocialTabState extends State<SocialTab> {
       _lastUser = u;
       _model.friends = [];
       _model.trades = [];
+      _model.leaderboard = [];
       if (u != null) _model.refresh();
       if (mounted) setState(() {});
     }
@@ -341,6 +345,10 @@ class _FriendsViewState extends State<_FriendsView> {
                     ),
                   ],
                 ),
+              if (friends.isNotEmpty && m.leaderboard.length > 1) ...[
+                const SectionTitle('Classement entre amis'),
+                _Leaderboard(entries: m.leaderboard, total: widget.data.pool.cards.length),
+              ],
               if (outgoing.isNotEmpty) ...[
                 const SectionTitle('Demandes envoyées'),
                 for (final f in outgoing)
@@ -371,6 +379,41 @@ class _FriendsViewState extends State<_FriendsView> {
           trailing: Row(mainAxisSize: MainAxisSize.min, children: actions),
         ),
       );
+}
+
+/// Classement : moi et mes amis, par nombre de cartes différentes.
+class _Leaderboard extends StatelessWidget {
+  const _Leaderboard({required this.entries, required this.total});
+  final List<LeaderboardEntry> entries;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    final ranks = leaderboardRanks(entries);
+    return Container(
+      decoration: BoxDecoration(color: _panel, borderRadius: BorderRadius.circular(14)),
+      child: Column(children: [
+        for (var i = 0; i < entries.length; i++)
+          ListTile(
+            dense: true,
+            tileColor: entries[i].isMe ? AppColors.gold.withValues(alpha: 0.12) : null,
+            leading: SizedBox(
+              width: 34,
+              child: Text(ranks[i] <= 3 ? const ['🥇', '🥈', '🥉'][ranks[i] - 1] : '${ranks[i]}',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900)),
+            ),
+            title: Text(entries[i].isMe ? '${entries[i].name} (toi)' : entries[i].name,
+                style: TextStyle(
+                    color: entries[i].isMe ? AppColors.gold : Colors.white, fontWeight: FontWeight.bold)),
+            subtitle: Text('${entries[i].copies} exemplaires · record ${entries[i].bestKills} ennemis',
+                style: const TextStyle(color: Colors.white54, fontSize: 11)),
+            trailing: Text('${entries[i].species} / $total',
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+          ),
+      ]),
+    );
+  }
 }
 
 // ------------------------------------------------------------- Échanges

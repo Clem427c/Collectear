@@ -118,6 +118,8 @@ select pg_temp.check(not exists (select 1 from public.owned_cards where card_id 
 select set_config('request.jwt.claim.sub', '11111111-1111-1111-1111-111111111111', false);
 select pg_temp.check(exists (select 1 from public.owned_cards where card_id = 50 and seed = 7), 'échange : A reçoit 50');
 select pg_temp.check(not exists (select 1 from public.owned_cards where card_id = 12 and seed = 345), 'échange : A n''a plus 12');
+select pg_temp.check((select count(*) from public.friends_leaderboard()) = 2, 'classement : moi et mon ami');
+select pg_temp.check((select is_me and species = 2 from public.friends_leaderboard() order by species desc limit 1), 'classement : trié (cartes différentes, puis exemplaires, puis pseudo)');
 -- Proposition puis annulation ; retrait d'ami.
 select public.propose_trade('22222222-2222-2222-2222-222222222222', (select id from public.my_cards() where card_id = 50), :b51) as t3 \gset
 select public.close_trade(:t3);
@@ -126,6 +128,7 @@ select public.propose_trade('22222222-2222-2222-2222-222222222222', (select id f
 select public.remove_friend('22222222-2222-2222-2222-222222222222');
 select pg_temp.check((select status from public.trades where id = :t4) = 'cancelled', 'ami retiré : échanges en attente annulés');
 select pg_temp.check((select count(*) from public.list_friends()) = 0, 'ami retiré');
+select pg_temp.check((select count(*) from public.friends_leaderboard()) = 1, 'classement : ancien ami retiré');
 
 -- C ne voit aucun échange des autres.
 select set_config('request.jwt.claim.sub', '33333333-3333-3333-3333-333333333333', false);

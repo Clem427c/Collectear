@@ -1,5 +1,18 @@
 # Journal des versions
 
+## 0.11.0 – 28/10/2026 (midi) – amis et échanges
+- Onglet Social → Amis : ton code ami (bouton copier), ajout d'un ami par son code, demandes reçues
+  (accepter / refuser) et envoyées (annuler), liste de tes amis avec leur nombre de cartes, retrait.
+- Échanges pour de vrai : « Proposer un échange » → tu choisis une de tes cartes et une carte de ton ami
+  (badge « Nouveau » sur celles que tu n'as pas). Ton ami accepte ou refuse ; les deux cartes changent de
+  main au moment de l'acceptation, et les autres propositions sur ces cartes expirent. Historique sur 30 jours.
+- Pastilles rouges sur les onglets Amis et Échanges quand quelque chose attend ta réponse.
+- Classement entre amis (cartes différentes, exemplaires, record d'ennemis).
+- Côté serveur : tout passe par des fonctions contrôlées (pas d'écriture directe), une carte donnée ne peut
+  pas revenir par la synchro ; 52 vérifications du schéma en CI.
+- **À faire par Clem** : recoller `supabase/schema.sql` (sans ça, l'onglet Social affiche
+  « Le serveur n'est pas encore à jour »).
+
 ## 0.10.0 – 28/10/2026 – profil en ligne et premières protections anti-triche
 - Pseudo modifiable : toucher son nom dans le Profil. Enregistré sur l'appareil et en ligne ; sur un
   nouvel appareil, le pseudo choisi est retrouvé à la connexion.

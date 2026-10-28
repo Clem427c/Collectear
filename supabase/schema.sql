@@ -508,3 +508,29 @@ grant execute on function
   public.propose_trade(uuid, bigint, bigint), public.accept_trade(bigint), public.close_trade(bigint),
   public.list_friends(), public.friend_cards(uuid), public.my_cards(), public.my_trades()
   to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Classement entre amis : moi et mes amis, par nombre de cartes différentes.
+-- ---------------------------------------------------------------------------
+create or replace function public.friends_leaderboard()
+returns table (user_id uuid, display_name text, is_me boolean, species bigint, copies bigint, best_kills int)
+language sql stable security definer set search_path = '' as $$
+  with people as (
+    select (select auth.uid()) as id
+    union
+    select case when f.requester = (select auth.uid()) then f.addressee else f.requester end
+    from public.friendships f
+    where f.status = 'accepted' and (select auth.uid()) in (f.requester, f.addressee)
+  )
+  select p.id, pr.display_name, p.id = (select auth.uid()),
+         (select count(distinct c.card_id) from public.owned_cards c where c.user_id = p.id),
+         (select count(*) from public.owned_cards c where c.user_id = p.id),
+         (select coalesce(max(r.kills), 0) from public.runs r where r.user_id = p.id and r.finished_at is not null)
+  from people p
+  join public.profiles pr on pr.id = p.id
+  where p.id is not null
+  order by 4 desc, 5 desc, 2
+$$;
+
+revoke execute on function public.friends_leaderboard() from public, anon;
+grant execute on function public.friends_leaderboard() to authenticated;
