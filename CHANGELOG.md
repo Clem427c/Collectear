@@ -6,6 +6,7 @@
   Avant, elles ne mesuraient que les stats, d'où un Shiny parfois moins étoilé qu'un uni.
 - Les stats ont leur propre étiquette sur la fiche (« Stats −3 % » = écart moyen des trois stats).
 - Le bestiaire montre et la fiche range en premier l'exemplaire le plus étoilé.
+- Guide (bouton ?) : nouvelle section « Tes cartes » : exemplaires uniques, étoiles, stats, favoris, échanges.
 
 ## 0.13.2 – 28/10/2026 (soir) – sols doux
 - Nouveaux sols de Clem (prompts doux) intégrés : vallée, prairie et plateau clairs, peu contrastés,

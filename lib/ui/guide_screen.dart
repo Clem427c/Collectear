@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../core/config.dart';
 import '../core/economy.dart';
 import '../core/places.dart';
+import '../core/social.dart' show maxTradeSide;
 import '../game/place.dart';
 import 'theme.dart';
 import 'widgets.dart';
@@ -118,6 +119,45 @@ class GuideScreen extends StatelessWidget {
             text: 'Plus le sol est clair, plus il est haut. SAUT pour monter d\'un étage ; on redescend en '
                 'marchant. Ton attaque touche aussi un ennemi un étage au-dessus ou en dessous.',
           ),
+          SectionTitle('Tes cartes'),
+          _Entry(
+            art: _IconArt(Icons.style),
+            title: 'Chaque carte est unique',
+            text: 'Deux exemplaires d\'une même carte ne sont jamais identiques : couleur, motif (uni, rayures, '
+                'taches, anneaux, étoiles), parfois un éclat Shiny ou une finition spéciale, et des stats '
+                'légèrement différentes. Touche une carte du bestiaire pour voir et faire défiler tes exemplaires.',
+          ),
+          _Entry(
+            art: _StarsArt(),
+            title: 'Étoiles : rareté de l\'apparence',
+            text: '★ uni, rayures ou taches (le plus courant)\n'
+                '★★ motif étoiles ou anneaux\n'
+                '★★★ Shiny (1 sur 40)\n'
+                '★★★★ finition Dorée, Cristal ou Ombre\n'
+                '★★★★★ finition + Shiny (exceptionnel)\n'
+                'Les étoiles ne disent rien de la force de la carte.',
+          ),
+          _Entry(
+            art: _IconArt(Icons.bar_chart_rounded, color: AppColors.teal),
+            title: 'Stats de l\'exemplaire',
+            text: 'PV, ATQ et DEF varient de −4 % à +4 % autour de ceux de l\'espèce. Sur la fiche, chaque stat '
+                'affiche son écart, et l\'étiquette « Stats » donne la moyenne : en vert au-dessus de la normale, '
+                'en rouge en dessous. Même à +4 %, une carte ne dépasse jamais une carte de rareté supérieure.',
+          ),
+          _Entry(
+            art: _IconArt(Icons.star_rounded),
+            title: 'Favoris',
+            text: 'Touche l\'étoile en haut de la fiche pour mettre un exemplaire en favori (étoile dorée dans le '
+                'coin de la carte). Un favori ne peut être ni proposé ni demandé dans un échange tant que tu ne '
+                'l\'as pas retiré des favoris. Le mettre en favori annule les échanges en attente qui le concernent.',
+          ),
+          _Entry(
+            art: _IconArt(Icons.swap_horiz_rounded, color: AppColors.teal),
+            title: 'Échanges entre amis',
+            text: 'Onglet Social : ajoute un ami avec son code ami, puis propose-lui de 1 à $maxTradeSide cartes '
+                'contre 1 à $maxTradeSide des siennes, sans restriction de rareté. Les cartes changent de main '
+                'quand il accepte.',
+          ),
           SizedBox(height: 8),
           Text(
             'Clavier : ZQSD / WASD / flèches · Espace = saut · J = attaque · K = esquive',
@@ -160,6 +200,35 @@ class _Entry extends StatelessWidget {
       ]),
     );
   }
+}
+
+/// Dessin d'une entrée sans image du jeu : une icône sur fond sombre.
+class _IconArt extends StatelessWidget {
+  const _IconArt(this.icon, {this.color = AppColors.gold});
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+        decoration: BoxDecoration(color: AppColors.night, borderRadius: BorderRadius.circular(12)),
+        child: Center(child: Icon(icon, color: color, size: 40)),
+      );
+}
+
+/// Les étoiles des exemplaires, comme sur la fiche d'une carte (3 sur 5 : un Shiny).
+class _StarsArt extends StatelessWidget {
+  const _StarsArt();
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+        decoration: BoxDecoration(color: AppColors.night, borderRadius: BorderRadius.circular(12)),
+        child: Center(
+          child: Wrap(alignment: WrapAlignment.center, children: [
+            for (var i = 1; i <= 5; i++)
+              Icon(i <= 3 ? Icons.star_rounded : Icons.star_outline_rounded, size: 20, color: AppColors.gold),
+          ]),
+        ),
+      );
 }
 
 enum _ArtKind {
