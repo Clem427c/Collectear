@@ -1,0 +1,167 @@
+/// Logique pure des amis et des échanges (testée sans réseau).
+/// Côté serveur : supabase/schema.sql (friendships, trades, traded_away et leurs fonctions).
+library;
+
+/// Alphabet des codes ami (sans 0/O ni 1/I), comme public.new_friend_code() côté serveur.
+const String friendCodeAlphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const int friendCodeLength = 8;
+
+/// Code ami saisi par le joueur : majuscules, sans espaces ni tirets.
+String normalizeFriendCode(String s) => s.toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
+
+/// Vrai si le code a la bonne forme (8 caractères de l'alphabet).
+bool isPlausibleFriendCode(String s) {
+  final c = normalizeFriendCode(s);
+  return c.length == friendCodeLength && c.split('').every(friendCodeAlphabet.contains);
+}
+
+/// Code affiché en deux blocs lisibles : « ABCD EFGH ».
+String formatFriendCode(String code) {
+  final c = normalizeFriendCode(code);
+  return c.length == friendCodeLength ? '${c.substring(0, 4)} ${c.substring(4)}' : c;
+}
+
+/// Message en français pour une erreur renvoyée par les fonctions amis / échanges du serveur.
+String socialErrorMessage(String message) {
+  const known = {
+    'code_inconnu': 'Aucun joueur n\'a ce code ami.',
+    'code_perso': 'C\'est ton propre code ami !',
+    'trop_amis': 'Tu as atteint le nombre maximal d\'amis.',
+    'deja_amis': 'Vous êtes déjà amis.',
+    'deja_demande': 'Demande déjà envoyée : attends qu\'il l\'accepte.',
+    'demande_inconnue': 'Cette demande n\'existe plus.',
+    'pas_ami': 'Vous n\'êtes plus amis.',
+    'carte_offerte_absente': 'Tu ne possèdes plus cette carte.',
+    'carte_demandee_absente': 'Ton ami ne possède plus cette carte.',
+    'trop_propositions': 'Trop de propositions en attente : attends des réponses ou annules-en.',
+    'deja_propose': 'Tu as déjà proposé cet échange.',
+    'echange_inconnu': 'Cet échange n\'est plus en attente.',
+  };
+  for (final e in known.entries) {
+    if (message.contains(e.key)) return e.value;
+  }
+  if (message.contains('Could not find the function') || message.contains('PGRST202')) {
+    return 'Le serveur n\'est pas encore à jour (Clem doit recoller supabase/schema.sql).';
+  }
+  return message;
+}
+
+/// Un exemplaire vu par le serveur : identifiant de ligne (owned_cards.id), carte et variante.
+class ServerCard {
+  const ServerCard(this.rowId, this.cardId, this.seed);
+  final int rowId;
+  final int cardId;
+  final int seed;
+
+  static List<ServerCard> fromRows(Iterable<dynamic> rows) => [
+        for (final r in rows)
+          if (r is Map && _int(r['id']) != null && _int(r['card_id']) != null && _int(r['seed']) != null)
+            ServerCard(_int(r['id'])!, _int(r['card_id'])!, _int(r['seed'])!),
+      ];
+}
+
+int? _int(Object? v) => switch (v) { final int i => i, final num n => n.toInt(), final String s => int.tryParse(s), _ => null };
+
+enum FriendStatus { friend, incoming, outgoing }
+
+/// Un ami, ou une demande en attente (reçue ou envoyée).
+class Friend {
+  const Friend({required this.userId, required this.name, required this.code, required this.status, this.species = 0});
+  final String userId;
+  final String name;
+  final String code;
+  final FriendStatus status;
+
+  /// Nombre de cartes différentes (0 tant que la demande n'est pas acceptée).
+  final int species;
+
+  static List<Friend> fromRows(Iterable<dynamic> rows) {
+    final out = <Friend>[];
+    for (final r in rows) {
+      if (r is! Map || r['user_id'] is! String) continue;
+      final accepted = r['status'] == 'accepted';
+      out.add(Friend(
+        userId: r['user_id'] as String,
+        name: (r['display_name'] as String?) ?? '?',
+        code: (r['friend_code'] as String?) ?? '',
+        status: accepted ? FriendStatus.friend : (r['incoming'] == true ? FriendStatus.incoming : FriendStatus.outgoing),
+        species: _int(r['species']) ?? 0,
+      ));
+    }
+    return out;
+  }
+}
+
+enum TradeStatus { pending, accepted, declined, cancelled, expired }
+
+extension TradeStatusInfo on TradeStatus {
+  String get label => const ['En attente', 'Accepté', 'Refusé', 'Annulé', 'Expiré'][index];
+}
+
+/// Un échange vu par le joueur : « offered » est toujours la carte de l'auteur de la proposition.
+class Trade {
+  const Trade({
+    required this.id,
+    required this.incoming,
+    required this.otherUser,
+    required this.otherName,
+    required this.offeredCard,
+    required this.offeredSeed,
+    required this.requestedCard,
+    required this.requestedSeed,
+    required this.status,
+  });
+  final int id;
+
+  /// Vrai si la proposition vient de l'ami (c'est à moi de répondre).
+  final bool incoming;
+  final String otherUser;
+  final String otherName;
+  final int offeredCard;
+  final int offeredSeed;
+  final int requestedCard;
+  final int requestedSeed;
+  final TradeStatus status;
+
+  /// Ce que je donne et ce que je reçois si l'échange se fait.
+  (int, int) get iGive => incoming ? (requestedCard, requestedSeed) : (offeredCard, offeredSeed);
+  (int, int) get iGet => incoming ? (offeredCard, offeredSeed) : (requestedCard, requestedSeed);
+
+  bool get isPending => status == TradeStatus.pending;
+
+  static List<Trade> fromRows(Iterable<dynamic> rows) {
+    final out = <Trade>[];
+    for (final r in rows) {
+      if (r is! Map) continue;
+      final id = _int(r['id']);
+      final oc = _int(r['offered_card']), os = _int(r['offered_seed']);
+      final rc = _int(r['requested_card']), rs = _int(r['requested_seed']);
+      final status = TradeStatus.values.where((s) => s.name == r['status']).firstOrNull;
+      if (id == null || oc == null || os == null || rc == null || rs == null || status == null) continue;
+      out.add(Trade(
+        id: id,
+        incoming: r['incoming'] == true,
+        otherUser: (r['other_user'] as String?) ?? '',
+        otherName: (r['other_name'] as String?) ?? '?',
+        offeredCard: oc,
+        offeredSeed: os,
+        requestedCard: rc,
+        requestedSeed: rs,
+        status: status,
+      ));
+    }
+    return out;
+  }
+}
+
+/// Exemplaires de la collection locale qui ont été donnés lors d'un échange (liste traded_away du
+/// serveur) et doivent donc en être retirés. Un exemplaire est (id de carte, seed).
+List<(int, int)> givenAwayStillLocal(Map<int, List<int>> local, Iterable<(int, int)> tradedAway) => [
+      for (final (id, seed) in tradedAway.toSet())
+        if (local[id]?.contains(seed) ?? false) (id, seed),
+    ];
+
+/// Nombre d'actions qui attendent le joueur (demandes d'ami et échanges reçus) : pastille de l'onglet.
+int pendingActions(List<Friend> friends, List<Trade> trades) =>
+    friends.where((f) => f.status == FriendStatus.incoming).length +
+    trades.where((t) => t.incoming && t.isPending).length;

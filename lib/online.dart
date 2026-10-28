@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/cloud_sync.dart';
 import 'core/collection.dart';
 import 'core/online_config.dart';
+import 'core/social.dart';
 
 /// État de la synchronisation de la collection, affiché dans le Profil.
 enum SyncState { idle, syncing, done, error }
@@ -156,6 +157,8 @@ class Online {
         remote.addAll(fromRows(rows));
         if (rows.length < _pageSize) break;
       }
+      step = 'cartes échangées';
+      await _removeTradedAway(col);
       step = 'envoi des cartes';
       final plan = planSync(col.variants, remote);
       for (final batch in chunked(plan.toUpload, _batchSize)) {
@@ -212,6 +215,118 @@ class Online {
       stats = ProfileStats.fromRpc(await _client.rpc<dynamic>('my_stats').timeout(_timeout));
     } catch (e) {
       debugPrint('Statistiques en ligne : $e');
+    }
+  }
+
+  /// Retire de l'appareil les exemplaires donnés lors d'échanges (table traded_away).
+  /// Sans effet si la base n'est pas encore à jour.
+  static Future<void> _removeTradedAway(Collection col) async {
+    try {
+      final rows = await _client.from('traded_away').select('card_id, seed').timeout(_timeout);
+      final given = givenAwayStillLocal(col.variants, fromRows(rows));
+      if (given.isNotEmpty) await col.removeAll(given);
+    } on PostgrestException catch (e) {
+      debugPrint('Cartes échangées : $e');
+    }
+  }
+
+  // --- Amis et échanges (supabase/schema.sql) ---
+  // Chaque fonction renvoie un message d'erreur en français, ou null si tout s'est bien passé.
+
+  static Future<T> _call<T>(String fn, [Map<String, dynamic>? params]) async =>
+      await _client.rpc<dynamic>(fn, params: params).timeout(_timeout) as T;
+
+  static String _socialMessage(Object e) {
+    if (e is PostgrestException) return socialErrorMessage('${e.message} ${e.code ?? ''}');
+    if (e is TimeoutException) return 'Le serveur ne répond pas.';
+    return 'Serveur injoignable.';
+  }
+
+  /// Amis et demandes en attente (null + message si impossible).
+  static Future<(List<Friend>?, String?)> listFriends() async {
+    try {
+      return (Friend.fromRows(await _call<List<dynamic>>('list_friends')), null);
+    } catch (e) {
+      return (null, _socialMessage(e));
+    }
+  }
+
+  /// Ajoute un ami par son code. Renvoie (vous êtes amis tout de suite ?, erreur).
+  static Future<(bool, String?)> addFriend(String code) async {
+    try {
+      final r = await _call<dynamic>('add_friend', {'p_code': normalizeFriendCode(code)});
+      return (r == 'accepted', null);
+    } catch (e) {
+      return (false, _socialMessage(e));
+    }
+  }
+
+  static Future<String?> respondFriend(String userId, bool accept) async {
+    try {
+      await _call<dynamic>('respond_friend', {'p_other': userId, 'p_accept': accept});
+      return null;
+    } catch (e) {
+      return _socialMessage(e);
+    }
+  }
+
+  static Future<String?> removeFriend(String userId) async {
+    try {
+      await _call<dynamic>('remove_friend', {'p_other': userId});
+      return null;
+    } catch (e) {
+      return _socialMessage(e);
+    }
+  }
+
+  /// Exemplaires d'un ami (avec leur identifiant serveur), ou les miens si [userId] est null.
+  static Future<(List<ServerCard>?, String?)> cardsOf(String? userId) async {
+    try {
+      final rows = userId == null
+          ? await _call<List<dynamic>>('my_cards')
+          : await _call<List<dynamic>>('friend_cards', {'p_friend': userId});
+      return (ServerCard.fromRows(rows), null);
+    } catch (e) {
+      return (null, _socialMessage(e));
+    }
+  }
+
+  static Future<String?> proposeTrade(String toUser, int offeredRowId, int requestedRowId) async {
+    try {
+      await _call<dynamic>('propose_trade', {'p_to': toUser, 'p_offered': offeredRowId, 'p_requested': requestedRowId});
+      return null;
+    } catch (e) {
+      return _socialMessage(e);
+    }
+  }
+
+  /// Accepte un échange reçu, puis met la collection de l'appareil à jour.
+  /// Renvoie (accepté ?, erreur) ; accepté = false sans erreur : un exemplaire n'était plus disponible.
+  static Future<(bool, String?)> acceptTrade(int tradeId) async {
+    try {
+      final r = await _call<dynamic>('accept_trade', {'p_trade': tradeId});
+      await sync();
+      return (r == 'accepted', null);
+    } catch (e) {
+      return (false, _socialMessage(e));
+    }
+  }
+
+  /// Refuse (si reçu) ou annule (si envoyé) un échange en attente.
+  static Future<String?> closeTrade(int tradeId) async {
+    try {
+      await _call<dynamic>('close_trade', {'p_trade': tradeId});
+      return null;
+    } catch (e) {
+      return _socialMessage(e);
+    }
+  }
+
+  static Future<(List<Trade>?, String?)> myTrades() async {
+    try {
+      return (Trade.fromRows(await _call<List<dynamic>>('my_trades')), null);
+    } catch (e) {
+      return (null, _socialMessage(e));
     }
   }
 

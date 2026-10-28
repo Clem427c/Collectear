@@ -90,6 +90,23 @@ class Collection {
     return fresh;
   }
 
+  /// Retire des exemplaires (donnés lors d'un échange). Si le compagnon n'est plus possédé,
+  /// il est retiré lui aussi. Renvoie le nombre d'exemplaires réellement retirés.
+  Future<int> removeAll(Iterable<(int, int)> items) async {
+    var removed = 0;
+    for (final (id, seed) in items) {
+      final seeds = variants[id];
+      if (seeds == null || !seeds.remove(seed)) continue;
+      removed++;
+      if (seeds.isEmpty) variants.remove(id);
+    }
+    if (removed == 0) return 0;
+    await _save();
+    final comp = companionId;
+    if (comp != null && !variants.containsKey(comp)) await setCompanion(null);
+    return removed;
+  }
+
   static String _today() {
     final n = DateTime.now();
     return '${n.year}-${n.month}-${n.day}';

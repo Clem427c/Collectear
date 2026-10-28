@@ -13,6 +13,7 @@ import 'package:collectear/core/online_config.dart';
 import 'package:collectear/core/places.dart';
 import 'package:collectear/core/run_state.dart';
 import 'package:collectear/core/settings.dart';
+import 'package:collectear/core/social.dart';
 import 'package:collectear/core/terrain.dart';
 import 'package:collectear/core/variants.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -575,14 +576,82 @@ void main() {
       expect(sql, contains('check (cards between 0 and ${GameConfig.maxCardsPerRun})'));
       expect(sql, contains("display_name text not null default '$defaultPseudo'"));
       expect(sql, contains('char_length(display_name) between 1 and $maxPseudoLength'));
+      expect(sql, contains("chars constant text := '$friendCodeAlphabet'"));
     });
 
     test('RLS activé sur toutes les tables', () {
       final tables = RegExp(r'create table if not exists public\.(\w+)').allMatches(sql).map((m) => m.group(1)!).toList();
-      expect(tables, containsAll(['profiles', 'owned_cards', 'runs']));
+      expect(tables, containsAll(['profiles', 'owned_cards', 'runs', 'friendships', 'trades', 'traded_away']));
       for (final t in tables) {
         expect(sql, contains('alter table public.$t enable row level security'), reason: t);
       }
+    });
+  });
+
+  group('Amis et échanges', () {
+    test('code ami : saisie souple, forme vérifiée, affichage en deux blocs', () {
+      expect(normalizeFriendCode(' abcd-efgh '), 'ABCDEFGH');
+      expect(isPlausibleFriendCode('abcd efgh'), isTrue);
+      expect(isPlausibleFriendCode('ABCDEFG'), isFalse);
+      expect(isPlausibleFriendCode('ABCDEFG0'), isFalse); // pas de 0 dans l'alphabet
+      expect(formatFriendCode('abcdefgh'), 'ABCD EFGH');
+    });
+
+    test('messages d\'erreur du serveur en français', () {
+      expect(socialErrorMessage('code_inconnu'), contains('Aucun joueur'));
+      expect(socialErrorMessage('P0001: deja_amis'), contains('déjà amis'));
+      expect(socialErrorMessage('Could not find the function public.add_friend'), contains('pas encore à jour'));
+      expect(socialErrorMessage('autre'), 'autre');
+    });
+
+    test('amis : lecture des lignes du serveur', () {
+      final friends = Friend.fromRows([
+        {'user_id': 'b', 'display_name': 'Nyx', 'friend_code': 'ABCDEFGH', 'status': 'accepted', 'incoming': false, 'species': 42},
+        {'user_id': 'c', 'display_name': 'Tom', 'friend_code': 'JKLMNPQR', 'status': 'pending', 'incoming': true, 'species': 0},
+        {'user_id': 'd', 'display_name': 'Mila', 'status': 'pending', 'incoming': false},
+        {'display_name': 'sans id'},
+      ]);
+      expect(friends.map((f) => f.status), [FriendStatus.friend, FriendStatus.incoming, FriendStatus.outgoing]);
+      expect(friends.first.species, 42);
+    });
+
+    test('échanges : ce que je donne et reçois selon le sens', () {
+      final trades = Trade.fromRows([
+        {'id': 1, 'incoming': true, 'other_user': 'b', 'other_name': 'Nyx', 'offered_card': 50, 'offered_seed': 7,
+         'requested_card': 12, 'requested_seed': 345, 'status': 'pending'},
+        {'id': 2, 'incoming': false, 'other_user': 'b', 'other_name': 'Nyx', 'offered_card': 3, 'offered_seed': 1,
+         'requested_card': 4, 'requested_seed': 2, 'status': 'expired'},
+        {'id': 3, 'status': 'inconnu'},
+      ]);
+      expect(trades.length, 2);
+      expect(trades[0].iGive, (12, 345));
+      expect(trades[0].iGet, (50, 7));
+      expect(trades[1].iGive, (3, 1));
+      expect(trades[1].status.label, 'Expiré');
+      expect(pendingActions(Friend.fromRows([
+        {'user_id': 'c', 'status': 'pending', 'incoming': true},
+      ]), trades), 2);
+    });
+
+    test('exemplaires du serveur : lignes invalides ignorées', () {
+      final cards = ServerCard.fromRows([
+        {'id': 9, 'card_id': 12, 'seed': 345},
+        {'id': 'x', 'card_id': 1, 'seed': 1},
+      ]);
+      expect(cards.single.rowId, 9);
+    });
+
+    test('carte donnée : retirée de la collection locale, compagnon compris', () async {
+      SharedPreferences.setMockInitialValues({});
+      final col = await Collection.load();
+      await col.addAll(const [(12, 345), (12, 346), (50, 7)]);
+      await col.setCompanion(50);
+      final given = givenAwayStillLocal(col.variants, const [(50, 7), (50, 7), (99, 1)]);
+      expect(given, [(50, 7)]);
+      expect(await col.removeAll([...given, (12, 345)]), 2);
+      expect(col.variants, {12: [346]});
+      expect(col.companionId, isNull);
+      expect(await col.removeAll(const [(12, 999)]), 0);
     });
   });
 
