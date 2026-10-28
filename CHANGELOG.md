@@ -1,5 +1,12 @@
 # Journal des versions
 
+## 0.13.3 – 28/10/2026 (soir) – étoiles des exemplaires
+- Les étoiles d'un exemplaire indiquent maintenant la rareté de son apparence : 1 ★ uni, rayures ou
+  taches ; 2 ★ motif étoiles ou anneaux ; 3 ★ Shiny ; 4 ★ Dorée, Cristal ou Ombre ; 5 ★ finition + Shiny.
+  Avant, elles ne mesuraient que les stats, d'où un Shiny parfois moins étoilé qu'un uni.
+- Les stats ont leur propre étiquette sur la fiche (« Stats −3 % » = écart moyen des trois stats).
+- Le bestiaire montre et la fiche range en premier l'exemplaire le plus étoilé.
+
 ## 0.13.2 – 28/10/2026 (soir) – sols doux
 - Nouveaux sols de Clem (prompts doux) intégrés : vallée, prairie et plateau clairs, peu contrastés,
   sans contours. Comme ils sortaient tous crème très pâle, chaque étage est ramené à sa teinte (vert

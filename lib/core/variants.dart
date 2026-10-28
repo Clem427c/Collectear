@@ -95,8 +95,28 @@ class Variant {
     return ((avg - (1 - statSpread)) / (2 * statSpread)).clamp(0.0, 1.0);
   }
 
-  /// Qualité en étoiles, de 1 à 5 (affichée sur la fiche détaillée).
-  int get stars => 1 + (quality * 5).floor().clamp(0, 4);
+  /// Étoiles de l'exemplaire (1 à 5) = rareté de son APPARENCE, du plus courant au plus rare.
+  /// Retour de Clem du 28/10 : avant, les étoiles mesuraient seulement les stats (±4 %), si bien
+  /// qu'un Shiny pouvait avoir moins d'étoiles qu'un exemplaire uni ; incompréhensible.
+  /// Les stats restent affichées à part (écart de chaque stat et moyenne, [statsPercent]).
+  ///   1 ★ uni, rayures, taches (≈ 78 %)   2 ★ motif étoiles ou anneaux (≈ 22 %)
+  ///   3 ★ Shiny (1/40)                      4 ★ finition Dorée, Cristal ou Ombre (≈ 1/43)
+  ///   5 ★ finition + Shiny (≈ 1/1700)
+  // PROVISOIRE : paliers proposés par Claude, à valider par Clem (ROADMAP, Questions).
+  int get stars {
+    final special = finish != VariantFinish.normal;
+    if (special && shiny) return 5;
+    if (special) return 4;
+    if (shiny) return 3;
+    if (pattern == VariantPattern.stars || pattern == VariantPattern.rings) return 2;
+    return 1;
+  }
+
+  /// Nom de la rareté de l'apparence, selon les étoiles.
+  String get rarityLabel => const ['Courant', 'Peu courant', 'Rare', 'Très rare', 'Exceptionnel'][stars - 1];
+
+  /// Écart moyen des trois stats par rapport à l'espèce, en pourcentage arrondi (−4 à +4).
+  int get statsPercent => deltaPercent((hpMult + atkMult + defMult) / 3);
 
   /// Écart d'un multiplicateur en pourcentage arrondi (ex. 1.031 → 3, 0.962 → −4).
   static int deltaPercent(double mult) => ((mult - 1) * 100).round();

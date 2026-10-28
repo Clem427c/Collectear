@@ -138,6 +138,12 @@ Priorité basse (à toi de juger) :
   Achat possible dès qu'il manque une énergie, sans dépasser 10 (décision de Clem du 28/10). Prix OK ?
 - Les pièces restent sur l'appareil pour l'instant (pas encore sauvegardées en ligne).
 
+### Étoiles des exemplaires (28/10)
+- Les étoiles mesurent maintenant la rareté de l'APPARENCE (avant : seulement les stats ±4 %, d'où un
+  Shiny à 1 étoile). PROVISOIRE : 1 ★ uni/rayures/taches, 2 ★ motif étoiles ou anneaux, 3 ★ Shiny,
+  4 ★ finition Dorée/Cristal/Ombre, 5 ★ finition + Shiny. Les stats ont leur propre étiquette
+  (« Stats −3 % » = moyenne des trois). Ces paliers te vont ?
+
 ### Décors (27/10)
 - Intégrés. PROVISOIRE : arbres, rochers et buissons sont décoratifs (on passe à travers). Veux-tu
   qu'ils bloquent le passage (plus de stratégie, mais risque de se coincer) ?

@@ -83,7 +83,7 @@ class _CardDetailScreenState extends State<CardDetailScreen> with TickerProvider
   void initState() {
     super.initState();
     final instances = [for (final s in widget.variantSeeds) CardInstance(widget.card, s)]
-      ..sort((a, b) => b.variant.prestige.compareTo(a.variant.prestige));
+      ..sort((a, b) => b.variant.stars.compareTo(a.variant.stars));
     _items = instances.isEmpty ? [null] : instances;
     if (widget.initialSeed != null) {
       final i = _items.indexWhere((e) => e?.variantSeed == widget.initialSeed);
@@ -465,7 +465,7 @@ class _VariantPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final special = variant.prestige > 0;
+    final special = variant.stars >= 3;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -485,9 +485,23 @@ class _VariantPanel extends StatelessWidget {
             Icon(i <= variant.stars ? Icons.star_rounded : Icons.star_outline_rounded,
                 size: 18, color: AppColors.gold),
         ]),
-        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerRight,
+          child: Text('Apparence ${variant.rarityLabel.toLowerCase()}',
+              style: TextStyle(color: special ? AppColors.gold : Colors.white54, fontSize: 11)),
+        ),
+        const SizedBox(height: 6),
         Wrap(spacing: 6, runSpacing: 6, children: [
           _Tag(text: variant.code, color: AppColors.night),
+          _Tag(
+            text: 'Stats ${variant.statsPercent > 0 ? '+' : variant.statsPercent < 0 ? '−' : '±'}'
+                '${variant.statsPercent.abs()} %',
+            color: variant.statsPercent > 0
+                ? const Color(0xFF1E6B45)
+                : variant.statsPercent < 0
+                    ? const Color(0xFF7A2E3A)
+                    : AppColors.night,
+          ),
           _Tag(text: 'Motif : ${variant.pattern.label}', color: AppColors.night),
           if (variant.finish != VariantFinish.normal) _Tag(text: variant.finish.label, color: AppColors.gold, dark: true),
           if (variant.shiny) const _Tag(text: '✦ Shiny', color: AppColors.violet),

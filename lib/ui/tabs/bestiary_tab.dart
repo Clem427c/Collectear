@@ -90,7 +90,7 @@ class _BestiaryTabState extends State<BestiaryTab> {
               CardInstance? best;
               for (final s in seeds) {
                 final inst = CardInstance(c, s);
-                if (best == null || inst.variant.prestige > best.variant.prestige) best = inst;
+                if (best == null || inst.variant.stars > best.variant.stars) best = inst;
               }
               return CardView(
                 card: c,

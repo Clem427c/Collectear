@@ -355,27 +355,34 @@ void main() {
   });
 
   group('Variantes', () {
-    test('qualité entre 0 et 1, étoiles entre 1 et 5, toutes atteintes', () {
-      final stars = <int>{};
-      for (var seed = 0; seed < 5000; seed++) {
+    test('étoiles = rareté de l\'apparence : un Shiny en a toujours plus qu\'un uni', () {
+      final byStars = <int, int>{};
+      for (var seed = 0; seed < 200000; seed++) {
         final v = Variant.fromSeed(seed);
         expect(v.quality, inInclusiveRange(0.0, 1.0));
         expect(v.stars, inInclusiveRange(1, 5));
-        stars.add(v.stars);
+        byStars[v.stars] = (byStars[v.stars] ?? 0) + 1;
+        final special = v.finish != VariantFinish.normal;
+        if (v.shiny && !special) expect(v.stars, 3);
+        if (special) expect(v.stars, v.shiny ? 5 : 4);
+        if (!v.shiny && !special) {
+          expect(v.stars, v.pattern == VariantPattern.stars || v.pattern == VariantPattern.rings ? 2 : 1);
+        }
       }
-      expect(stars, {1, 2, 3, 4, 5});
+      expect(byStars.keys.toSet(), {1, 2, 3, 4, 5});
+      // Plus il y a d'étoiles, plus c'est rare.
+      for (var k = 1; k < 5; k++) {
+        expect(byStars[k]!, greaterThan(byStars[k + 1]!), reason: '$k étoiles plus courant que ${k + 1}');
+      }
+      expect(Variant.fromSeed(1).rarityLabel, isNotEmpty);
     });
 
-    test('la qualité suit la moyenne des stats', () {
-      Variant? best, worst;
+    test('moyenne des stats en pourcentage', () {
       for (var seed = 0; seed < 2000; seed++) {
         final v = Variant.fromSeed(seed);
-        if (best == null || v.quality > best.quality) best = v;
-        if (worst == null || v.quality < worst.quality) worst = v;
+        expect(v.statsPercent, inInclusiveRange(-4, 4));
+        expect(v.statsPercent, Variant.deltaPercent((v.hpMult + v.atkMult + v.defMult) / 3));
       }
-      double avg(Variant v) => (v.hpMult + v.atkMult + v.defMult) / 3;
-      expect(avg(best!), greaterThan(avg(worst!)));
-      expect(best.stars, greaterThanOrEqualTo(worst.stars));
     });
 
     test('écart en pourcentage', () {
