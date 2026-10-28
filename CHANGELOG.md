@@ -1,5 +1,11 @@
 # Journal des versions
 
+## 0.13.1 – 28/10/2026 (soir)
+- Sols régénérés par Clem intégrés (vallée, prairie, plateau). Ils sortaient encore des anciens prompts
+  (la copie locale des prompts n'était pas à jour) : la vallée, toujours très sombre, reste adoucie
+  automatiquement.
+- `comfy_batch.py` fait un `git pull` avant de lire les prompts (option `--no-pull` pour l'éviter).
+
 ## 0.13.0 – 28/10/2026 (soir) – lisibilité et retours de Clem
 - Herbe : la vallée (sol le plus courant) était trop dense et trop foncée. Elle est maintenant adoucie
   automatiquement (vert sauge clair, relief très léger) ; personnages et ennemis ressortent mieux.

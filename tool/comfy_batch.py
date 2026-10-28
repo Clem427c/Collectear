@@ -105,6 +105,20 @@ def generate(url: str, prompt: str, seed: int, prefix: str, dest: Path, width: i
             raise RuntimeError(json.dumps(hist[pid]["status"])[:500])
 
 
+def update_prompts():
+    """Récupère la dernière version du dépôt AVANT de lire les prompts (sinon on génère avec de vieux
+    prompts : c'est arrivé le 28/10 avec les sols). Sans effet bloquant si git échoue (hors ligne…)."""
+    try:
+        r = subprocess.run(["git", "pull", "--rebase", "--autostash", "origin", "main"], cwd=ROOT,
+                           capture_output=True, text=True, timeout=60)
+        if r.returncode == 0:
+            print("Prompts à jour (git pull).")
+        else:
+            print("ATTENTION : git pull a échoué, les prompts sont peut-être anciens :", r.stderr.strip()[:300])
+    except Exception as e:  # git absent, pas de réseau…
+        print("ATTENTION : impossible de mettre le dépôt à jour, les prompts sont peut-être anciens :", e)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--from", dest="start", type=int, default=1)
@@ -118,7 +132,10 @@ def main():
     ap.add_argument("--full", action="store_true", help="FLUX en pleine précision et encodeurs sur la carte graphique")
     ap.add_argument("--decors", action="store_true",
                     help="décors, personnage jouable et ennemis (docs/prompts_decors.csv) au lieu des cartes")
+    ap.add_argument("--no-pull", action="store_true", help="ne pas mettre le dépôt à jour avant de lire les prompts")
     args = ap.parse_args()
+    if not args.no_pull:
+        update_prompts()
     if args.full:
         global WEIGHT_DTYPE, CLIP_DEVICE
         WEIGHT_DTYPE, CLIP_DEVICE = "default", "default"
