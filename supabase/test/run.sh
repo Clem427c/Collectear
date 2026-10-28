@@ -11,3 +11,5 @@ q -d collectear_test -f supabase/test/mock_supabase.sql
 q -d collectear_test -f supabase/schema.sql
 q -d collectear_test -f supabase/schema.sql
 PGOPTIONS='-c client_min_messages=notice' q -d collectear_test -f supabase/test/checks.sql
+q -d collectear_test -f supabase/showcase.sql
+PGOPTIONS='-c client_min_messages=notice' q -d collectear_test -f supabase/test/showcase_checks.sql

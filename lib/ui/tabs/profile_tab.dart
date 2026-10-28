@@ -4,6 +4,7 @@ import '../../app_data.dart';
 import '../../core/cards.dart';
 import '../../core/cloud_sync.dart';
 import '../../online.dart';
+import '../pseudo_dialog.dart';
 import '../theme.dart';
 import '../widgets.dart';
 
@@ -86,76 +87,7 @@ class ProfileTab extends StatelessWidget {
 }
 
 /// Fenêtre de changement de pseudo (enregistré sur l'appareil, et en ligne si connecté).
-Future<void> _editPseudo(BuildContext context, String current) async {
-  await showDialog<void>(context: context, builder: (_) => _PseudoDialog(current: current));
-}
-
-class _PseudoDialog extends StatefulWidget {
-  const _PseudoDialog({required this.current});
-  final String current;
-
-  @override
-  State<_PseudoDialog> createState() => _PseudoDialogState();
-}
-
-class _PseudoDialogState extends State<_PseudoDialog> {
-  late final _ctrl = TextEditingController(text: widget.current == defaultPseudo ? '' : widget.current);
-  String? _error;
-  bool _busy = false;
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  Future<void> _save() async {
-    setState(() => _busy = true);
-    final err = await Online.setPseudo(_ctrl.text);
-    if (!mounted) return;
-    if (err == null) {
-      Navigator.of(context).pop();
-    } else {
-      setState(() {
-        _busy = false;
-        _error = err;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      backgroundColor: const Color(0xFF2A1F66),
-      title: const Text('Ton pseudo', style: TextStyle(color: Colors.white)),
-      content: TextField(
-        controller: _ctrl,
-        autofocus: true,
-        maxLength: maxPseudoLength,
-        enabled: !_busy,
-        style: const TextStyle(color: Colors.white),
-        decoration: InputDecoration(
-          hintText: defaultPseudo,
-          hintStyle: const TextStyle(color: Colors.white38),
-          errorText: _error,
-          counterStyle: const TextStyle(color: Colors.white38),
-        ),
-        onSubmitted: (_) => _save(),
-      ),
-      actions: [
-        TextButton(
-          onPressed: _busy ? null : () => Navigator.of(context).pop(),
-          child: const Text('Annuler', style: TextStyle(color: Colors.white70)),
-        ),
-        FilledButton(
-          style: FilledButton.styleFrom(backgroundColor: AppColors.violet),
-          onPressed: _busy ? null : _save,
-          child: const Text('Valider'),
-        ),
-      ],
-    );
-  }
-}
+Future<void> _editPseudo(BuildContext context, String current) => showPseudoDialog(context, current);
 
 class _StatBox extends StatelessWidget {
   const _StatBox({required this.icon, required this.label, required this.value});

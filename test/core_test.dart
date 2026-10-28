@@ -377,6 +377,31 @@ void main() {
       expect(Variant.fromSeed(1).rarityLabel, isNotEmpty);
     });
 
+    test('vitrine de test : chaque seed de supabase/showcase.sql donne la variante annoncée', () {
+      // tool/gen_showcase.py réimplémente le Random de Dart en Python : ce test le vérifie
+      // avec le vrai code de l'appli, pour les 3000 exemplaires.
+      final sql = File('supabase/showcase.sql').readAsStringSync();
+      final rows = RegExp(r"\((\d+), (\d+), '([a-z-]+)'\)").allMatches(sql).toList();
+      expect(rows.length, 3000);
+      for (final m in rows) {
+        final v = Variant.fromSeed(int.parse(m.group(2)!));
+        final kind = m.group(3)!;
+        final k = ShowcaseKind.values.firstWhere((e) => e.name == (kind == 'golden-shiny' ? 'goldenShiny' : kind));
+        final ok = k.matches(v);
+        expect(ok, isTrue, reason: 'carte ${m.group(1)}, seed ${m.group(2)} : $kind attendu');
+      }
+    });
+
+    test('galerie : une seed pour chacune des 10 apparences, étoiles croissantes', () {
+      final seeds = showcaseSeeds();
+      expect(seeds.length, ShowcaseKind.values.length);
+      for (final e in seeds.entries) {
+        expect(e.key.matches(Variant.fromSeed(e.value)), isTrue, reason: e.key.label);
+      }
+      expect(Variant.fromSeed(seeds[ShowcaseKind.goldenShiny]!).stars, 5);
+      expect(Variant.fromSeed(seeds[ShowcaseKind.none]!).stars, 1);
+    });
+
     test('moyenne des stats en pourcentage', () {
       for (var seed = 0; seed < 2000; seed++) {
         final v = Variant.fromSeed(seed);
@@ -549,6 +574,17 @@ void main() {
       expect(pseudoError('A' * 25), isNotNull);
       expect(pseudoError('Clem<script>'), isNotNull);
       expect(pseudoError('Clem 😀'), isNotNull);
+    });
+
+    test('pseudo choisi à la première connexion : « Explorateur » refusé', () {
+      expect(chosenPseudoError('Clem'), isNull);
+      expect(chosenPseudoError(defaultPseudo), isNotNull);
+      expect(chosenPseudoError(' explorateur '), isNotNull);
+      expect(chosenPseudoError('A'), isNotNull);
+      expect(needsPseudoChoice(signedIn: true, profileLoaded: true, pseudo: defaultPseudo), isTrue);
+      expect(needsPseudoChoice(signedIn: true, profileLoaded: false, pseudo: defaultPseudo), isFalse);
+      expect(needsPseudoChoice(signedIn: false, profileLoaded: true, pseudo: defaultPseudo), isFalse);
+      expect(needsPseudoChoice(signedIn: true, profileLoaded: true, pseudo: 'Clem'), isFalse);
     });
 
     test('pseudo : le pseudo choisi l\'emporte sur celui par défaut', () {

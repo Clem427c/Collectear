@@ -32,6 +32,13 @@ class Online {
   /// Statistiques calculées par le serveur (runs jouées connecté), null si indisponibles.
   static ProfileStats? stats;
 
+  /// Profil en ligne lu depuis la connexion (pseudo, code ami) : on sait alors si le pseudo est choisi.
+  static bool profileLoaded = false;
+
+  /// Le joueur connecté n'a pas encore choisi de pseudo (fenêtre à la première connexion).
+  static bool get needsPseudo => needsPseudoChoice(
+      signedIn: user != null, profileLoaded: profileLoaded, pseudo: _collection?.pseudo ?? defaultPseudo);
+
   /// Vrai si le client Supabase est prêt (secrets présents et valides au build).
   static bool get ready => _initialized;
 
@@ -60,6 +67,7 @@ class Online {
       } else if (s.event == AuthChangeEvent.signedOut) {
         friendCode = null;
         stats = null;
+        profileLoaded = false;
         onlineCount = 0;
         syncState = SyncState.idle;
         _bump();
@@ -208,6 +216,7 @@ class Online {
       if (pseudo != col.pseudo) await col.setPseudo(pseudo);
       if (push) await _client.from('profiles').update({'display_name': pseudo}).eq('id', userId);
     }
+    if (row != null) profileLoaded = true;
     await _loadStats();
   }
 

@@ -133,6 +133,39 @@ class Variant {
   }
 }
 
+/// Les 10 apparences à montrer dans la galerie des variantes (et la vitrine de test du serveur).
+enum ShowcaseKind { none, stripes, spots, rings, stars, shiny, golden, crystal, shadow, goldenShiny }
+
+extension ShowcaseKindInfo on ShowcaseKind {
+  String get label => const [
+        'Uni', 'Rayures', 'Taches', 'Anneaux', 'Étoiles', 'Shiny', 'Dorée', 'Cristal', 'Ombre', 'Dorée Shiny',
+      ][index];
+
+  bool matches(Variant v) {
+    final normal = v.finish == VariantFinish.normal;
+    return switch (this) {
+      ShowcaseKind.shiny => v.shiny && normal,
+      ShowcaseKind.golden => v.finish == VariantFinish.golden && !v.shiny,
+      ShowcaseKind.crystal => v.finish == VariantFinish.crystal && !v.shiny,
+      ShowcaseKind.shadow => v.finish == VariantFinish.shadow && !v.shiny,
+      ShowcaseKind.goldenShiny => v.finish == VariantFinish.golden && v.shiny,
+      _ => normal && !v.shiny && v.pattern.name == name,
+    };
+  }
+}
+
+/// Première seed (à partir de [start]) de chaque apparence de [ShowcaseKind].
+Map<ShowcaseKind, int> showcaseSeeds({int start = 0}) {
+  final out = <ShowcaseKind, int>{};
+  for (var seed = start; out.length < ShowcaseKind.values.length; seed++) {
+    final v = Variant.fromSeed(seed);
+    for (final k in ShowcaseKind.values) {
+      if (!out.containsKey(k) && k.matches(v)) out[k] = seed;
+    }
+  }
+  return out;
+}
+
 /// Un exemplaire possédé : une espèce + une variante.
 class CardInstance {
   CardInstance(this.card, this.variantSeed) : variant = Variant.fromSeed(variantSeed);

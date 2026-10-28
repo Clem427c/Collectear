@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../app_data.dart';
 import '../online.dart';
 import 'guide_screen.dart';
+import 'pseudo_dialog.dart';
 import 'settings_screen.dart';
 import 'tabs/bestiary_tab.dart';
 import 'tabs/play_tab.dart';
@@ -39,8 +40,23 @@ class _HomeShellState extends State<HomeShell> {
 
   int _index = _playIndex;
 
+  bool _askingPseudo = false;
+
   void _refresh() {
     if (mounted) setState(() {});
+    _askPseudoIfNeeded();
+  }
+
+  /// Première connexion : le joueur choisit son pseudo (sinon tout le monde s'appelle « Explorateur »).
+  void _askPseudoIfNeeded() {
+    if (_askingPseudo || !Online.needsPseudo) return;
+    _askingPseudo = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (mounted && Online.needsPseudo) {
+        await showPseudoDialog(context, widget.data.collection.pseudo, first: true);
+      }
+      _askingPseudo = false;
+    });
   }
 
   @override

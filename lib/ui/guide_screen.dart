@@ -8,6 +8,7 @@ import '../core/places.dart';
 import '../core/social.dart' show maxTradeSide;
 import '../game/place.dart';
 import 'theme.dart';
+import 'variant_gallery_screen.dart';
 import 'widgets.dart';
 
 /// Guide des points d'intérêt et des règles, avec les mêmes dessins que dans le jeu.
@@ -137,6 +138,7 @@ class GuideScreen extends StatelessWidget {
                 '★★★★★ finition + Shiny (exceptionnel)\n'
                 'Les étoiles ne disent rien de la force de la carte.',
           ),
+          _GalleryButton(),
           _Entry(
             art: _IconArt(Icons.bar_chart_rounded, color: AppColors.teal),
             title: 'Stats de l\'exemplaire',
@@ -200,6 +202,25 @@ class _Entry extends StatelessWidget {
       ]),
     );
   }
+}
+
+/// Ouvre la galerie : une carte dans ses 10 apparences.
+class _GalleryButton extends StatelessWidget {
+  const _GalleryButton();
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: ChunkyButton(
+          label: 'Voir toutes les variantes',
+          icon: Icons.auto_awesome,
+          fontSize: 16,
+          color: AppColors.violet,
+          textColor: Colors.white,
+          onPressed: () => Navigator.of(context)
+              .push(MaterialPageRoute<void>(builder: (_) => const VariantGalleryScreen())),
+        ),
+      );
 }
 
 /// Dessin d'une entrée sans image du jeu : une icône sur fond sombre.

@@ -308,128 +308,297 @@ void showPrototypeSnack(BuildContext context, String text) {
     ..showSnackBar(SnackBar(content: Text(text), behavior: SnackBarBehavior.floating));
 }
 
-/// Illustration provisoire d'une variante : pastille teintée, motif, finition et éclat shiny.
-/// Sera remplacée par l'illustration IA teintée de la même façon.
-class VariantEmblem extends StatelessWidget {
-  const VariantEmblem({super.key, required this.card, required this.variant, required this.size});
+/// Illustration d'un exemplaire : pastille teintée, motif, finition et éclat shiny.
+/// Retour de Clem du 28/10 : effets plus visibles (motifs plus marqués, cadre, reflets animés).
+/// [animate] : reflets et scintillements animés (grandes vignettes ; coupé dans les grilles).
+class VariantEmblem extends StatefulWidget {
+  const VariantEmblem({super.key, required this.card, required this.variant, required this.size, bool? animate})
+      : animate = animate ?? size >= 120;
   final GameCard card;
   final Variant variant;
   final double size;
+  final bool animate;
 
-  List<Color> get _colors => switch (variant.finish) {
-        VariantFinish.golden => const [Color(0xFFFFF1A8), Color(0xFFE0A100)],
-        VariantFinish.crystal => const [Color(0xFFF2FDFF), Color(0xFF7FD3FF)],
-        VariantFinish.shadow => const [Color(0xFF5B4B8A), Color(0xFF120B26)],
-        VariantFinish.normal => [
-            HSVColor.fromAHSV(1, variant.hue, 0.45, 0.95).toColor(),
-            HSVColor.fromAHSV(1, (variant.hue + 25) % 360, 0.75, 0.65).toColor(),
-          ],
-      };
+  @override
+  State<VariantEmblem> createState() => _VariantEmblemState();
+}
+
+class _VariantEmblemState extends State<VariantEmblem> with SingleTickerProviderStateMixin {
+  AnimationController? _anim;
+
+  bool get _special =>
+      widget.variant.shiny ||
+      widget.variant.finish != VariantFinish.normal ||
+      widget.variant.pattern == VariantPattern.stars ||
+      widget.variant.pattern == VariantPattern.rings;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.animate && _special) {
+      _anim = AnimationController(vsync: this, duration: const Duration(milliseconds: 2600))..repeat();
+    }
+  }
+
+  @override
+  void dispose() {
+    _anim?.dispose();
+    super.dispose();
+  }
+
+  List<Color> get _colors {
+    final v = widget.variant;
+    return switch (v.finish) {
+      VariantFinish.golden => const [Color(0xFFFFF4B8), Color(0xFFFFC93C), Color(0xFFB87A00)],
+      VariantFinish.crystal => const [Color(0xFFFFFFFF), Color(0xFFBDEBFF), Color(0xFF5BB8F0)],
+      VariantFinish.shadow => const [Color(0xFF6A54A8), Color(0xFF2A1B52), Color(0xFF0B0618)],
+      VariantFinish.normal => [
+          HSVColor.fromAHSV(1, v.hue, 0.40, 0.98).toColor(),
+          HSVColor.fromAHSV(1, (v.hue + 20) % 360, 0.62, 0.82).toColor(),
+          HSVColor.fromAHSV(1, (v.hue + 40) % 360, 0.80, 0.58).toColor(),
+        ],
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
+    final card = widget.card;
+    final v = widget.variant;
+    final size = widget.size;
+    final art = Center(
+      child: Illustrations.available.contains(card.id)
+          ? Padding(
+              padding: EdgeInsets.all(size * 0.05),
+              child: ColorFiltered(
+                colorFilter: ColorFilter.matrix(variantMatrix(v)),
+                child: Image.asset(Illustrations.path(card.id), fit: BoxFit.contain),
+              ),
+            )
+          : Icon(
+              card.family == CardFamily.hero ? Icons.person : Icons.pets,
+              size: size * 0.5,
+              color: v.finish == VariantFinish.shadow ? const Color(0xFFCBB8FF) : Colors.white,
+              shadows: const [Shadow(color: Colors.black45, blurRadius: 4)],
+            ),
+    );
+    Widget layer(double t) => Stack(fit: StackFit.expand, children: [
+          CustomPaint(painter: _EmblemPainter(variant: v, colors: _colors, t: t, front: false)),
+          art,
+          // Reflets, éclats et cadre par-dessus l'illustration.
+          IgnorePointer(child: CustomPaint(painter: _EmblemPainter(variant: v, colors: _colors, t: t, front: true))),
+        ]);
+    final anim = _anim;
     return SizedBox(
       width: size,
       height: size,
-      child: CustomPaint(
-        painter: _EmblemPainter(colors: _colors, pattern: variant.pattern, shiny: variant.shiny),
-        child: Center(
-          child: Illustrations.available.contains(card.id)
-              ? Padding(
-                  padding: EdgeInsets.all(size * 0.04),
-                  child: ColorFiltered(
-                    colorFilter: ColorFilter.matrix(variantMatrix(variant)),
-                    child: Image.asset(Illustrations.path(card.id), fit: BoxFit.contain),
-                  ),
-                )
-              : Icon(
-            card.family == CardFamily.hero ? Icons.person : Icons.pets,
-            size: size * 0.5,
-            color: variant.finish == VariantFinish.shadow ? const Color(0xFFCBB8FF) : Colors.white,
-            shadows: const [Shadow(color: Colors.black45, blurRadius: 4)],
-          ),
-        ),
-      ),
+      child: anim == null ? layer(0.15) : AnimatedBuilder(animation: anim, builder: (_, __) => layer(anim.value)),
     );
   }
 }
 
+/// Dessin d'un exemplaire. [front] = false : fond (aura, disque, motif) ; true : par-dessus
+/// l'illustration (reflet des finitions, cadre arc-en-ciel et éclats du shiny, cadre des finitions).
+/// [t] : temps de l'animation, de 0 à 1 (boucle).
 class _EmblemPainter extends CustomPainter {
-  _EmblemPainter({required this.colors, required this.pattern, required this.shiny});
+  _EmblemPainter({required this.variant, required this.colors, required this.t, required this.front});
+  final Variant variant;
   final List<Color> colors;
-  final VariantPattern pattern;
-  final bool shiny;
+  final double t;
+  final bool front;
+
+  static const _rainbow = [
+    Color(0xFFFF6B6B), Color(0xFFFFB627), Color(0xFF6BE36B), Color(0xFF4DD6FF), Color(0xFFB57BFF), Color(0xFFFF6B6B),
+  ];
 
   @override
   void paint(Canvas canvas, Size size) {
     final c = Offset(size.width / 2, size.height / 2);
-    final r = size.width / 2;
+    final r = size.width / 2 * 0.94; // marge pour l'aura et les éclats
     final rect = Rect.fromCircle(center: c, radius: r);
-    canvas.drawCircle(c, r, Paint()..shader = LinearGradient(colors: colors, begin: Alignment.topLeft, end: Alignment.bottomRight).createShader(rect));
-    canvas.save();
-    canvas.clipPath(Path()..addOval(rect));
-    final p = Paint()..color = Colors.white.withValues(alpha: 0.22);
-    switch (pattern) {
-      case VariantPattern.none:
-        break;
-      case VariantPattern.stripes:
-        p
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = r * 0.12;
-        for (var i = -4; i <= 4; i++) {
-          final o = i * r * 0.35;
-          canvas.drawLine(Offset(c.dx + o - r, c.dy - r), Offset(c.dx + o + r, c.dy + r), p);
-        }
-      case VariantPattern.spots:
-        for (final o in const [Offset(-0.5, -0.4), Offset(0.45, -0.3), Offset(-0.2, 0.5), Offset(0.5, 0.45), Offset(0.05, -0.05)]) {
-          canvas.drawCircle(c + Offset(o.dx * r, o.dy * r), r * 0.16, p);
-        }
-      case VariantPattern.rings:
-        p
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = r * 0.07;
-        for (var k = 1; k <= 3; k++) {
-          canvas.drawCircle(c, r * k * 0.3, p);
-        }
-      case VariantPattern.stars:
-        for (var k = 0; k < 6; k++) {
-          final a = k * math.pi / 3;
-          _star(canvas, c + Offset(math.cos(a) * r * 0.62, math.sin(a) * r * 0.62), r * 0.13, p);
-        }
-    }
-    canvas.restore();
-    if (shiny) {
-      canvas.drawCircle(
-        c,
-        r - 1.5,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 3
-          ..shader = const SweepGradient(colors: [
-            Color(0xFFFF6B6B), Color(0xFFFFB627), Color(0xFF6BE36B), Color(0xFF4DD6FF), Color(0xFFB57BFF), Color(0xFFFF6B6B),
-          ]).createShader(rect),
-      );
-      final sp = Paint()..color = Colors.white;
-      _star(canvas, c + Offset(r * 0.7, -r * 0.7), r * 0.18, sp);
-      _star(canvas, c + Offset(-r * 0.75, r * 0.55), r * 0.12, sp);
+    if (front) {
+      _front(canvas, c, r, rect);
+    } else {
+      _back(canvas, c, r, rect);
     }
   }
 
-  void _star(Canvas canvas, Offset c, double s, Paint p) {
+  void _back(Canvas canvas, Offset c, double r, Rect rect) {
+    final finish = variant.finish;
+    // Aura autour du disque : dorée, glacée ou violette (pulse avec l'animation).
+    if (finish != VariantFinish.normal || variant.shiny) {
+      final pulse = 0.5 + 0.5 * math.sin(t * 2 * math.pi);
+      final glow = switch (finish) {
+        VariantFinish.golden => const Color(0xFFFFC93C),
+        VariantFinish.crystal => const Color(0xFF9BE3FF),
+        VariantFinish.shadow => const Color(0xFF8E4DFF),
+        VariantFinish.normal => const Color(0xFFFFFFFF),
+      };
+      canvas.drawCircle(
+        c,
+        r * (0.98 + 0.03 * pulse),
+        Paint()
+          ..color = glow.withValues(alpha: finish == VariantFinish.shadow ? 0.75 : 0.55)
+          ..maskFilter = MaskFilter.blur(BlurStyle.outer, r * (0.10 + 0.05 * pulse)),
+      );
+    }
+    canvas.drawCircle(
+      c,
+      r,
+      Paint()
+        ..shader = RadialGradient(colors: colors, stops: const [0, 0.6, 1], center: const Alignment(-0.3, -0.35))
+            .createShader(rect),
+    );
+    canvas.save();
+    canvas.clipPath(Path()..addOval(rect));
+    if (finish == VariantFinish.crystal) _facets(canvas, c, r);
+    if (finish == VariantFinish.shadow) _smoke(canvas, c, r);
+    _pattern(canvas, c, r);
+    canvas.restore();
+  }
+
+  /// Motif bien visible : clair et sombre en alternance, éléments plus grands qu'avant.
+  void _pattern(Canvas canvas, Offset c, double r) {
+    final light = Paint()..color = Colors.white.withValues(alpha: 0.42);
+    final dark = Paint()..color = Colors.black.withValues(alpha: 0.16);
+    switch (variant.pattern) {
+      case VariantPattern.none:
+        break;
+      case VariantPattern.stripes:
+        for (var i = -5; i <= 5; i++) {
+          final o = i * r * 0.32;
+          final p = (i.isEven ? light : dark)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = r * 0.14;
+          canvas.drawLine(Offset(c.dx + o - r, c.dy - r), Offset(c.dx + o + r, c.dy + r), p);
+        }
+      case VariantPattern.spots:
+        const spots = [
+          (-0.55, -0.45, 0.20), (0.5, -0.4, 0.15), (-0.3, 0.55, 0.17), (0.55, 0.45, 0.22), (0.0, -0.75, 0.12),
+          (-0.8, 0.1, 0.13), (0.82, 0.02, 0.11), (0.15, 0.82, 0.12), (-0.05, 0.0, 0.10),
+        ];
+        for (final (x, y, s) in spots) {
+          canvas.drawCircle(c + Offset(x * r, y * r), r * s, light);
+          canvas.drawCircle(c + Offset(x * r + r * s * 0.25, y * r + r * s * 0.25), r * s * 0.45, dark);
+        }
+      case VariantPattern.rings:
+        // Anneaux concentriques qui s'élargissent lentement (ondes).
+        for (var k = 0; k < 4; k++) {
+          final f = ((k + t) / 4) % 1.0;
+          canvas.drawCircle(
+            c,
+            r * (0.2 + 0.85 * f),
+            Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = r * 0.09
+              ..color = Colors.white.withValues(alpha: 0.5 * (1 - f) + 0.1),
+          );
+        }
+      case VariantPattern.stars:
+        // Étoiles qui tournent autour du personnage.
+        for (var k = 0; k < 8; k++) {
+          final a = k * math.pi / 4 + t * 2 * math.pi / 8;
+          final rr = k.isEven ? 0.72 : 0.5;
+          _star(canvas, c + Offset(math.cos(a) * r * rr, math.sin(a) * r * rr), r * (k.isEven ? 0.17 : 0.11),
+              Colors.white.withValues(alpha: 0.55));
+        }
+    }
+  }
+
+  void _facets(Canvas canvas, Offset c, double r) {
+    final p = Paint()..color = Colors.white.withValues(alpha: 0.28);
+    final q = Paint()..color = const Color(0xFF2F8FD0).withValues(alpha: 0.18);
+    for (var k = 0; k < 8; k++) {
+      final a1 = k * math.pi / 4, a2 = a1 + math.pi / 4;
+      final path = Path()
+        ..moveTo(c.dx, c.dy)
+        ..lineTo(c.dx + math.cos(a1) * r * 1.2, c.dy + math.sin(a1) * r * 1.2)
+        ..lineTo(c.dx + math.cos(a2) * r * 1.2, c.dy + math.sin(a2) * r * 1.2)
+        ..close();
+      canvas.drawPath(path, k.isEven ? p : q);
+    }
+  }
+
+  void _smoke(Canvas canvas, Offset c, double r) {
+    for (var k = 0; k < 5; k++) {
+      final a = k * 2 * math.pi / 5 + t * 2 * math.pi;
+      canvas.drawCircle(
+        c + Offset(math.cos(a) * r * 0.55, math.sin(a) * r * 0.55),
+        r * 0.38,
+        Paint()
+          ..color = const Color(0xFF8E4DFF).withValues(alpha: 0.22)
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, r * 0.15),
+      );
+    }
+  }
+
+  void _front(Canvas canvas, Offset c, double r, Rect rect) {
+    final finish = variant.finish;
+    if (finish != VariantFinish.normal) {
+      // Reflet qui balaie la carte en diagonale.
+      canvas.save();
+      canvas.clipPath(Path()..addOval(rect));
+      final x = -1.6 + 3.2 * t;
+      canvas.drawRect(
+        rect,
+        Paint()
+          ..blendMode = BlendMode.plus
+          ..shader = LinearGradient(
+            begin: Alignment(x - 0.5, -1),
+            end: Alignment(x + 0.5, 1),
+            colors: [Colors.transparent, Colors.white.withValues(alpha: finish == VariantFinish.shadow ? 0.18 : 0.45),
+              Colors.transparent],
+          ).createShader(rect),
+      );
+      canvas.restore();
+      // Cadre métallique (or), givré (cristal) ou sombre (ombre).
+      final frame = switch (finish) {
+        VariantFinish.golden => const [Color(0xFFFFF4B8), Color(0xFFB87A00), Color(0xFFFFE07A), Color(0xFF8A5A00), Color(0xFFFFF4B8)],
+        VariantFinish.crystal => const [Color(0xFFFFFFFF), Color(0xFF7FD3FF), Color(0xFFFFFFFF), Color(0xFF4DA6E0), Color(0xFFFFFFFF)],
+        _ => const [Color(0xFF8E4DFF), Color(0xFF1A0B33), Color(0xFFB57BFF), Color(0xFF1A0B33), Color(0xFF8E4DFF)],
+      };
+      canvas.drawCircle(
+        c,
+        r - r * 0.035,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = r * 0.07
+          ..shader = SweepGradient(colors: frame, transform: GradientRotation(t * 2 * math.pi)).createShader(rect),
+      );
+    }
+    if (variant.shiny) {
+      canvas.drawCircle(
+        c,
+        r - r * (finish == VariantFinish.normal ? 0.03 : 0.11),
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = r * 0.055
+          ..shader = SweepGradient(colors: _rainbow, transform: GradientRotation(t * 2 * math.pi)).createShader(rect),
+      );
+      // Éclats qui scintillent à tour de rôle.
+      const spots = [(0.72, -0.72, 0.20), (-0.78, 0.55, 0.14), (0.85, 0.35, 0.10), (-0.55, -0.85, 0.11)];
+      for (var i = 0; i < spots.length; i++) {
+        final (x, y, s) = spots[i];
+        final tw = 0.55 + 0.45 * math.sin((t + i / spots.length) * 2 * math.pi);
+        _star(canvas, c + Offset(x * r, y * r), r * s * tw, Colors.white);
+      }
+    }
+  }
+
+  void _star(Canvas canvas, Offset c, double s, Color color) {
     final path = Path();
     for (var i = 0; i < 8; i++) {
       final a = i * math.pi / 4;
-      final rr = i.isEven ? s : s * 0.4;
+      final rr = i.isEven ? s : s * 0.38;
       final pt = c + Offset(math.cos(a) * rr, math.sin(a) * rr);
       i == 0 ? path.moveTo(pt.dx, pt.dy) : path.lineTo(pt.dx, pt.dy);
     }
     path.close();
-    canvas.drawPath(path, Paint()..color = p.color);
+    canvas.drawPath(path, Paint()..color = color);
   }
 
   @override
   bool shouldRepaint(covariant _EmblemPainter old) =>
-      old.colors != colors || old.pattern != pattern || old.shiny != shiny;
+      old.t != t || old.variant.seed != variant.seed || old.front != front;
 }
 
 

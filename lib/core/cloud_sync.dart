@@ -107,6 +107,22 @@ String? pseudoError(String pseudo) {
   return null;
 }
 
+/// Erreur pour un pseudo CHOISI par le joueur : en plus des règles de [pseudoError], le pseudo par
+/// défaut « Explorateur » est refusé (tout le monde l'a, on ne distinguerait pas ses amis).
+String? chosenPseudoError(String pseudo) {
+  final err = pseudoError(pseudo);
+  if (err != null) return err;
+  if (normalizePseudo(pseudo).toLowerCase() == defaultPseudo.toLowerCase()) {
+    return 'Choisis un pseudo à toi : « $defaultPseudo » est celui de tout le monde.';
+  }
+  return null;
+}
+
+/// Faut-il demander au joueur de choisir son pseudo ? Oui une fois connecté, son profil en ligne lu,
+/// s'il n'a toujours que le pseudo par défaut.
+bool needsPseudoChoice({required bool signedIn, required bool profileLoaded, required String pseudo}) =>
+    signedIn && profileLoaded && normalizePseudo(pseudo) == defaultPseudo;
+
 /// Quel pseudo garder quand on retrouve son profil en ligne ?
 /// Le pseudo choisi (différent de celui par défaut) l'emporte ; si les deux ont été choisis,
 /// c'est celui du serveur (il a pu être changé sur un autre appareil).
