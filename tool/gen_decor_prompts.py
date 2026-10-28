@@ -23,6 +23,18 @@ TILE = ("seamless tileable texture, perfectly top-down orthographic view looking
         "evenly lit, no shadows from objects, no horizon, no perspective, the pattern fills the whole image edge to edge, "
         "no characters, no objects, no border, game terrain tile, " + STYLE)
 
+# Sols d'herbe (retour de Clem du 28/10 : l'herbe était trop dense et trop foncée, on lisait mal le
+# jeu). Fond doux, clair, peu contrasté et sans contours, sur lequel personnages et ennemis ressortent.
+GROUND_SOFT = ("seamless tileable ground texture, perfectly top-down orthographic view looking straight down, "
+               "evenly lit, flat soft lighting, no shadows, no horizon, no perspective, the pattern fills the whole image "
+               "edge to edge, no characters, no objects, no border, "
+               "calm understated background texture for a top-down mobile game, meant to stay discreet behind the action, "
+               "soft pastel colors, light and airy, low contrast, very subtle and sparse details, large areas of smooth "
+               "nearly uniform color, outline-free soft edges, short sparse grass, bright gentle greens, "
+               "smooth painted cartoon style, original design, no text, no letters, no watermark")
+# (FLUX n'a pas de prompt négatif : « no dense grass » risque d'ajouter de l'herbe dense, on décrit
+#  donc ce qu'on veut plutôt que ce qu'on ne veut pas.)
+
 PROP = ("single game prop seen from above at a three-quarter top-down angle, like a top-down mobile adventure game, "
         "centered, the whole object fully inside the image with a white margin, soft round shadow on the ground under it, "
         "isolated on a plain pure white background, no scenery, no ground texture, no other objects, " + STYLE)
@@ -35,12 +47,15 @@ CHAR = ("single game character sprite seen from a three-quarter top-down angle, 
 # (fichier, nom, sorte, largeur, hauteur, description)
 ASSETS = [
     # --- Sol : un niveau de hauteur = un sol (du plus bas au plus haut) ---
-    ("tile_l0_vallee.png", "Sol niveau 0 : vallée", "tuile", 1024, 1024,
-     "lush dark green grass of a shaded valley, short dense grass blades, a few tiny clover leaves, deep green tones"),
-    ("tile_l1_prairie.png", "Sol niveau 1 : prairie", "tuile", 1024, 1024,
-     "bright green meadow grass, soft grass tufts, a few tiny white and yellow flowers scattered sparsely"),
-    ("tile_l2_plateau.png", "Sol niveau 2 : plateau", "tuile", 1024, 1024,
-     "light yellow-green plateau grass, short dry grass with small pebbles, sunny warm tones"),
+    ("tile_l0_vallee.png", "Sol niveau 0 : vallée", "sol", 1024, 1024,
+     "soft short lawn of a calm valley, smooth light sage green ground, only a few faint tiny grass strokes "
+     "here and there, gentle subtle variations of soft green"),
+    ("tile_l1_prairie.png", "Sol niveau 1 : prairie", "sol", 1024, 1024,
+     "soft fresh meadow ground, smooth pale spring green short grass, a few faint tiny grass strokes, "
+     "very rare tiny pale white flowers"),
+    ("tile_l2_plateau.png", "Sol niveau 2 : plateau", "sol", 1024, 1024,
+     "soft dry plateau ground, smooth pale straw yellow-green short grass, a few faint tiny pebbles, "
+     "light warm muted tones"),
     ("tile_l3_roche.png", "Sol niveau 3 : roche", "tuile", 1024, 1024,
      "sandy beige rocky ground, flat cracked stone slabs with small gravel, warm sandstone colors"),
     ("tile_l4_sommet.png", "Sol niveau 4 : sommet enneigé", "tuile", 1024, 1024,
@@ -137,8 +152,9 @@ def main():
         w = csv.writer(f, delimiter=";")
         w.writerow(["numero", "fichier", "nom", "sorte", "largeur", "hauteur", "prompt"])
         for i, (fichier, nom, sorte, lw, lh, desc) in enumerate(ASSETS, 1):
-            base = {"tuile": TILE, "objet": PROP, "perso": CHAR}[sorte]
-            w.writerow([i, fichier, nom, sorte, lw, lh, f"{desc}, {base}"])
+            base = {"tuile": TILE, "sol": GROUND_SOFT, "objet": PROP, "perso": CHAR}[sorte]
+            # « sol » = tuile au style doux : même traitement qu'une tuile pour comfy_batch et process_decors.
+            w.writerow([i, fichier, nom, "tuile" if sorte == "sol" else sorte, lw, lh, f"{desc}, {base}"])
     print(f"{len(ASSETS)} prompts écrits dans {OUT.relative_to(ROOT)}")
 
 

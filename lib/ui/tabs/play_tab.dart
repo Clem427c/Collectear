@@ -143,6 +143,19 @@ class PlayTab extends StatelessWidget {
                         ),
                     ]),
                   ),
+                  // Il manque des énergies sans être à zéro : achat possible aussi d'ici.
+                  if (runsLeft > 0 && col.energyMissing && col.nextEnergyPrice != null)
+                    TextButton.icon(
+                      onPressed: col.canBuyEnergy
+                          ? () async {
+                              await col.buyEnergy();
+                              onChanged();
+                            }
+                          : null,
+                      icon: const Icon(Icons.bolt, size: 16, color: AppColors.gold),
+                      label: Text('+1 énergie · ${col.nextEnergyPrice} pièces',
+                          style: TextStyle(color: col.canBuyEnergy ? AppColors.gold : Colors.white38, fontSize: 12)),
+                    ),
                   Text('$runsLeft / ${GameConfig.runsPerDay} runs aujourd\'hui'
                       '${col.energyBoughtToday > 0 ? ' (+${col.energyBoughtToday} achetée${col.energyBoughtToday > 1 ? 's' : ''})' : ''}'
                       ' · ${col.coins} pièces',

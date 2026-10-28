@@ -1,5 +1,16 @@
 # Journal des versions
 
+## 0.13.0 – 28/10/2026 (soir) – lisibilité et retours de Clem
+- Herbe : la vallée (sol le plus courant) était trop dense et trop foncée. Elle est maintenant adoucie
+  automatiquement (vert sauge clair, relief très léger) ; personnages et ennemis ressortent mieux.
+  Nouveaux prompts doux pour les sols vallée, prairie et plateau, à régénérer dans ComfyUI :
+  `py tool\comfy_batch.py --decors --redo 1,2,3`.
+- Tours : le sommet est une plate-forme de 3×3 cases (au lieu d'une seule) ; la pyramide fait 9×9 cases.
+  On voit tout de suite qu'il reste un étage à sauter pour atteindre le coffre. Guide mis à jour.
+- Énergies : on peut en acheter dès qu'il en manque une (jusqu'à revenir à 10), plus seulement quand
+  toutes les runs sont épuisées ; bouton « +1 énergie » aussi sous le bouton Jouer. Toujours 5 achats
+  par jour au plus.
+
 ## 0.12.1 – 28/10/2026 (après-midi) – profil des amis
 - Toucher un ami (ou sa ligne du classement) ouvre son profil : code ami, cartes, exemplaires, record,
   progression par rareté, et combien de cartes il a que tu n'as pas (et l'inverse).

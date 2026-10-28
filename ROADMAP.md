@@ -42,6 +42,9 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
 - [x] Décors générés par Clem (41 images) et intégrés : sols par étage, décors, lieux, pièces, perso, ennemis (27/10)
 - [x] Chrono d'alerte des 15 dernières secondes ; gardiens de sanctuaire au même étage, tenus en laisse, en élite
 - [ ] Décors : collisions avec les arbres et rochers ? (aujourd'hui on passe à travers)
+- [x] Retours du 28/10 : herbe plus douce (prompts + adoucissement auto), sommet des tours en 3×3,
+  énergie achetable dès qu'il en manque une (max 10)
+- [ ] **Clem** : régénérer les sols 1, 2, 3 (`py tool\comfy_batch.py --decors --redo 1,2,3`)
 
 ## Étape 3 – En ligne (Supabase) — en cours
 Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et `SUPABASE_PUBLISHABLE_KEY` (26/10).
@@ -94,6 +97,9 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
 - Échanges à plusieurs cartes (2 contre 1…) : oui. On peut échanger sa dernière carte d'une espèce : oui.
 - Classement entre amis : par nombre de cartes différentes, pas d'autre critère pour l'instant (28/10).
 - Favoris : une carte en favori ne peut être ni offerte ni demandée tant qu'elle n'est pas retirée des favoris.
+- Énergies : achetables dès qu'il en manque une, sans jamais dépasser 10 (28/10).
+- Tours : dernier étage plus large (3×3) pour qu'on comprenne qu'il faut un dernier saut (28/10).
+- Sols : herbe douce et claire, sur laquelle personnages et ennemis ressortent (28/10).
 - Style des illustrations : cartoon coloré, façon jeu mobile grand public. Petites créatures (communes, peu communes) mignonnes et rondes ; créatures rares, épiques et légendaires plus impressionnantes (effrayantes si leur nom est sombre) ; héros héroïques, « durs à cuire », pas enfantins.
 
 ## Questions pour Clem
@@ -128,14 +134,18 @@ Priorité basse (à toi de juger) :
 
 ### Pièces et énergies (27/10)
 - PROVISOIRE : une run rapporte ≈ 30 à 50 pièces (≈ 2 au sol par chunk, +2 par ennemi, +10 par lieu).
-  Énergie = 60 pièces, puis +40 à chaque achat du jour (60, 100, 140, 180, 220), 5 par jour au plus, et
-  seulement quand les runs gratuites sont épuisées (une énergie ne se garde pas). Ça te va ?
+  Énergie = 60 pièces, puis +40 à chaque achat du jour (60, 100, 140, 180, 220), 5 par jour au plus.
+  Achat possible dès qu'il manque une énergie, sans dépasser 10 (décision de Clem du 28/10). Prix OK ?
 - Les pièces restent sur l'appareil pour l'instant (pas encore sauvegardées en ligne).
 
 ### Décors (27/10)
 - Intégrés. PROVISOIRE : arbres, rochers et buissons sont décoratifs (on passe à travers). Veux-tu
   qu'ils bloquent le passage (plus de stratégie, mais risque de se coincer) ?
 - Une image ne te plaît pas ? `py tool\comfy_batch.py --decors --redo N` (N = colonne « numero »).
+- **Herbe (28/10)** : prompts des sols 1 (vallée), 2 (prairie) et 3 (plateau) refaits en style doux (clair, peu
+  contrasté, peu de détails, sans contours). Pour les régénérer : `py tool\comfy_batch.py --decors --redo 1,2,3`.
+  En attendant, la vallée actuelle (trop sombre) est adoucie automatiquement par la CI (recolorée en vert
+  sauge) ; un sol régénéré assez clair est gardé tel quel.
 
 ### En ligne
 - Pour la connexion Google, il faudra créer des identifiants OAuth dans Google Cloud et les coller dans

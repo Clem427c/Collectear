@@ -62,7 +62,7 @@ class GuideScreen extends StatelessWidget {
             art: _Art(_ArtKind.tower),
             title: 'Tour',
             text: 'Une pyramide de pierre lilas. Grimpe-la étage par étage en sautant (bouton SAUT) : le coffre '
-                'est au sommet.',
+                'est sur la plate-forme du sommet, un dernier saut plus haut.',
           ),
           _Entry(
             art: _Art(_ArtKind.ruinClosed),
@@ -284,7 +284,7 @@ class _ArtPainter extends CustomPainter {
       case _ArtKind.tower:
         const colors = [Color(0xFF6F6890), Color(0xFF837BA6), Color(0xFF9890BA), Color(0xFFADA6CC)];
         for (var i = 0; i < colors.length; i++) {
-          final half = 16.0 - i * 4;
+          final half = const [18.0, 14.0, 10.0, 7.0][i]; // sommet large (3×3 cases en jeu)
           _fill.color = colors[i];
           canvas.drawRect(Rect.fromCenter(center: c, width: half * 2, height: half * 2), _fill);
         }

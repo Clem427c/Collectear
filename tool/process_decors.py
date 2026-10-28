@@ -58,10 +58,34 @@ def mirror_tile(img: Image.Image) -> Image.Image:
 SATURATION = {"tile_l1_prairie.png": 0.75, "tile_l2_plateau.png": 0.7}
 MIRROR = {"tile_tour.png"}
 
+# Lisibilité (retour de Clem du 28/10) : un sol d'herbe trop sombre ou trop chargé noie personnages et
+# ennemis. S'il est plus sombre que ce seuil, on garde seulement son relief (très atténué) et on le
+# recolore dans une teinte douce. Les sols régénérés avec les nouveaux prompts doux passent tels quels.
+SOFT_GROUND = {
+    "tile_l0_vallee.png": (136, 186, 104),   # vert sauge doux
+    "tile_l1_prairie.png": (160, 204, 120),  # vert tendre
+    "tile_l2_plateau.png": (196, 204, 138),  # paille
+}
+DARK_LUMINANCE = 110  # luminance moyenne (0-255) en dessous de laquelle le sol est adouci
+SOFT_RELIEF = 9       # amplitude du relief gardé, en niveaux de couleur
+
+
+def soften_ground(img: Image.Image, target) -> Image.Image:
+    from PIL import ImageFilter
+    a = np.asarray(img.filter(ImageFilter.GaussianBlur(1.5))).astype(float)
+    lum = a.mean(axis=2)
+    relief = (lum - lum.mean()) / (lum.std() + 1e-6)
+    out = np.array(target, float)[None, None, :] + relief[..., None] * SOFT_RELIEF
+    return Image.fromarray(np.clip(out, 0, 255).astype(np.uint8))
+
 
 def make_tile(f: Path) -> Image.Image:
     img = center_crop(Image.open(f).convert("RGB"))
     img = mirror_tile(img) if f.name in MIRROR else seamless(img)
+    target = SOFT_GROUND.get(f.name)
+    if target is not None and np.asarray(img).mean() < DARK_LUMINANCE:
+        print(f"  {f.name} : sol trop sombre, adouci (régénère-le avec le nouveau prompt doux)")
+        img = soften_ground(img, target)
     sat = SATURATION.get(f.name)
     if sat is not None:
         from PIL import ImageEnhance

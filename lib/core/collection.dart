@@ -168,10 +168,17 @@ class Collection {
   /// Prix de la prochaine énergie (null : limite du jour atteinte).
   int? get nextEnergyPrice => Economy.energyPrice(energyBoughtToday);
 
-  /// On n'achète une énergie que si toutes les runs du jour sont épuisées (elle ne se garde pas).
+  /// Réserve maximale d'énergies (runs disponibles) : on ne peut pas acheter au-delà.
+  static const int maxEnergy = GameConfig.runsPerDay;
+
+  /// Il manque au moins une énergie pour être au maximum.
+  bool get energyMissing => runsLeftToday < maxEnergy;
+
+  /// Retour de Clem du 28/10 : on peut acheter une énergie dès qu'il en manque une (on ne dépasse
+  /// juste pas le maximum de 10), plus seulement quand toutes les runs sont épuisées.
   bool get canBuyEnergy {
     final price = nextEnergyPrice;
-    return price != null && coins >= price && runsLeftToday == 0;
+    return price != null && coins >= price && energyMissing;
   }
 
   /// Achète une énergie : +1 run aujourd'hui. Renvoie false si ce n'est pas possible.

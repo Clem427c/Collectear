@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app_data.dart';
+import '../../core/collection.dart';
 import '../../core/economy.dart';
 import '../theme.dart';
 import '../widgets.dart';
@@ -49,8 +50,8 @@ class ShopTab extends StatelessWidget {
     final String msg;
     if (price == null) {
       msg = 'Limite atteinte : ${Economy.maxEnergyPurchasesPerDay} énergies achetées aujourd\'hui. Reviens demain !';
-    } else if (col.runsLeftToday > 0) {
-      msg = 'Il te reste ${col.runsLeftToday} run(s) aujourd\'hui : les énergies s\'achètent quand tout est épuisé.';
+    } else if (!col.energyMissing) {
+      msg = 'Tes énergies sont au maximum (${Collection.maxEnergy}) : joue une run d\'abord !';
     } else if (col.coins < price) {
       msg = 'Pas assez de pièces : il t\'en faut $price (tu en as ${col.coins}).';
     } else {
@@ -75,7 +76,8 @@ class ShopTab extends StatelessWidget {
           title: 'Énergie : +1 run aujourd\'hui',
           subtitle: 'Avec les pièces ramassées en run. '
               '${data.collection.energyBoughtToday} / ${Economy.maxEnergyPurchasesPerDay} achetées aujourd\'hui'
-              '${data.collection.runsLeftToday > 0 ? ' · disponible quand tes runs sont épuisées' : ''}.',
+              ' · ${data.collection.runsLeftToday} / ${Collection.maxEnergy} énergies'
+              '${data.collection.energyMissing ? '' : ' (maximum atteint)'}.',
           price: data.collection.nextEnergyPrice == null ? 'Demain' : '${data.collection.nextEnergyPrice} pièces',
           onBuy: () => _buyEnergy(context),
         ),

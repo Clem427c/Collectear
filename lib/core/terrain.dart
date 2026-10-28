@@ -55,8 +55,14 @@ class Terrain {
 
   // --- Tours : pyramides à gravir saut après saut, un coffre au sommet. ---
 
-  /// Rayon d'une tour en cases (le sommet est au niveau maxLevel).
-  static const int towerRadius = 3;
+  /// Rayon d'une tour en cases : 9×9 cases, le sommet (3×3) au niveau maxLevel.
+  /// Retour de Clem du 28/10 : avec un sommet d'une seule case, on ne comprenait pas qu'il fallait
+  /// encore sauter pour atteindre le coffre ; un dernier étage plus large se voit tout de suite.
+  /// La tour déborde d'une case sur les chunks voisins (8 cases de large) : voir [towerRing].
+  static const int towerRadius = 4;
+
+  /// Demi-largeur du sommet plat (1 → 3×3 cases).
+  static const int towerSummitRadius = 1;
 
   /// Probabilité qu'un chunk contienne une tour.
   static const double towerChance = 0.06; // avant : 0.05 (lieux spéciaux un peu plus fréquents)
@@ -71,19 +77,30 @@ class Terrain {
     return TilePos(cx * n + n ~/ 2, cy * n + n ~/ 2);
   }
 
-  /// Distance (Chebyshev) au centre de la tour du chunk, ou null si hors tour.
+  /// Distance (Chebyshev) au centre de la tour la plus proche, ou null si hors tour.
+  /// Une tour peut déborder sur le chunk voisin : on regarde aussi les chunks adjacents.
   int? towerRing(int tx, int ty) {
-    final cx = chunkOf(tx), cy = chunkOf(ty);
-    if (!hasTower(cx, cy)) return null;
-    final c = towerCenter(cx, cy);
-    final d = math.max((tx - c.x).abs(), (ty - c.y).abs());
-    return d <= towerRadius ? d : null;
+    final cx0 = chunkOf(tx), cy0 = chunkOf(ty);
+    int? best;
+    for (var dy = -1; dy <= 1; dy++) {
+      for (var dx = -1; dx <= 1; dx++) {
+        if (!hasTower(cx0 + dx, cy0 + dy)) continue;
+        final c = towerCenter(cx0 + dx, cy0 + dy);
+        final d = math.max((tx - c.x).abs(), (ty - c.y).abs());
+        if (d <= towerRadius && (best == null || d < best)) best = d;
+      }
+    }
+    return best;
   }
+
+  /// Niveau d'une case de tour selon sa distance au centre : sommet plat de 3×3, puis un étage
+  /// de moins par anneau (4, 4, 3, 2, 1).
+  static int towerLevel(int ring) => GameConfig.maxLevel - math.max(0, ring - towerSummitRadius);
 
   int _compute(int tx, int ty) {
     if (tx.abs() <= spawnClearRadius && ty.abs() <= spawnClearRadius) return 0;
     final ring = towerRing(tx, ty);
-    if (ring != null) return GameConfig.maxLevel - ring;
+    if (ring != null) return towerLevel(ring);
     final n = fbm(seed, tx / 11.0, ty / 11.0);
     // Courbe : beaucoup de plaines, des plateaux, quelques sommets.
     const thresholds = [0.48, 0.58, 0.67, 0.75];

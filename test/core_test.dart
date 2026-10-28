@@ -339,9 +339,18 @@ void main() {
         }
       }
       final c = t.towerCenter(cx, cy);
-      for (var d = 0; d <= Terrain.towerRadius; d++) {
-        expect(t.levelAt(c.x + d, c.y), GameConfig.maxLevel - d);
+      // Sommet plat de 3×3 (retour de Clem du 28/10), puis un étage de moins par anneau.
+      for (var dy = -1; dy <= 1; dy++) {
+        for (var dx = -1; dx <= 1; dx++) {
+          expect(t.levelAt(c.x + dx, c.y + dy), GameConfig.maxLevel, reason: 'sommet $dx,$dy');
+        }
       }
+      for (final dir in const [(1, 0), (-1, 0), (0, 1), (0, -1)]) {
+        final levels = [for (var d = 0; d <= Terrain.towerRadius; d++) t.levelAt(c.x + dir.$1 * d, c.y + dir.$2 * d)];
+        expect(levels, [4, 4, 3, 2, 1], reason: 'pente symétrique $dir');
+      }
+      expect(Terrain.towerLevel(0), GameConfig.maxLevel);
+      expect(Terrain.towerLevel(Terrain.towerRadius), 1);
     });
   });
 
@@ -774,30 +783,33 @@ void main() {
       expect(run.coins, 3);
     });
 
-    test('achat d\'énergie : seulement runs épuisées, assez de pièces, 5 par jour', () async {
+    test('achat d\'énergie : dès qu\'il en manque une, sans dépasser 10, 5 par jour', () async {
       SharedPreferences.setMockInitialValues({});
       final col = await Collection.load();
       expect(col.coins, 0);
       expect(col.runsLeftToday, GameConfig.runsPerDay);
       await col.addCoins(1000);
-      expect(col.canBuyEnergy, isFalse, reason: 'il reste des runs gratuites');
-      for (var i = 0; i < GameConfig.runsPerDay; i++) {
+      expect(col.canBuyEnergy, isFalse, reason: 'énergies au maximum');
+      expect(await col.buyEnergy(), isFalse);
+      await col.registerRun();
+      expect(col.runsLeftToday, GameConfig.runsPerDay - 1);
+      expect(col.canBuyEnergy, isTrue, reason: 'il en manque une seule : achat possible');
+      var spent = col.nextEnergyPrice!;
+      expect(await col.buyEnergy(), isTrue);
+      expect(col.runsLeftToday, Collection.maxEnergy);
+      expect(await col.buyEnergy(), isFalse, reason: 'jamais plus que le maximum');
+      for (var i = 1; i < Economy.maxEnergyPurchasesPerDay; i++) {
         await col.registerRun();
-      }
-      expect(col.runsLeftToday, 0);
-      var spent = 0;
-      for (var i = 0; i < Economy.maxEnergyPurchasesPerDay; i++) {
         spent += col.nextEnergyPrice!;
         expect(await col.buyEnergy(), isTrue);
-        expect(col.runsLeftToday, 1);
-        expect(await col.buyEnergy(), isFalse, reason: 'une seule énergie d\'avance');
-        await col.registerRun();
+        expect(col.runsLeftToday, Collection.maxEnergy);
       }
       expect(col.coins, 1000 - spent);
       expect(col.energyBoughtToday, Economy.maxEnergyPurchasesPerDay);
       expect(col.nextEnergyPrice, isNull);
-      expect(await col.buyEnergy(), isFalse);
-      expect(col.runsLeftToday, 0);
+      await col.registerRun();
+      expect(await col.buyEnergy(), isFalse, reason: '5 achats par jour au plus');
+      expect(col.runsLeftToday, Collection.maxEnergy - 1);
     });
 
     test('pas assez de pièces : pas d\'achat', () async {
