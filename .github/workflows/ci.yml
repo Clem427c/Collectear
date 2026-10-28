@@ -158,6 +158,14 @@ jobs:
           --dart-define=SUPABASE_URL="$SUPABASE_URL"
           --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY"
 
+      - name: Test de fumée web (lance une run dans Chromium, captures dans le journal)
+        continue-on-error: true
+        timeout-minutes: 8
+        run: |
+          python3 -m pip install --quiet playwright || python3 -m pip install --quiet --break-system-packages playwright
+          python3 -m playwright install --with-deps chromium > /dev/null
+          python3 tool/web_smoke.py build/web
+
       - name: Build APK
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

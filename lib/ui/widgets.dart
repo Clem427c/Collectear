@@ -240,7 +240,14 @@ class ChunkyButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final enabled = onPressed != null;
     final base = enabled ? color : Colors.grey.shade700;
-    return GestureDetector(
+    // Semantics : bouton annoncé par les lecteurs d'écran, et trouvable par le test web de la CI.
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      label: label,
+      excludeSemantics: true,
+      onTap: onPressed,
+      child: GestureDetector(
       onTap: onPressed,
       child: Container(
         padding: EdgeInsets.symmetric(vertical: fontSize * 0.7, horizontal: 20),
@@ -268,6 +275,7 @@ class ChunkyButton extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }
