@@ -38,6 +38,9 @@ String socialErrorMessage(String message) {
     'pas_ami': 'Vous n\'êtes plus amis.',
     'carte_offerte_absente': 'Tu ne possèdes plus cette carte.',
     'carte_demandee_absente': 'Ton ami ne possède plus cette carte.',
+    'carte_favorite': 'Une des cartes est en favori : elle doit d\'abord être retirée des favoris.',
+    'nombre_cartes': 'Choisis de 1 à $maxTradeSide cartes de chaque côté.',
+    'carte_en_double': 'La même carte est choisie deux fois.',
     'trop_propositions': 'Trop de propositions en attente : attends des réponses ou annules-en.',
     'deja_propose': 'Tu as déjà proposé cet échange.',
     'echange_inconnu': 'Cet échange n\'est plus en attente.',
@@ -53,16 +56,31 @@ String socialErrorMessage(String message) {
 
 /// Un exemplaire vu par le serveur : identifiant de ligne (owned_cards.id), carte et variante.
 class ServerCard {
-  const ServerCard(this.rowId, this.cardId, this.seed);
+  const ServerCard(this.rowId, this.cardId, this.seed, {this.favorite = false});
   final int rowId;
   final int cardId;
   final int seed;
 
+  /// En favori chez son propriétaire : ne peut être ni offert ni demandé dans un échange.
+  final bool favorite;
+
   static List<ServerCard> fromRows(Iterable<dynamic> rows) => [
         for (final r in rows)
           if (r is Map && _int(r['id']) != null && _int(r['card_id']) != null && _int(r['seed']) != null)
-            ServerCard(_int(r['id'])!, _int(r['card_id'])!, _int(r['seed'])!),
+            ServerCard(_int(r['id'])!, _int(r['card_id'])!, _int(r['seed'])!, favorite: r['favorite'] == true),
       ];
+}
+
+/// Nombre maximal d'exemplaires de chaque côté d'un échange (comme max_side dans schema.sql).
+// PROVISOIRE : 5 de chaque côté (2 contre 1, 3 contre 2… validés par Clem le 28/10, le plafond reste à confirmer).
+const int maxTradeSide = 5;
+
+/// Ajoute ou retire [item] de la sélection d'un côté de l'échange. Renvoie la nouvelle sélection,
+/// ou null si l'ajout est refusé (côté plein, ou exemplaire en favori).
+List<ServerCard>? toggleTradePick(List<ServerCard> picked, ServerCard item) {
+  if (picked.any((c) => c.rowId == item.rowId)) return [for (final c in picked) if (c.rowId != item.rowId) c];
+  if (item.favorite || picked.length >= maxTradeSide) return null;
+  return [...picked, item];
 }
 
 int? _int(Object? v) => switch (v) { final int i => i, final num n => n.toInt(), final String s => int.tryParse(s), _ => null };
@@ -110,10 +128,8 @@ class Trade {
     required this.incoming,
     required this.otherUser,
     required this.otherName,
-    required this.offeredCard,
-    required this.offeredSeed,
-    required this.requestedCard,
-    required this.requestedSeed,
+    required this.offered,
+    required this.requested,
     required this.status,
   });
   final int id;
@@ -122,36 +138,39 @@ class Trade {
   final bool incoming;
   final String otherUser;
   final String otherName;
-  final int offeredCard;
-  final int offeredSeed;
-  final int requestedCard;
-  final int requestedSeed;
+
+  /// Exemplaires (id de carte, seed) de l'auteur de la proposition, et ceux qu'il demande.
+  final List<(int, int)> offered;
+  final List<(int, int)> requested;
   final TradeStatus status;
 
   /// Ce que je donne et ce que je reçois si l'échange se fait.
-  (int, int) get iGive => incoming ? (requestedCard, requestedSeed) : (offeredCard, offeredSeed);
-  (int, int) get iGet => incoming ? (offeredCard, offeredSeed) : (requestedCard, requestedSeed);
+  List<(int, int)> get iGive => incoming ? requested : offered;
+  List<(int, int)> get iGet => incoming ? offered : requested;
 
   bool get isPending => status == TradeStatus.pending;
+
+  static List<(int, int)> _items(Object? v) => [
+        if (v is List)
+          for (final e in v)
+            if (e is Map && _int(e['card_id']) != null && _int(e['seed']) != null) (_int(e['card_id'])!, _int(e['seed'])!),
+      ];
 
   static List<Trade> fromRows(Iterable<dynamic> rows) {
     final out = <Trade>[];
     for (final r in rows) {
       if (r is! Map) continue;
       final id = _int(r['id']);
-      final oc = _int(r['offered_card']), os = _int(r['offered_seed']);
-      final rc = _int(r['requested_card']), rs = _int(r['requested_seed']);
       final status = TradeStatus.values.where((s) => s.name == r['status']).firstOrNull;
-      if (id == null || oc == null || os == null || rc == null || rs == null || status == null) continue;
+      final offered = _items(r['offered']), requested = _items(r['requested']);
+      if (id == null || status == null || offered.isEmpty || requested.isEmpty) continue;
       out.add(Trade(
         id: id,
         incoming: r['incoming'] == true,
         otherUser: (r['other_user'] as String?) ?? '',
         otherName: (r['other_name'] as String?) ?? '?',
-        offeredCard: oc,
-        offeredSeed: os,
-        requestedCard: rc,
-        requestedSeed: rs,
+        offered: offered,
+        requested: requested,
         status: status,
       ));
     }

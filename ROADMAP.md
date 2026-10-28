@@ -64,6 +64,8 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
 - [x] Échanges carte contre carte entre amis : proposer, accepter (atomique côté serveur), refuser,
   annuler, historique ; la carte donnée quitte l'appareil et ne peut pas être renvoyée par la synchro (28/10)
 - [x] Classement entre amis (cartes différentes, exemplaires, record d'ennemis) (28/10)
+- [x] Échanges à plusieurs cartes : de 1 à 5 de chaque côté (2 contre 1…) (28/10)
+- [x] Cartes favorites (étoile sur la fiche d'un exemplaire) : ni offertes ni demandées, synchro en ligne (28/10)
 - [ ] Connexion Google (attend la réponse de Clem, voir « Questions »)
 - [ ] Profil d'un ami (voir sa collection en détail) ; notifications d'échange (push) — plus tard
 - [ ] **Prochaine session** : traiter les réponses de Clem (hors ligne, pseudos, collisions, énergies) ;
@@ -86,6 +88,9 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
 - Échanges libres, négociés entre joueurs, sans restriction de rareté.
 - 5e boost « Portée » : attaque de plus loin (langues, tentacules, archers, mages…).
 - Combats entre amis : Clem a ses idées, on s'y attaque à la toute fin.
+- Échanges à plusieurs cartes (2 contre 1…) : oui. On peut échanger sa dernière carte d'une espèce : oui.
+- Classement entre amis : par nombre de cartes différentes, pas d'autre critère pour l'instant (28/10).
+- Favoris : une carte en favori ne peut être ni offerte ni demandée tant qu'elle n'est pas retirée des favoris.
 - Style des illustrations : cartoon coloré, façon jeu mobile grand public. Petites créatures (communes, peu communes) mignonnes et rondes ; créatures rares, épiques et légendaires plus impressionnantes (effrayantes si leur nom est sombre) ; héros héroïques, « durs à cuire », pas enfantins.
 
 ## Questions pour Clem
@@ -147,11 +152,11 @@ Priorité basse (à toi de juger) :
   Je recommande (b) : c'est la seule option qui rend les échanges entre joueurs sûrs.
 - PROVISOIRE : le jour des 15 runs est compté en heure de Paris côté serveur (l'appli compte en heure
   du téléphone). Les énergies ne sont pas encore vérifiées par le serveur (les pièces sont sur l'appareil).
-- Échanges (28/10) : un exemplaire contre un exemplaire, uniquement entre amis. PROVISOIRE :
-  20 propositions en attente au plus, 200 amis au plus, pas d'expiration automatique des propositions
-  (seulement quand une des cartes change de main). Veux-tu des échanges à plusieurs cartes (2 contre 1…) ?
-  Faut-il pouvoir échanger sa dernière carte d'une espèce (aujourd'hui oui) ?
-- Classement entre amis : trié par nombre de cartes différentes. Autre critère préféré (rareté, points) ?
+- Échanges : PROVISOIRE : 5 cartes au plus de chaque côté, 20 propositions en attente au plus,
+  200 amis au plus, pas d'expiration automatique des propositions (seulement quand une des cartes
+  change de main ou est mise en favori). Ces plafonds te vont ?
+- Favoris : un favori mis ou retiré hors ligne n'est transmis au serveur qu'à la prochaine connexion,
+  et un favori retiré sur un appareil peut revenir via un autre appareil qui l'avait encore (PROVISOIRE).
 - Pseudo : 2 à 24 caractères, lettres (accents compris), chiffres, espaces, - ' . _ — pas d'émojis.
   Pas encore de filtre des gros mots ni d'unicité : à prévoir avant les amis/classements ? 
 

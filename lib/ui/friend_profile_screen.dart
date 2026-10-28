@@ -85,16 +85,22 @@ class _FriendProfileScreenState extends State<FriendProfileScreen> {
                         child: CardView(
                           card: card,
                           instance: CardInstance(card, sc.seed),
+                          favorite: sc.favorite,
                           onTap: () => openCardDetail(context, card,
                               variantSeeds: [for (final c in copies) c.seed], initialSeed: sc.seed),
                         ),
                       ),
+                      // Un exemplaire en favori ne peut pas être demandé (décision de Clem du 28/10).
                       TextButton(
-                        onPressed: () {
-                          Navigator.pop(ctx);
-                          widget.onTrade(sc);
-                        },
-                        child: const Text('Demander', style: TextStyle(color: AppColors.teal, fontWeight: FontWeight.bold)),
+                        onPressed: sc.favorite
+                            ? null
+                            : () {
+                                Navigator.pop(ctx);
+                                widget.onTrade(sc);
+                              },
+                        child: Text(sc.favorite ? 'Favori' : 'Demander',
+                            style: TextStyle(
+                                color: sc.favorite ? AppColors.gold : AppColors.teal, fontWeight: FontWeight.bold)),
                       ),
                     ]),
                   );

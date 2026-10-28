@@ -21,6 +21,7 @@ class Collection {
   static const _kBestKills = 'stat_best_kills';
   static const _kFriendCode = 'friend_code';
   static const _kPseudo = 'pseudo';
+  static const _kFavorites = 'favorites'; // "id:seed"
   static const _kCoins = 'coins';
   static const _kEnergyDay = 'energy_day';
   static const _kEnergyBought = 'energy_bought';
@@ -90,6 +91,39 @@ class Collection {
     return fresh;
   }
 
+  // --- Favoris : un exemplaire en favori ne peut pas être échangé (ni offert, ni demandé) ---
+
+  /// Exemplaires en favori (id de carte, seed).
+  Set<(int, int)> get favorites => {
+        for (final e in _prefs.getStringList(_kFavorites) ?? const <String>[])
+          if (e.split(':') case [final a, final b] when int.tryParse(a) != null && int.tryParse(b) != null)
+            (int.parse(a), int.parse(b)),
+      };
+
+  bool isFavorite(int id, int seed) => favorites.contains((id, seed));
+
+  /// Nombre d'exemplaires en favori pour une carte (pastille du bestiaire).
+  int favoriteCount(int id) => favorites.where((f) => f.$1 == id).length;
+
+  Future<void> _saveFavorites(Set<(int, int)> favs) =>
+      _prefs.setStringList(_kFavorites, [for (final (id, seed) in favs) '$id:$seed']);
+
+  /// Met en favori ou retire. Seuls les exemplaires possédés peuvent être mis en favori.
+  Future<void> setFavorite(int id, int seed, bool favorite) async {
+    final favs = favorites;
+    if (favorite && !(variants[id]?.contains(seed) ?? false)) return;
+    favorite ? favs.add((id, seed)) : favs.remove((id, seed));
+    await _saveFavorites(favs);
+  }
+
+  /// Ajoute des favoris venus du serveur (union : un favori n'est jamais retiré par la synchro).
+  Future<void> addFavorites(Iterable<(int, int)> items) async {
+    final favs = favorites;
+    final before = favs.length;
+    favs.addAll(items.where((e) => variants[e.$1]?.contains(e.$2) ?? false));
+    if (favs.length != before) await _saveFavorites(favs);
+  }
+
   /// Retire des exemplaires (donnés lors d'un échange). Si le compagnon n'est plus possédé,
   /// il est retiré lui aussi. Renvoie le nombre d'exemplaires réellement retirés.
   Future<int> removeAll(Iterable<(int, int)> items) async {
@@ -102,6 +136,9 @@ class Collection {
     }
     if (removed == 0) return 0;
     await _save();
+    final favs = favorites;
+    final kept = favs.where((f) => variants[f.$1]?.contains(f.$2) ?? false).toSet();
+    if (kept.length != favs.length) await _saveFavorites(kept);
     final comp = companionId;
     if (comp != null && !variants.containsKey(comp)) await setCompanion(null);
     return removed;

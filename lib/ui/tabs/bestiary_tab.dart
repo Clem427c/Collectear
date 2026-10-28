@@ -97,18 +97,20 @@ class _BestiaryTabState extends State<BestiaryTab> {
                 instance: best,
                 owned: qty != null,
                 quantity: qty,
+                favorite: qty != null && data.collection.favoriteCount(c.id) > 0,
                 onTap: qty == null
                     ? null
                     : () => openCardDetail(
                           context,
                           c,
                           variantSeeds: seeds,
+                          canFavorite: true,
                           isCompanion: data.collection.companionId == c.id,
                           onEquip: () async {
                             await data.collection.setCompanion(c.id);
                             widget.onChanged();
                           },
-                        ),
+                        ).then((_) => widget.onChanged()),
               );
             },
           ),

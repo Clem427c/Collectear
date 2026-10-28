@@ -29,9 +29,13 @@ class CardView extends StatelessWidget {
     this.owned = true,
     this.quantity,
     this.isNew = false,
+    this.favorite = false,
     this.onTap,
   });
   final GameCard card;
+
+  /// Exemplaire en favori : étoile dorée dans le coin (il ne peut pas être échangé).
+  final bool favorite;
 
   /// Exemplaire précis (variante) ; null = vue de l'espèce.
   final CardInstance? instance;
@@ -146,6 +150,15 @@ class CardView extends StatelessWidget {
                     top: w * 0.22,
                     left: 0,
                     child: _Badge(text: '×$quantity', color: AppColors.ink),
+                  ),
+                if (favorite)
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    child: Icon(Icons.star_rounded,
+                        color: AppColors.gold,
+                        size: small ? 16 : 22,
+                        shadows: const [Shadow(color: Colors.black54, blurRadius: 3)]),
                   ),
                 // Badge « Nouveau » collé dans le coin haut droit, comme un autocollant (ne cache aucun texte).
                 if (isNew)

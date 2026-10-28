@@ -169,6 +169,8 @@ class Online {
       }
       step = 'ajout local';
       if (plan.toAddLocally.isNotEmpty) await col.addAll(plan.toAddLocally);
+      step = 'favoris';
+      await _syncFavorites(col);
       onlineCount = remote.toSet().length + plan.toUpload.length;
       syncState = SyncState.done;
     } catch (e) {
@@ -227,6 +229,40 @@ class Online {
       if (given.isNotEmpty) await col.removeAll(given);
     } on PostgrestException catch (e) {
       debugPrint('Cartes échangées : $e');
+    }
+  }
+
+  // --- Favoris ---
+
+  static bool isFavorite(int cardId, int seed) => _collection?.isFavorite(cardId, seed) ?? false;
+
+  /// Met un exemplaire en favori (ou l'en retire) sur l'appareil, et en ligne si on est connecté.
+  /// En ligne, un favori fait expirer les échanges en attente qui le concernent.
+  /// Renvoie un message si le serveur n'a pas pu être prévenu (le favori local est gardé).
+  static Future<String?> setFavorite(int cardId, int seed, bool favorite) async {
+    await _collection?.setFavorite(cardId, seed, favorite);
+    _bump();
+    if (user == null) return null;
+    try {
+      await _call<dynamic>('set_favorite', {'p_card': cardId, 'p_seed': seed, 'p_favorite': favorite});
+      return null;
+    } catch (e) {
+      debugPrint('Favori en ligne : $e');
+      return _socialMessage(e);
+    }
+  }
+
+  /// Synchro des favoris : union entre l'appareil et le serveur.
+  // PROVISOIRE : un favori retiré sur un appareil hors ligne revient à la synchro d'un autre
+  // appareil qui l'avait encore (le retrait n'est transmis que s'il est fait connecté).
+  static Future<void> _syncFavorites(Collection col) async {
+    try {
+      final local = col.favorites;
+      if (local.isNotEmpty) await _call<dynamic>('add_favorites', {'p_cards': runCardsPayload(local)});
+      final mine = ServerCard.fromRows(await _call<List<dynamic>>('my_cards'));
+      await col.addFavorites([for (final c in mine) if (c.favorite) (c.cardId, c.seed)]);
+    } on PostgrestException catch (e) {
+      debugPrint('Favoris : $e'); // base pas encore à jour : favoris seulement sur l'appareil
     }
   }
 
@@ -291,9 +327,10 @@ class Online {
     }
   }
 
-  static Future<String?> proposeTrade(String toUser, int offeredRowId, int requestedRowId) async {
+  /// Propose un échange : mes exemplaires [offered] contre ceux de l'ami [requested] (owned_cards.id).
+  static Future<String?> proposeTrade(String toUser, List<int> offered, List<int> requested) async {
     try {
-      await _call<dynamic>('propose_trade', {'p_to': toUser, 'p_offered': offeredRowId, 'p_requested': requestedRowId});
+      await _call<dynamic>('propose_trade', {'p_to': toUser, 'p_offered': offered, 'p_requested': requested});
       return null;
     } catch (e) {
       return _socialMessage(e);

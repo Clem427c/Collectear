@@ -573,6 +573,7 @@ void main() {
       expect(sqlConst('runs_per_day'), GameConfig.runsPerDay);
       expect(sqlConst('max_energies_per_day'), Economy.maxEnergyPurchasesPerDay);
       expect(sqlConst('max_cards'), GameConfig.maxCardsPerRun);
+      expect(sqlConst('max_side'), maxTradeSide);
       expect(sql, contains('check (cards between 0 and ${GameConfig.maxCardsPerRun})'));
       expect(sql, contains("display_name text not null default '$defaultPseudo'"));
       expect(sql, contains('char_length(display_name) between 1 and $maxPseudoLength'));
@@ -615,22 +616,36 @@ void main() {
       expect(friends.first.species, 42);
     });
 
-    test('échanges : ce que je donne et reçois selon le sens', () {
+    test('échanges : ce que je donne et reçois selon le sens, plusieurs cartes', () {
       final trades = Trade.fromRows([
-        {'id': 1, 'incoming': true, 'other_user': 'b', 'other_name': 'Nyx', 'offered_card': 50, 'offered_seed': 7,
-         'requested_card': 12, 'requested_seed': 345, 'status': 'pending'},
-        {'id': 2, 'incoming': false, 'other_user': 'b', 'other_name': 'Nyx', 'offered_card': 3, 'offered_seed': 1,
-         'requested_card': 4, 'requested_seed': 2, 'status': 'expired'},
-        {'id': 3, 'status': 'inconnu'},
+        {'id': 1, 'incoming': true, 'other_user': 'b', 'other_name': 'Nyx', 'status': 'pending',
+         'offered': [{'card_id': 50, 'seed': 7}, {'card_id': 51, 'seed': 8}], 'requested': [{'card_id': 12, 'seed': 345}]},
+        {'id': 2, 'incoming': false, 'other_user': 'b', 'other_name': 'Nyx', 'status': 'expired',
+         'offered': [{'card_id': 3, 'seed': 1}], 'requested': [{'card_id': 4, 'seed': 2}]},
+        {'id': 3, 'status': 'inconnu', 'offered': [], 'requested': []},
+        {'id': 4, 'status': 'pending', 'offered': [], 'requested': [{'card_id': 4, 'seed': 2}]},
       ]);
       expect(trades.length, 2);
-      expect(trades[0].iGive, (12, 345));
-      expect(trades[0].iGet, (50, 7));
-      expect(trades[1].iGive, (3, 1));
+      expect(trades[0].iGive, [(12, 345)]);
+      expect(trades[0].iGet, [(50, 7), (51, 8)]);
+      expect(trades[1].iGive, [(3, 1)]);
       expect(trades[1].status.label, 'Expiré');
       expect(pendingActions(Friend.fromRows([
         {'user_id': 'c', 'status': 'pending', 'incoming': true},
       ]), trades), 2);
+    });
+
+    test('échanges : sélection de 1 à 5 cartes, favoris refusés', () {
+      var picked = <ServerCard>[];
+      for (var i = 0; i < maxTradeSide; i++) {
+        picked = toggleTradePick(picked, ServerCard(i, 1, i))!;
+      }
+      expect(picked.length, maxTradeSide);
+      expect(toggleTradePick(picked, const ServerCard(99, 1, 99)), isNull); // côté plein
+      expect(toggleTradePick(picked, const ServerCard(0, 1, 0))!.length, maxTradeSide - 1); // retrait
+      expect(toggleTradePick(const [], const ServerCard(7, 2, 7, favorite: true)), isNull);
+      expect(ServerCard.fromRows([{'id': 1, 'card_id': 2, 'seed': 3, 'favorite': true}]).single.favorite, isTrue);
+      expect(socialErrorMessage('carte_favorite'), contains('favoris'));
     });
 
     test('exemplaires du serveur : lignes invalides ignorées', () {
@@ -652,6 +667,24 @@ void main() {
       expect(rows.first.isMe, isTrue);
       expect(rows.last.userId, 't');
       expect(leaderboardRanks(rows), [1, 2, 2]);
+    });
+
+    test('favoris : seulement des exemplaires possédés, union, retirés avec la carte', () async {
+      SharedPreferences.setMockInitialValues({});
+      final col = await Collection.load();
+      await col.addAll(const [(12, 345), (12, 346), (50, 7)]);
+      await col.setFavorite(12, 345, true);
+      await col.setFavorite(99, 1, true); // pas possédé : ignoré
+      expect(col.favorites, {(12, 345)});
+      expect(col.isFavorite(12, 345), isTrue);
+      expect(col.isFavorite(12, 346), isFalse);
+      await col.addFavorites(const [(50, 7), (98, 1)]);
+      expect(col.favoriteCount(12), 1);
+      expect(col.favorites, {(12, 345), (50, 7)});
+      await col.setFavorite(12, 345, false);
+      expect(col.favorites, {(50, 7)});
+      await col.removeAll(const [(50, 7)]);
+      expect(col.favorites, isEmpty);
     });
 
     test('carte donnée : retirée de la collection locale, compagnon compris', () async {

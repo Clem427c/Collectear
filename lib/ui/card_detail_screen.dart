@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../app_data.dart';
 import '../core/cards.dart';
 import '../core/variants.dart';
+import '../online.dart';
 import 'theme.dart';
 import 'widgets.dart';
 
@@ -22,6 +23,7 @@ Future<void> openCardDetail(
   int? initialSeed,
   bool isCompanion = false,
   VoidCallback? onEquip,
+  bool canFavorite = false,
 }) {
   return Navigator.of(context).push(PageRouteBuilder<void>(
     opaque: false,
@@ -34,6 +36,7 @@ Future<void> openCardDetail(
       initialSeed: initialSeed,
       isCompanion: isCompanion,
       onEquip: onEquip,
+      canFavorite: canFavorite,
     ),
     transitionsBuilder: (_, anim, __, child) {
       final curved = CurvedAnimation(parent: anim, curve: Curves.easeOutBack, reverseCurve: Curves.easeIn);
@@ -54,12 +57,16 @@ class CardDetailScreen extends StatefulWidget {
     this.initialSeed,
     this.isCompanion = false,
     this.onEquip,
+    this.canFavorite = false,
   });
   final GameCard card;
   final List<int> variantSeeds;
   final int? initialSeed;
   final bool isCompanion;
   final VoidCallback? onEquip;
+
+  /// Exemplaires du joueur : bouton étoile pour mettre l'exemplaire affiché en favori.
+  final bool canFavorite;
 
   @override
   State<CardDetailScreen> createState() => _CardDetailScreenState();
@@ -123,6 +130,7 @@ class _CardDetailScreenState extends State<CardDetailScreen> with TickerProvider
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                     const Spacer(),
+                    if (widget.canFavorite && current != null) _favoriteButton(card, current.variantSeed),
                     Text('N° ${card.id.toString().padLeft(3, '0')}',
                         style: const TextStyle(color: Colors.white60, fontWeight: FontWeight.bold)),
                     const SizedBox(width: 16),
@@ -201,6 +209,33 @@ class _CardDetailScreenState extends State<CardDetailScreen> with TickerProvider
           ),
         ),
       ),
+    );
+  }
+
+  /// Étoile : met l'exemplaire affiché en favori (il ne pourra plus être échangé) ou l'en retire.
+  Widget _favoriteButton(GameCard card, int seed) {
+    return ValueListenableBuilder<int>(
+      valueListenable: Online.revision,
+      builder: (context, _, __) {
+        final fav = Online.isFavorite(card.id, seed);
+        return IconButton(
+          tooltip: fav ? 'Retirer des favoris' : 'Mettre en favori',
+          icon: Icon(fav ? Icons.star_rounded : Icons.star_outline_rounded,
+              color: fav ? AppColors.gold : Colors.white70, size: 30),
+          onPressed: () async {
+            final err = await Online.setFavorite(card.id, seed, !fav);
+            if (!context.mounted) return;
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(SnackBar(
+                content: Text(err ??
+                    (fav
+                        ? 'Retiré des favoris : cet exemplaire peut de nouveau être échangé.'
+                        : 'En favori : cet exemplaire ne peut plus être échangé ni demandé.')),
+              ));
+          },
+        );
+      },
     );
   }
 

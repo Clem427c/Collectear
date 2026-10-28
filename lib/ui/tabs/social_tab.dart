@@ -507,7 +507,7 @@ class _TradesView extends StatelessWidget {
               ),
               const Padding(
                 padding: EdgeInsets.only(top: 8),
-                child: Text('Une carte contre une carte, entre amis, sans restriction de rareté.',
+                child: Text('De 1 à $maxTradeSide cartes de chaque côté, entre amis, sans restriction de rareté. Les favoris (★) ne s\'échangent pas.',
                     textAlign: TextAlign.center, style: TextStyle(color: Colors.white54, fontSize: 12)),
               ),
               if (model.error != null)
@@ -572,9 +572,9 @@ class _TradeTileState extends State<_TradeTile> {
 
   Widget _card((int, int) item) {
     final card = widget.data.pool.byId(item.$1);
-    if (card == null) return const SizedBox(width: 76);
+    if (card == null) return const SizedBox(width: 60);
     return SizedBox(
-      width: 76,
+      width: 60,
       child: CardView(
         card: card,
         instance: CardInstance(card, item.$2),
@@ -583,11 +583,18 @@ class _TradeTileState extends State<_TradeTile> {
     );
   }
 
+  Widget _side(String label, List<(int, int)> items) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('$label (${items.length})', style: const TextStyle(color: Colors.white60, fontSize: 11)),
+        const SizedBox(height: 4),
+        Wrap(spacing: 6, runSpacing: 6, children: [for (final e in items) _card(e)]),
+      ]);
+
+  String _names(List<(int, int)> items) =>
+      [for (final e in items) widget.data.pool.byId(e.$1)].whereType<GameCard>().map((c) => '${c.name} (${c.rarity.label})').join(', ');
+
   @override
   Widget build(BuildContext context) {
     final t = widget.trade;
-    final give = widget.data.pool.byId(t.iGive.$1);
-    final get = widget.data.pool.byId(t.iGet.$1);
     final title = t.incoming ? '${t.otherName} te propose :' : 'Proposé à ${t.otherName}';
     final statusColor = switch (t.status) {
       TradeStatus.accepted => Colors.greenAccent,
@@ -604,14 +611,17 @@ class _TradeTileState extends State<_TradeTile> {
             Text(t.status.label, style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.bold)),
           ]),
           const SizedBox(height: 8),
-          Row(children: [
-            Column(children: [const Text('Tu donnes', style: TextStyle(color: Colors.white60, fontSize: 11)), _card(t.iGive)]),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child: Icon(Icons.swap_horiz, color: AppColors.gold, size: 30),
+          Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            Expanded(
+              child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                Flexible(child: _side('Tu donnes', t.iGive)),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 6),
+                  child: Icon(Icons.swap_horiz, color: AppColors.gold, size: 28),
+                ),
+                Flexible(child: _side('Tu reçois', t.iGet)),
+              ]),
             ),
-            Column(children: [const Text('Tu reçois', style: TextStyle(color: Colors.white60, fontSize: 11)), _card(t.iGet)]),
-            const Spacer(),
             if (t.isPending && _busy)
               const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
             else if (t.isPending && t.incoming)
@@ -632,11 +642,9 @@ class _TradeTileState extends State<_TradeTile> {
             else if (t.isPending)
               TextButton(onPressed: _close, child: const Text('Annuler', style: TextStyle(color: Colors.white70))),
           ]),
-          if (give != null && get != null) ...[
-            const SizedBox(height: 6),
-            Text('Tu donnes ${give.name} (${give.rarity.label}), tu reçois ${get.name} (${get.rarity.label}).',
-                style: const TextStyle(color: Colors.white60, fontSize: 12)),
-          ],
+          const SizedBox(height: 6),
+          Text('Tu donnes ${_names(t.iGive)} ; tu reçois ${_names(t.iGet)}.',
+              style: const TextStyle(color: Colors.white60, fontSize: 12)),
         ]),
       ),
     );
@@ -678,8 +686,8 @@ class _TradeComposerState extends State<_TradeComposer> {
   List<ServerCard>? _mine;
   List<ServerCard>? _theirs;
   String? _error;
-  ServerCard? _give;
-  ServerCard? _get;
+  List<ServerCard> _give = [];
+  List<ServerCard> _get = [];
   bool _sending = false;
 
   @override
@@ -689,7 +697,8 @@ class _TradeComposerState extends State<_TradeComposer> {
   }
 
   Future<void> _load() async {
-    // Mes cartes en ligne : la synchro d'abord, pour pouvoir offrir aussi les cartes de l'appareil.
+    // Mes cartes en ligne : la synchro d'abord, pour pouvoir offrir aussi les cartes de l'appareil
+    // (et envoyer mes favoris au serveur).
     await Online.sync();
     final (mine, e1) = await Online.cardsOf(null);
     final (theirs, e2) = await Online.cardsOf(widget.friend.userId);
@@ -698,17 +707,19 @@ class _TradeComposerState extends State<_TradeComposer> {
       _mine = mine;
       _theirs = theirs;
       _error = e1 ?? e2;
-      // Carte demandée depuis le profil de l'ami, si elle est toujours à lui.
+      // Carte demandée depuis le profil de l'ami, si elle est toujours à lui et pas en favori.
       final req = widget.request;
-      if (req != null && _get == null) _get = theirs?.where((c) => c.rowId == req.rowId).firstOrNull;
+      final found = req == null ? null : theirs?.where((c) => c.rowId == req.rowId && !c.favorite).firstOrNull;
+      if (found != null && _get.isEmpty) _get = [found];
     });
   }
 
-  /// Trie de la plus rare à la plus commune, puis par nom.
+  /// Trie de la plus rare à la plus commune, puis par nom ; les favoris (non échangeables) à la fin.
   List<ServerCard> _sorted(List<ServerCard> cards) {
     final pool = widget.data.pool;
     final list = cards.where((c) => pool.byId(c.cardId) != null).toList();
     list.sort((a, b) {
+      if (a.favorite != b.favorite) return a.favorite ? 1 : -1;
       final ca = pool.byId(a.cardId)!, cb = pool.byId(b.cardId)!;
       final r = cb.rarity.index.compareTo(ca.rarity.index);
       return r != 0 ? r : ca.name.compareTo(cb.name);
@@ -716,64 +727,114 @@ class _TradeComposerState extends State<_TradeComposer> {
     return list;
   }
 
-  Future<ServerCard?> _pick(List<ServerCard> cards, String title, {required bool markNew}) {
+  /// Choix de 1 à 5 exemplaires d'un côté. [mine] : mes cartes (sinon celles de l'ami).
+  Future<List<ServerCard>?> _pick(List<ServerCard> cards, List<ServerCard> current, {required bool mine}) {
     final pool = widget.data.pool;
     final owned = widget.data.collection.owned;
     final sorted = _sorted(cards);
-    return showModalBottomSheet<ServerCard>(
+    var picked = [...current];
+    String? hint;
+    return showModalBottomSheet<List<ServerCard>>(
       context: context,
       backgroundColor: AppColors.night,
       isScrollControlled: true,
-      builder: (ctx) => SafeArea(
-        child: SizedBox(
-          height: MediaQuery.of(ctx).size.height * 0.75,
-          child: Column(children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900)),
-            ),
-            if (markNew)
-              const Padding(
-                padding: EdgeInsets.only(bottom: 8),
-                child: Text('« Nouveau » = carte que tu n\'as pas encore.',
-                    style: TextStyle(color: Colors.white54, fontSize: 12)),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheet) => SafeArea(
+          child: SizedBox(
+            height: MediaQuery.of(ctx).size.height * 0.8,
+            child: Column(children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 8, 4),
+                child: Row(children: [
+                  Expanded(
+                    child: Text(mine ? 'Cartes que je donne' : 'Cartes de ${widget.friend.name}',
+                        style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900)),
+                  ),
+                  FilledButton(
+                    style: FilledButton.styleFrom(backgroundColor: AppColors.teal),
+                    onPressed: () => Navigator.pop(ctx, picked),
+                    child: Text('OK (${picked.length}/$maxTradeSide)'),
+                  ),
+                ]),
               ),
-            Expanded(
-              child: sorted.isEmpty
-                  ? const Center(child: Text('Aucune carte.', style: TextStyle(color: Colors.white60)))
-                  : GridView.builder(
-                      padding: const EdgeInsets.all(12),
-                      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: 120,
-                        childAspectRatio: 0.72,
-                        mainAxisSpacing: 10,
-                        crossAxisSpacing: 10,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  hint ??
+                      (mine
+                          ? '★ = en favori : retire-la des favoris (bestiaire) pour pouvoir l\'échanger.'
+                          : '« Nouveau » = tu ne l\'as pas encore. ★ = en favori chez ${widget.friend.name} : '
+                              'impossible de la demander.'),
+                  style: TextStyle(color: hint == null ? Colors.white54 : AppColors.coral, fontSize: 12),
+                ),
+              ),
+              Expanded(
+                child: sorted.isEmpty
+                    ? const Center(child: Text('Aucune carte.', style: TextStyle(color: Colors.white60)))
+                    : GridView.builder(
+                        padding: const EdgeInsets.all(12),
+                        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 120,
+                          childAspectRatio: 0.72,
+                          mainAxisSpacing: 10,
+                          crossAxisSpacing: 10,
+                        ),
+                        itemCount: sorted.length,
+                        itemBuilder: (_, i) {
+                          final sc = sorted[i];
+                          final card = pool.byId(sc.cardId)!;
+                          final selected = picked.any((c) => c.rowId == sc.rowId);
+                          return Opacity(
+                            opacity: sc.favorite ? 0.45 : 1,
+                            child: Stack(fit: StackFit.expand, children: [
+                              CardView(
+                                card: card,
+                                instance: CardInstance(card, sc.seed),
+                                quantity: mine ? owned[card.id] : null,
+                                isNew: !mine && !owned.containsKey(card.id),
+                                favorite: sc.favorite,
+                                onTap: () => setSheet(() {
+                                  final next = toggleTradePick(picked, sc);
+                                  if (next != null) {
+                                    picked = next;
+                                    hint = null;
+                                  } else {
+                                    hint = sc.favorite
+                                        ? (mine
+                                            ? '${card.name} est en favori : retire-la des favoris pour l\'échanger.'
+                                            : '${card.name} est en favori chez ${widget.friend.name}.')
+                                        : '$maxTradeSide cartes au plus de chaque côté.';
+                                  }
+                                }),
+                              ),
+                              if (selected)
+                                const IgnorePointer(
+                                  child: Align(
+                                    alignment: Alignment.center,
+                                    child: CircleAvatar(
+                                      radius: 18,
+                                      backgroundColor: AppColors.teal,
+                                      child: Icon(Icons.check, color: Colors.white),
+                                    ),
+                                  ),
+                                ),
+                            ]),
+                          );
+                        },
                       ),
-                      itemCount: sorted.length,
-                      itemBuilder: (_, i) {
-                        final sc = sorted[i];
-                        final card = pool.byId(sc.cardId)!;
-                        return CardView(
-                          card: card,
-                          instance: CardInstance(card, sc.seed),
-                          quantity: markNew ? null : owned[card.id],
-                          isNew: markNew && !owned.containsKey(card.id),
-                          onTap: () => Navigator.pop(ctx, sc),
-                        );
-                      },
-                    ),
-            ),
-          ]),
+              ),
+            ]),
+          ),
         ),
       ),
     );
   }
 
   Future<void> _send() async {
-    final give = _give, get = _get;
-    if (give == null || get == null) return;
+    if (_give.isEmpty || _get.isEmpty) return;
     setState(() => _sending = true);
-    final err = await Online.proposeTrade(widget.friend.userId, give.rowId, get.rowId);
+    final err = await Online.proposeTrade(
+        widget.friend.userId, [for (final c in _give) c.rowId], [for (final c in _get) c.rowId]);
     if (!mounted) return;
     setState(() => _sending = false);
     if (err != null) {
@@ -786,31 +847,37 @@ class _TradeComposerState extends State<_TradeComposer> {
     Navigator.of(context).pop();
   }
 
-  Widget _slot(String label, ServerCard? sc, VoidCallback? onTap) {
-    final card = sc == null ? null : widget.data.pool.byId(sc.cardId);
-    return Column(children: [
-      Text(label, style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
-      const SizedBox(height: 6),
-      SizedBox(
-        width: 130,
-        child: card != null
-            ? CardView(card: card, instance: CardInstance(card, sc!.seed), onTap: onTap)
-            : GestureDetector(
-                onTap: onTap,
-                child: AspectRatio(
-                  aspectRatio: 0.72,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white24, width: 2),
-                    ),
-                    child: const Icon(Icons.add, color: Colors.white38, size: 40),
-                  ),
+  /// Un côté de l'échange : les cartes choisies, et une case « + » pour en choisir.
+  Widget _side(String label, List<ServerCard> picked, VoidCallback? onTap) {
+    final pool = widget.data.pool;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: _panel, borderRadius: BorderRadius.circular(14)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('$label (${picked.length}/$maxTradeSide)',
+            style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        Wrap(spacing: 8, runSpacing: 8, children: [
+          for (final sc in picked)
+            if (pool.byId(sc.cardId) case final card?)
+              SizedBox(width: 84, child: CardView(card: card, instance: CardInstance(card, sc.seed), onTap: onTap)),
+          if (picked.length < maxTradeSide)
+            GestureDetector(
+              onTap: onTap,
+              child: Container(
+                width: 84,
+                height: 84 / 0.72,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white24, width: 2),
                 ),
+                child: const Icon(Icons.add, color: Colors.white38, size: 36),
               ),
-      ),
-    ]);
+            ),
+        ]),
+      ]),
+    );
   }
 
   @override
@@ -827,29 +894,33 @@ class _TradeComposerState extends State<_TradeComposer> {
           ? const Center(child: CircularProgressIndicator())
           : ListView(padding: const EdgeInsets.all(16), children: [
               if (_error != null) Text(_error!, style: const TextStyle(color: AppColors.coral)),
-              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                _slot('Je donne', _give, _mine == null
-                    ? null
-                    : () async {
-                        final c = await _pick(_mine!, 'Carte à donner', markNew: false);
-                        if (c != null) setState(() => _give = c);
-                      }),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                  child: Icon(Icons.swap_horiz, color: AppColors.gold, size: 36),
-                ),
-                _slot('Je reçois', _get, _theirs == null
-                    ? null
-                    : () async {
-                        final c = await _pick(_theirs!, 'Cartes de ${widget.friend.name}', markNew: true);
-                        if (c != null) setState(() => _get = c);
-                      }),
-              ]),
+              _side(
+                  'Je donne',
+                  _give,
+                  _mine == null
+                      ? null
+                      : () async {
+                          final c = await _pick(_mine!, _give, mine: true);
+                          if (c != null) setState(() => _give = c);
+                        }),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 6),
+                child: Icon(Icons.swap_vert, color: AppColors.gold, size: 36),
+              ),
+              _side(
+                  'Je reçois',
+                  _get,
+                  _theirs == null
+                      ? null
+                      : () async {
+                          final c = await _pick(_theirs!, _get, mine: false);
+                          if (c != null) setState(() => _get = c);
+                        }),
               const SizedBox(height: 12),
               Text(
-                'Touche une case pour choisir. ${widget.friend.name} devra accepter : les cartes ne changent '
-                'de main qu\'à ce moment-là. Le chiffre sur tes cartes = combien d\'exemplaires tu en as '
-                '(les doublons sont parfaits pour échanger).',
+                'De 1 à $maxTradeSide cartes de chaque côté (2 contre 1, 3 contre 2…). ${widget.friend.name} '
+                'devra accepter : les cartes ne changent de main qu\'à ce moment-là. Les cartes en favori (★) '
+                'ne peuvent pas être échangées.',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.white54, fontSize: 12),
               ),
@@ -858,7 +929,7 @@ class _TradeComposerState extends State<_TradeComposer> {
                 label: _sending ? 'Envoi…' : 'Envoyer la proposition',
                 fontSize: 16,
                 color: AppColors.teal,
-                onPressed: _give != null && _get != null && !_sending ? _send : null,
+                onPressed: _give.isNotEmpty && _get.isNotEmpty && !_sending ? _send : null,
               ),
             ]),
     );

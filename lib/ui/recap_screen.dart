@@ -58,7 +58,7 @@ class RecapScreen extends StatelessWidget {
                             card: c.card,
                             instance: c,
                             isNew: freshIds.contains(c.card.id),
-                            onTap: () => openCardDetail(context, c.card, variantSeeds: [c.variantSeed]),
+                            onTap: () => openCardDetail(context, c.card, variantSeeds: [c.variantSeed], canFavorite: true),
                           ),
                         ),
                     ],

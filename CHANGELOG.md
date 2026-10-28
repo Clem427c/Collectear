@@ -1,5 +1,15 @@
 # Journal des versions
 
+## 0.12.0 – 28/10/2026 (après-midi) – échanges à plusieurs cartes et favoris
+- Échanges de 1 à 5 cartes de chaque côté (2 contre 1, 3 contre 2…) : on coche les cartes de chaque
+  côté, l'échange se fait en une fois quand l'ami accepte.
+- Favoris : étoile en haut de la fiche d'un exemplaire (bestiaire, récapitulatif de run). Une carte en
+  favori porte une étoile dorée ; elle ne peut être ni offerte ni demandée par un ami tant qu'elle n'est
+  pas retirée des favoris. La mettre en favori annule les propositions en attente qui la concernent.
+  Les favoris sont sauvegardés en ligne et visibles par tes amis (bouton « Favori » au lieu de « Demander »).
+- Serveur : nouvelle table des cartes d'un échange (migration automatique depuis la 0.11), 70 vérifications.
+- **À faire par Clem** : recoller `supabase/schema.sql` (toujours sans rien supprimer).
+
 ## 0.11.0 – 28/10/2026 (midi) – amis et échanges
 - Onglet Social → Amis : ton code ami (bouton copier), ajout d'un ami par son code, demandes reçues
   (accepter / refuser) et envoyées (annuler), liste de tes amis avec leur nombre de cartes, retrait.
