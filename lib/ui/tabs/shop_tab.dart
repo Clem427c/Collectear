@@ -273,7 +273,7 @@ class _ShopCell extends StatelessWidget {
   }
 }
 
-/// Aperçu d'un skin : l'explorateur vu de dos (la cape se voit le mieux), un rond coloré si l'image manque.
+/// Aperçu d'un skin : l'explorateur en pose d'attaque (la cape se voit le mieux), un rond coloré si l'image manque.
 class _SkinPreview extends StatelessWidget {
   const _SkinPreview({required this.skin, this.size = 58});
   final Skin skin;
@@ -298,7 +298,7 @@ class _SkinPreview extends StatelessWidget {
       height: size * 1.2,
       child: Stack(alignment: Alignment.center, children: [
         Opacity(opacity: 0.35, child: round),
-        Image.asset('assets/images/decors/${skin.sprite('dos')}.png',
+        Image.asset('assets/images/decors/${skin.sprite('attaque')}.png',
             width: size * 1.15,
             height: size * 1.15,
             fit: BoxFit.contain,
