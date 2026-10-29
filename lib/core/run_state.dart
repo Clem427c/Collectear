@@ -95,5 +95,22 @@ class RunState {
     coins += amount;
   }
 
+  /// Résurrections utilisées (vidéo récompensée à la mort).
+  int revives = 0;
+
+  /// On peut proposer une résurrection : mort (pas abandon ni chrono), il reste du temps,
+  /// et la limite par run n'est pas atteinte.
+  bool get canRevive =>
+      endReason == RunEndReason.death && revives < GameConfig.revivesPerRun && remaining > 0;
+
+  /// Ressuscite le joueur avec GameConfig.reviveLives vie(s). Renvoie false si ce n'est pas permis.
+  bool revive() {
+    if (!canRevive) return false;
+    revives++;
+    endReason = null;
+    hitsTaken = rules.playerHitsToDie - GameConfig.reviveLives;
+    return true;
+  }
+
   void quit() => endReason ??= RunEndReason.quit;
 }

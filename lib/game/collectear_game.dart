@@ -51,6 +51,7 @@ class CollectearGame extends FlameGame with KeyboardEvents {
     required this.rules,
     required this.seed,
     required this.onRunEnd,
+    this.onReviveOffer,
   })  : terrain = Terrain(seed),
         run = RunState(rules),
         _rng = math.Random(seed ^ 0x5bd1e995);
@@ -59,6 +60,9 @@ class CollectearGame extends FlameGame with KeyboardEvents {
   final RunRules rules;
   final int seed;
   final void Function(RunState run) onRunEnd;
+
+  /// À la mort, propose une résurrection (vidéo récompensée). Renvoie true si le joueur repart.
+  final Future<bool> Function()? onReviveOffer;
   final Terrain terrain;
   final RunState run;
   final math.Random _rng;
@@ -210,9 +214,39 @@ class CollectearGame extends FlameGame with KeyboardEvents {
     _pushHud();
     if (run.isOver && !_endNotified) {
       _endNotified = true;
-      Sfx.play('run_end');
       pauseEngine();
-      Future<void>.delayed(const Duration(milliseconds: 300), () => onRunEnd(run));
+      final offer = onReviveOffer;
+      if (run.canRevive && offer != null) {
+        unawaited(_offerRevive(offer));
+      } else {
+        _finish();
+      }
+    }
+  }
+
+  void _finish() {
+    Sfx.play('run_end');
+    Future<void>.delayed(const Duration(milliseconds: 300), () => onRunEnd(run));
+  }
+
+  /// Mort : le jeu est figé pendant que le joueur choisit (et regarde la vidéo).
+  Future<void> _offerRevive(Future<bool> Function() offer) async {
+    var back = false;
+    try {
+      back = await offer();
+    } catch (e) {
+      debugPrint('Résurrection : $e');
+    }
+    if (back && run.revive()) {
+      player.makeInvincible(GameConfig.reviveInvincibility);
+      _endNotified = false;
+      _pushHud();
+      world.add(Burst(position: player.position.clone(), color: const Color(0xFFFF8FA3), count: 24, speed: 160));
+      Sfx.play('life');
+      _toast('De retour ! Encore ${run.hitsLeft} vie${run.hitsLeft > 1 ? 's' : ''}');
+      resumeEngine();
+    } else {
+      _finish();
     }
   }
 

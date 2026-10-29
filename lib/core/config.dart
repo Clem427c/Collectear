@@ -58,4 +58,11 @@ class GameConfig {
   static const double projectileSpeed = 170;
   static const double projectileLife = 2.5;
   static const double enemyAttackCooldown = 1.1;
+
+  // --- Publicités récompensées (GDD diapo 15 ; voir core/ads.dart) ---
+  // PROVISOIRE (à valider par Clem) : 3 runs bonus par jour, une seule résurrection par run.
+  static const int adBonusRunsPerDay = 3; // vidéo = +1 run, seulement quand il n'en reste plus
+  static const int revivesPerRun = 1; // vidéo à la mort = on repart
+  static const int reviveLives = 1; // vies rendues par la résurrection
+  static const double reviveInvincibility = 2.5; // secondes intouchable après la résurrection
 }

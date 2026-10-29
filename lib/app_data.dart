@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
+import 'ads/ads.dart';
 import 'core/cards.dart';
 import 'core/collection.dart';
 import 'core/settings.dart';
@@ -25,6 +27,8 @@ class AppData {
     await Illustrations.load();
     await Online.init();
     Online.attach(collection);
+    // Vidéos récompensées : initialisées en arrière-plan (ne retarde pas le démarrage).
+    unawaited(Ads.init());
     return AppData(pool, collection, settings);
   }
 

@@ -59,9 +59,9 @@ select pg_temp.check((select count(*) from public.runs) = 0, 'runs des autres in
 select pg_temp.check((select count(*) from public.owned_cards) = 0, 'collection des autres invisible');
 select pg_temp.check(pg_temp.fails(format('select public.finish_run(%L, 0, 0, %L)', :'rid3', '[]')), 'run d''un autre refusée');
 
--- Limite du jour : 15 runs (10 gratuites + 5 énergies).
-select count(*) from (select public.start_run() from generate_series(1, 15)) s;
-select pg_temp.check(pg_temp.fails('select public.start_run()'), '16e run du jour refusée');
+-- Limite du jour : 18 runs (10 gratuites + 5 énergies + 3 vidéos).
+select count(*) from (select public.start_run() from generate_series(1, 18)) s;
+select pg_temp.check(pg_temp.fails('select public.start_run()'), '19e run du jour refusée');
 
 
 -- ===========================================================================

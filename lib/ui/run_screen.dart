@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
+import '../ads/ads.dart';
 import '../core/cards.dart';
 import '../core/config.dart';
 import '../core/run_state.dart';
@@ -40,8 +41,38 @@ class _RunScreenState extends State<RunScreen> {
       rules: RunRules(boost: widget.companion?.boost),
       seed: math.Random().nextInt(1 << 31),
       onRunEnd: _onRunEnd,
+      onReviveOffer: _offerRevive,
     );
     unawaited(_onlineRun);
+  }
+
+  /// Mort : propose de revenir avec une vie contre une vidéo (facultatif).
+  Future<bool> _offerRevive() async {
+    if (!mounted) return false;
+    final watch = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.night,
+        title: const Text('Tu es tombé !', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+        content: Text(
+          'Regarde une courte vidéo pour revenir avec ${GameConfig.reviveLives} vie'
+          '${GameConfig.reviveLives > 1 ? 's' : ''} et finir ta run '
+          '(une fois par run). Tes cartes et tes pièces sont gardées dans tous les cas.',
+          style: const TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Terminer la run')),
+          FilledButton.icon(
+            onPressed: () => Navigator.pop(ctx, true),
+            icon: const Icon(Icons.ondemand_video),
+            label: const Text('Revenir (vidéo)'),
+          ),
+        ],
+      ),
+    );
+    if (watch != true || !mounted) return false;
+    return Ads.showRewarded(context);
   }
 
   Future<void> _onRunEnd(RunState run) async {

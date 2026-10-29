@@ -130,6 +130,9 @@ class Player extends PositionComponent with HasGameReference<CollectearGame> {
     }
   }
 
+  /// Rend le joueur intouchable un moment (résurrection).
+  void makeInvincible(double seconds) => _invincible = math.max(_invincible, seconds);
+
   /// Le joueur reçoit un coup (ignoré pendant l'esquive et l'invincibilité).
   void takeHit() {
     if (_invincible > 0 || dodging || !game.active) return;

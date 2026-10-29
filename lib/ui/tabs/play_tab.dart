@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../ads/ads.dart';
 import '../../app_data.dart';
+import '../../core/ads.dart';
 import '../../core/cards.dart';
 import '../../core/config.dart';
 import '../run_screen.dart';
@@ -22,6 +24,17 @@ class PlayTab extends StatelessWidget {
       builder: (_) => RunScreen(data: data, companion: data.companion),
     ));
     onChanged();
+  }
+
+  /// Plus aucune run : une vidéo en donne une (3 par jour au plus).
+  Future<void> _watchForRun(BuildContext context) async {
+    final col = data.collection;
+    if (!col.canWatchAdForRun) return;
+    final ok = await Ads.showRewarded(context);
+    if (!ok) return;
+    await col.addAdRun();
+    onChanged();
+    if (context.mounted) showPrototypeSnack(context, '+1 run ! Bonne chasse.');
   }
 
   Future<void> _pickCompanion(BuildContext context) async {
@@ -128,6 +141,20 @@ class PlayTab extends StatelessWidget {
                                 : null,
                           ),
                   ),
+                  if (runsLeft <= 0 && col.canWatchAdForRun) ...[
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ChunkyButton(
+                        label: 'VIDÉO · +1 RUN (${AdRules.bonusRunsLeft(col.adRunsToday)})',
+                        icon: Icons.ondemand_video,
+                        color: AppColors.teal,
+                        textColor: Colors.white,
+                        fontSize: 18,
+                        onPressed: () => _watchForRun(context),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   GestureDetector(
                     // Outil de test : appui long pour remettre le compteur de runs à zéro.
@@ -158,6 +185,7 @@ class PlayTab extends StatelessWidget {
                     ),
                   Text('$runsLeft / ${GameConfig.runsPerDay} runs aujourd\'hui'
                       '${col.energyBoughtToday > 0 ? ' (+${col.energyBoughtToday} achetée${col.energyBoughtToday > 1 ? 's' : ''})' : ''}'
+                      '${col.adRunsToday > 0 ? ' (+${col.adRunsToday} vidéo${col.adRunsToday > 1 ? 's' : ''})' : ''}'
                       ' · ${col.coins} pièces',
                       style: const TextStyle(color: Colors.white60, fontSize: 12)),
                   const SizedBox(height: 16),

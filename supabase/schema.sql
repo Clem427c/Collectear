@@ -124,21 +124,22 @@ create policy "runs : lecture des siennes" on public.runs
 
 revoke insert, update, delete, truncate on public.runs from authenticated, anon;
 
--- Ouvre une run. Refuse au-delà de 15 runs par jour (10 gratuites + 5 énergies au plus).
--- PROVISOIRE : jour compté en heure de Paris ; les énergies achetées ne sont pas encore
--- vérifiées (les pièces sont sur l'appareil), d'où la limite large de 15.
+-- Ouvre une run. Refuse au-delà de 18 runs par jour (10 gratuites + 5 énergies + 3 vidéos au plus).
+-- PROVISOIRE : jour compté en heure de Paris ; les énergies achetées et les vidéos regardées ne
+-- sont pas encore vérifiées (pièces et pubs sont sur l'appareil), d'où la limite large de 18.
 create or replace function public.start_run() returns uuid
 language plpgsql volatile security definer set search_path = '' as $$
 declare
   uid uuid := auth.uid();
   runs_per_day constant int := 10;
   max_energies_per_day constant int := 5;
+  max_ad_runs_per_day constant int := 3;
   today_start timestamptz := date_trunc('day', now() at time zone 'Europe/Paris') at time zone 'Europe/Paris';
   rid uuid;
 begin
   if uid is null then raise exception 'non connecté' using errcode = '28000'; end if;
   if (select count(*) from public.runs r where r.user_id = uid and r.started_at >= today_start)
-     >= runs_per_day + max_energies_per_day then
+     >= runs_per_day + max_energies_per_day + max_ad_runs_per_day then
     raise exception 'limite de runs du jour atteinte' using errcode = 'P0001';
   end if;
   insert into public.runs (user_id) values (uid) returning id into rid;

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'cloud_sync.dart' show defaultPseudo, normalizePseudo;
+import 'ads.dart';
 import 'config.dart';
 import 'economy.dart';
 
@@ -25,6 +26,8 @@ class Collection {
   static const _kCoins = 'coins';
   static const _kEnergyDay = 'energy_day';
   static const _kEnergyBought = 'energy_bought';
+  static const _kAdRunsDay = 'ad_runs_day';
+  static const _kAdRunsCount = 'ad_runs_count';
 
   static const _kVariants = 'owned_variants'; // "id:seed1,seed2,…"
 
@@ -154,8 +157,25 @@ class Collection {
 
   int get runsToday => _prefs.getString(_kRunsDay) == _today() ? (_prefs.getInt(_kRunsCount) ?? 0) : 0;
 
-  /// Runs disponibles aujourd'hui : les gratuites + les énergies achetées avec des pièces.
-  int get runsLeftToday => math.max(0, GameConfig.runsPerDay + energyBoughtToday - runsToday);
+  /// Runs disponibles aujourd'hui : les gratuites + les énergies achetées avec des pièces
+  /// + les runs bonus gagnées en regardant une vidéo.
+  int get runsLeftToday =>
+      math.max(0, GameConfig.runsPerDay + energyBoughtToday + adRunsToday - runsToday);
+
+  // --- Runs bonus (vidéo récompensée) ---
+  int get adRunsToday => _prefs.getString(_kAdRunsDay) == _today() ? (_prefs.getInt(_kAdRunsCount) ?? 0) : 0;
+
+  /// Le bouton « vidéo = +1 run » est proposé (plus aucune run, limite du jour pas atteinte).
+  bool get canWatchAdForRun => AdRules.canWatchForBonusRun(runsLeft: runsLeftToday, adRunsToday: adRunsToday);
+
+  /// Vidéo regardée jusqu'au bout : +1 run aujourd'hui. Renvoie false si ce n'est pas permis.
+  Future<bool> addAdRun() async {
+    if (!canWatchAdForRun) return false;
+    final n = adRunsToday + 1;
+    await _prefs.setString(_kAdRunsDay, _today());
+    await _prefs.setInt(_kAdRunsCount, n);
+    return true;
+  }
 
   // --- Pièces et énergies ---
   int get coins => _prefs.getInt(_kCoins) ?? 0;

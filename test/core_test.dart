@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:collectear/core/ads.dart';
 import 'package:collectear/core/cards.dart';
 import 'package:collectear/core/cloud_sync.dart';
 import 'package:collectear/core/collection.dart';
@@ -644,6 +645,7 @@ void main() {
     test('limites de schema.sql identiques à config.dart et economy.dart', () {
       expect(sqlConst('runs_per_day'), GameConfig.runsPerDay);
       expect(sqlConst('max_energies_per_day'), Economy.maxEnergyPurchasesPerDay);
+      expect(sqlConst('max_ad_runs_per_day'), GameConfig.adBonusRunsPerDay);
       expect(sqlConst('max_cards'), GameConfig.maxCardsPerRun);
       expect(sqlConst('max_side'), maxTradeSide);
       expect(sql, contains('check (cards between 0 and ${GameConfig.maxCardsPerRun})'));
@@ -911,6 +913,101 @@ void main() {
       expect(again.volume, 1.0);
       expect(again.haptics, isFalse);
       expect(again.loginPromptShown, isTrue);
+    });
+  });
+
+  group('Publicités', () {
+    TestWidgetsFlutterBinding.ensureInitialized();
+
+    test('résurrection : une fois par run, après une mort, avec 1 vie', () {
+      final run = RunState(const RunRules());
+      expect(run.canRevive, isFalse, reason: 'pas mort');
+      run.tick(30);
+      for (var i = 0; i < GameConfig.playerHitsToDie; i++) {
+        run.playerHit();
+      }
+      expect(run.endReason, RunEndReason.death);
+      expect(run.canRevive, isTrue);
+      expect(run.revive(), isTrue);
+      expect(run.isOver, isFalse);
+      expect(run.hitsLeft, GameConfig.reviveLives);
+      expect(run.elapsed, 30, reason: 'le chrono reprend où il en était');
+      // On peut encore gagner des pièces et des kills.
+      run.addCoins(2);
+      expect(run.coins, 2);
+      // Deuxième mort : plus de résurrection.
+      for (var i = 0; i < GameConfig.reviveLives; i++) {
+        run.playerHit();
+      }
+      expect(run.endReason, RunEndReason.death);
+      expect(run.canRevive, isFalse);
+      expect(run.revive(), isFalse);
+      expect(run.isOver, isTrue);
+    });
+
+    test('pas de résurrection après un abandon, la fin du chrono ou 3 cartes', () {
+      final quit = RunState(const RunRules())..quit();
+      expect(quit.revive(), isFalse);
+      final time = RunState(const RunRules())..tick(500);
+      expect(time.revive(), isFalse);
+      final pool = _pool();
+      final won = RunState(const RunRules());
+      for (var i = 0; i < 3; i++) {
+        won.addCard(CardInstance(pool.cards[i], i));
+      }
+      expect(won.revive(), isFalse);
+      expect(won.endReason, RunEndReason.cardsCollected);
+    });
+
+    test('résurrection avec le boost résistance : toujours 1 vie', () {
+      final run = RunState(const RunRules(boost: Boost.resistance));
+      for (var i = 0; i < GameConfig.playerHitsToDieBoosted; i++) {
+        run.playerHit();
+      }
+      expect(run.revive(), isTrue);
+      expect(run.hitsLeft, GameConfig.reviveLives);
+    });
+
+    test('run bonus : seulement sans run restante, 3 par jour', () async {
+      expect(AdRules.canWatchForBonusRun(runsLeft: 1, adRunsToday: 0), isFalse);
+      expect(AdRules.canWatchForBonusRun(runsLeft: 0, adRunsToday: 0), isTrue);
+      expect(AdRules.canWatchForBonusRun(runsLeft: 0, adRunsToday: GameConfig.adBonusRunsPerDay), isFalse);
+      expect(AdRules.bonusRunsLeft(1), GameConfig.adBonusRunsPerDay - 1);
+      expect(AdRules.bonusRunsLeft(99), 0);
+
+      SharedPreferences.setMockInitialValues({});
+      final col = await Collection.load();
+      expect(col.canWatchAdForRun, isFalse, reason: 'il reste des runs');
+      expect(await col.addAdRun(), isFalse);
+      for (var i = 0; i < GameConfig.runsPerDay; i++) {
+        await col.registerRun();
+      }
+      expect(col.runsLeftToday, 0);
+      for (var i = 0; i < GameConfig.adBonusRunsPerDay; i++) {
+        expect(col.canWatchAdForRun, isTrue);
+        expect(await col.addAdRun(), isTrue);
+        expect(col.runsLeftToday, 1);
+        expect(await col.addAdRun(), isFalse, reason: 'une seule run bonus en réserve');
+        await col.registerRun();
+      }
+      expect(col.adRunsToday, GameConfig.adBonusRunsPerDay);
+      expect(col.runsLeftToday, 0);
+      expect(col.canWatchAdForRun, isFalse, reason: 'limite du jour');
+      // La run bonus ne bloque pas l'achat d'énergie (il en manque toujours).
+      await col.addCoins(100);
+      expect(col.canBuyEnergy, isTrue);
+    });
+
+    test('limite du serveur = runs gratuites + énergies + vidéos', () {
+      expect(GameConfig.runsPerDay + Economy.maxEnergyPurchasesPerDay + GameConfig.adBonusRunsPerDay, 18);
+    });
+
+    test('identifiants AdMob : ceux de test par défaut, un identifiant fourni doit être valide', () {
+      expect(AdIds.rewardedAndroid, AdIds.testRewardedAndroid);
+      expect(AdIds.usingTestIds, isTrue);
+      expect(AdIds.resolve('', 'x'), 'x');
+      expect(AdIds.resolve('n\'importe quoi', 'x'), 'x');
+      expect(AdIds.resolve(' ca-app-pub-1234567890123456/1234567890 ', 'x'), 'ca-app-pub-1234567890123456/1234567890');
     });
   });
 }

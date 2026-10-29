@@ -88,7 +88,8 @@ class GuideScreen extends StatelessWidget {
             title: 'Pièces',
             text: 'Ramasse-les en passant dessus (parfois un tas de ${Economy.pileValue}). Chaque ennemi vaincu en '
                 'donne ${Economy.coinsPerKill}, chaque lieu ouvert ${Economy.coinsPerPlace}. Dépense-les dans la '
-                'Boutique : une énergie = une run de plus (${Economy.maxEnergyPurchasesPerDay} par jour au plus).',
+                'Boutique : une énergie = une run de plus (${Economy.maxEnergyPurchasesPerDay} par jour au plus). '
+                'Plus aucune run ? Une vidéo t\'en offre une (${GameConfig.adBonusRunsPerDay} par jour au plus).',
           ),
           SectionTitle('Les ennemis'),
           _Entry(
@@ -111,7 +112,8 @@ class GuideScreen extends StatelessWidget {
             art: _Art(_ArtKind.hearts),
             title: 'Vies',
             text: '3 vies (4 avec un compagnon Résistance). Si tu en as perdu une, chaque série de '
-                '${GameConfig.killsPerLifeRegen} ennemis vaincus t\'en rend une.',
+                '${GameConfig.killsPerLifeRegen} ennemis vaincus t\'en rend une. Tombé au combat ? Une courte '
+                'vidéo (facultative) te fait revenir avec ${GameConfig.reviveLives} vie, une fois par run.',
           ),
           SectionTitle('Les étages'),
           _Entry(

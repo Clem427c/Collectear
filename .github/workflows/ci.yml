@@ -52,6 +52,8 @@ jobs:
         run: flutter --version
 
       - name: Générer les dossiers plateforme (web, android)
+        env:
+          ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
         run: |
           flutter create . --platforms=web,android --project-name collectear --org com.clem427c --no-overwrite
           # flutter create ajoute un test d'exemple qui ne correspond pas à notre app
@@ -81,6 +83,30 @@ jobs:
               open(p, 'w').write(s)
           PY
           grep -n 'login-callback\|deeplinking' "$m"
+          # AdMob (vidéos récompensées) : identifiant d'appli obligatoire dans le manifeste, sinon l'appli
+          # plante au démarrage. Secret ADMOB_APP_ID s'il existe, sinon l'identifiant de TEST de Google.
+          python3 - "$m" "$ADMOB_APP_ID" <<'PY'
+          import re, sys
+          p, given = sys.argv[1], sys.argv[2].strip()
+          app_id = given if re.fullmatch(r'ca-app-pub-\d{16}~\d{10}', given) else 'ca-app-pub-3940256099942544~3347511713'
+          print('AdMob :', 'identifiant du secret ADMOB_APP_ID' if app_id == given else 'identifiant de TEST')
+          s = open(p).read()
+          if 'gms.ads.APPLICATION_ID' not in s:
+              assert s.count('</application>') == 1
+              s = s.replace('</application>', '    <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" '
+                            f'android:value="{app_id}"/>\n    </application>', 1)
+              open(p, 'w').write(s)
+          PY
+          grep -n 'gms.ads' "$m"
+          # google_mobile_ads demande un minSdk récent : au moins 23 (sans baisser celui de Flutter).
+          g=android/app/build.gradle.kts
+          if [ -f "$g" ]; then
+            sed -i -E 's/minSdk *= *flutter\.minSdkVersion/minSdk = maxOf(flutter.minSdkVersion, 23)/' "$g"
+          else
+            g=android/app/build.gradle
+            sed -i -E 's/minSdk(Version)? *=? *flutter\.minSdkVersion/minSdkVersion Math.max(flutter.minSdkVersion, 23)/' "$g"
+          fi
+          grep -n 'minSdk' "$g"
 
       - name: Illustrations (art/raw → assets/cards)
         run: |
@@ -168,12 +194,14 @@ jobs:
 
       - name: Build APK
         env:
+          ADMOB_REWARDED_ANDROID: ${{ secrets.ADMOB_REWARDED_ANDROID }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
         run: >
           flutter build apk --release
           --dart-define=SUPABASE_URL="$SUPABASE_URL"
           --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY"
+          --dart-define=ADMOB_REWARDED_ANDROID="$ADMOB_REWARDED_ANDROID"
 
       - name: Renommer l'APK
         run: cp build/app/outputs/flutter-apk/app-release.apk collectear.apk
