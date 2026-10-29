@@ -96,7 +96,7 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
 - [ ] **Clem** (avec le compte AdMob) : AdMob → Confidentialité et messages → créer un message RGPD
   pour l'appli. Sans lui, en Europe, le formulaire ne peut pas s'afficher (vidéo simulée en attendant).
 - [ ] Interstitiels rares (jamais en run) ? (attend la réponse de Clem)
-- [x] Skins d'explorateur (P) : 6 skins achetables avec les pièces, portés en run (tenue recolorée) (29/10)
+- [x] Skins d'explorateur (P) : 6 skins achetables avec les pièces, portés en run (cape recolorée en CI) (29/10)
 - [ ] Cadres de cartes, gemmes, achats intégrés (Google Play Billing), option sans pub
 
 ## Étape 5 – Lancement
@@ -218,9 +218,9 @@ Priorité basse (à toi de juger) :
 - PROVISOIRE : skins payés en **pièces** (300 ; Nuit étoilée 600 ; Or royal 1 200), soit ≈ 8 runs de
   récolte pour un skin courant. Ils entrent en concurrence avec les énergies : ça te va, ou tu préfères
   des skins en gemmes (achetées en euros) seulement, ou un mélange (courants en pièces, rares en gemmes) ?
-- PROVISOIRE : un skin recolore toute l'image de l'explorateur (cheveux et peau compris, à 50-60 %).
-  Pour de vraies tenues, il faudrait générer 4 images par skin (face, dos, profil, attaque) avec
-  ComfyUI : je prépare les prompts si tu veux.
+- PROVISOIRE : un skin ne change que la couleur de la cape (recolorée automatiquement en CI sur les
+  4 poses). Pour des tenues entièrement différentes (chapeau, armure…), il faudrait générer 4 images
+  par skin avec ComfyUI : je prépare les prompts si tu veux.
 - Les skins achetés restent sur l'appareil (comme les pièces) : à sauvegarder en ligne avec elles ?
 
 ### Illustrations (suite)

@@ -179,21 +179,27 @@ class Player extends PositionComponent with HasGameReference<CollectearGame> {
   /// Hauteur de l'explorateur à l'écran (unités du monde).
   static const double _spriteHeight = 40;
 
+  /// Image d'une pose aux couleurs du skin porté (image d'origine si celle du skin manque).
+  String _sprite(String pose) {
+    final skinned = game.skin.sprite(pose);
+    return DecorArt.has(skinned) ? skinned : 'perso_explorateur_$pose';
+  }
+
   /// Explorateur dessiné (images générées) : face, dos ou profil selon la direction, pose
   /// d'attaque pendant un coup. Renvoie false si les images manquent (dessin de secours).
   bool _renderSprite(Canvas canvas, Offset c, double lift, bool blink) {
     final String name;
     var flip = facing.x < 0;
     if (_swing > 0) {
-      name = 'perso_explorateur_attaque';
+      name = _sprite('attaque');
     } else if (facing.y > facing.x.abs()) {
-      name = 'perso_explorateur_face';
+      name = _sprite('face');
       flip = false;
     } else if (-facing.y > facing.x.abs()) {
-      name = 'perso_explorateur_dos';
+      name = _sprite('dos');
       flip = false;
     } else {
-      name = 'perso_explorateur_profil';
+      name = _sprite('profil');
     }
     if (!DecorArt.has(name)) return false;
     final foot = c + Offset(0, 9 - lift);
@@ -204,9 +210,8 @@ class Player extends PositionComponent with HasGameReference<CollectearGame> {
     // Petit rebond pendant la marche.
     final moving = game.moveInput.length2 > 0.01 && !airborne;
     final bob = moving ? (math.sin(game.run.elapsed * 18).abs() * 2) : 0.0;
-    final skin = game.skin;
     DecorArt.drawOnGround(canvas, name, foot - Offset(0, bob), _spriteHeight,
-        flipX: flip, opacity: blink ? 0.35 : 1, tint: Color(skin.dark), tintStrength: skin.tintStrength);
+        flipX: flip, opacity: blink ? 0.35 : 1);
     if (_swing > 0) {
       final angle = math.atan2(facing.y, facing.x);
       canvas.drawArc(

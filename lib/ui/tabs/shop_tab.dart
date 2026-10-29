@@ -119,7 +119,7 @@ class ShopTab extends StatelessWidget {
         _SkinGrid(collection: data.collection, onTap: (skin) => _onSkin(context, skin)),
         const Padding(
           padding: EdgeInsets.only(top: 6),
-          child: Text('Payés avec les pièces ramassées en run. Le skin porté change la tenue de ton explorateur.',
+          child: Text('Payés avec les pièces ramassées en run. Le skin porté change la couleur de la cape de ton explorateur.',
               style: TextStyle(color: Colors.white54, fontSize: 12)),
         ),
         const SectionTitle('Cadres de cartes'),
@@ -273,13 +273,12 @@ class _ShopCell extends StatelessWidget {
   }
 }
 
-/// Aperçu d'un skin : l'explorateur dessiné, teinté comme en run (un rond coloré si l'image manque).
+/// Aperçu d'un skin : l'explorateur vu de dos (la cape se voit le mieux), un rond coloré si l'image manque.
 class _SkinPreview extends StatelessWidget {
   const _SkinPreview({required this.skin, this.size = 58});
   final Skin skin;
   final double size;
 
-  static const _asset = 'assets/images/decors/perso_explorateur_face.png';
 
   @override
   Widget build(BuildContext context) {
@@ -294,22 +293,16 @@ class _SkinPreview extends StatelessWidget {
         boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 6, offset: Offset(0, 3))],
       ),
     );
-    Widget image(Widget fallback) => Image.asset(_asset,
-        width: size * 1.15, height: size * 1.15, fit: BoxFit.contain, errorBuilder: (_, __, ___) => fallback);
     return SizedBox(
       width: size * 1.2,
       height: size * 1.2,
       child: Stack(alignment: Alignment.center, children: [
         Opacity(opacity: 0.35, child: round),
-        image(round),
-        if (skin.tintStrength > 0)
-          Opacity(
-            opacity: skin.tintStrength,
-            child: ColorFiltered(
-              colorFilter: ColorFilter.mode(Color(skin.dark), BlendMode.color),
-              child: image(const SizedBox.shrink()),
-            ),
-          ),
+        Image.asset('assets/images/decors/${skin.sprite('dos')}.png',
+            width: size * 1.15,
+            height: size * 1.15,
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) => round),
       ]),
     );
   }

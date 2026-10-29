@@ -1041,8 +1041,17 @@ void main() {
       expect(Skins.all.where((s) => s.isDefault).length, 1);
       expect(Skins.all.first.id, Skins.defaultId);
       expect(Skins.byId('inconnu').id, Skins.defaultId);
+      expect(Skins.byId(Skins.defaultId).sprite('dos'), 'perso_explorateur_dos');
+      expect(Skins.byId('azur').sprite('face'), 'perso_explorateur_face__azur');
+      // tool/process_decors.py relit les skins dans cosmetics.dart : il doit les trouver tous.
+      final src = File('lib/core/cosmetics.dart').readAsStringSync();
+      final re = RegExp(r"Skin\('(\w+)',\s*'[^']*',\s*(\d+),\s*0x[0-9A-Fa-f]{8},\s*0x[0-9A-Fa-f]{8}");
+      expect(re.allMatches(src).map((m) => m.group(1)).toSet(),
+          Skins.all.where((s) => !s.isDefault).map((s) => s.id).toSet());
       for (final s in Skins.all) {
-        expect(s.tintStrength, inInclusiveRange(0, 1));
+        expect(s.id, matches(RegExp(r'^[a-z]+$')));
+        expect(s.light >> 24, 0xFF);
+        expect(s.dark >> 24, 0xFF);
       }
     });
 

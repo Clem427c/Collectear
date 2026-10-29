@@ -7,7 +7,8 @@
   sont les identifiants de test, aucune vidéo avec les vrais.
 - Boutique → Skins d'explorateur : 6 skins (Éclaireur azur, Braise, Sylve, Corail, Nuit étoilée,
   Or royal) achetables avec les pièces (300 à 1 200), à porter ou changer quand on veut. En run,
-  la tenue de l'explorateur prend les couleurs du skin porté. Purement cosmétique.
+  la cape de l'explorateur prend les couleurs du skin porté (images recolorées automatiquement en CI
+  à partir des 4 poses, ombres et reflets conservés). Purement cosmétique.
 - CI : le test de fumée web fait aussi une capture de la Boutique.
 
 ## 0.15.0 – 29/10/2026 – vidéos récompensées (provisoire)
