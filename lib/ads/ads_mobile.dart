@@ -12,20 +12,97 @@ import 'simulated_ad.dart';
 /// iOS viendra avec l'App Store (identifiants à créer) : vidéo simulée en attendant.
 bool get _native => !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
-bool get simulated => !_native;
-
 bool _initialized = false;
+bool _canRequestAds = false;
+bool _privacyOptions = false;
 RewardedAd? _ready;
 Future<void>? _loading;
+Future<void>? _starting;
 
-Future<void> init() async {
-  if (!_native || _initialized) return;
+AdMode get mode => AdConsent.mode(nativeAds: _native, canRequestAds: _canRequestAds, testIds: AdIds.usingTestIds);
+
+bool get simulated => mode == AdMode.simulated;
+
+bool get privacyOptionsRequired => _native && _privacyOptions;
+
+/// Démarrage : d'abord le consentement RGPD (UMP), ensuite seulement le SDK AdMob et la 1re vidéo.
+Future<void> init() {
+  if (!_native || _initialized) return Future.value();
+  return _starting ??= () async {
+    try {
+      await _gatherConsent();
+      if (!_canRequestAds) {
+        debugPrint('AdMob : pas de consentement, aucune pub demandée (mode : $mode)');
+        return;
+      }
+      await MobileAds.instance.initialize();
+      _initialized = true;
+      unawaited(_load());
+    } catch (e) {
+      debugPrint('AdMob : initialisation impossible : $e');
+    } finally {
+      _starting = null;
+    }
+  }();
+}
+
+/// Met à jour l'état du consentement et montre le formulaire de Google s'il est requis
+/// (premier lancement en Europe, ou choix expiré). Ne lève jamais d'exception.
+Future<void> _gatherConsent() async {
+  final done = Completer<void>();
+  void finish([FormError? error]) {
+    if (error != null) debugPrint('UMP : ${error.errorCode} ${error.message}');
+    if (!done.isCompleted) done.complete();
+  }
+
   try {
-    await MobileAds.instance.initialize();
-    _initialized = true;
-    unawaited(_load());
+    ConsentInformation.instance.requestConsentInfoUpdate(
+      ConsentRequestParameters(),
+      () => ConsentForm.loadAndShowConsentFormIfRequired(finish),
+      finish,
+    );
+    // Le formulaire peut rester ouvert longtemps : pas de délai si le joueur est en train de choisir.
+    await done.future;
   } catch (e) {
-    debugPrint('AdMob : initialisation impossible : $e');
+    debugPrint('UMP : $e');
+  }
+  await _refreshConsent();
+}
+
+Future<void> _refreshConsent() async {
+  try {
+    _canRequestAds = await ConsentInformation.instance.canRequestAds();
+    _privacyOptions = await ConsentInformation.instance.getPrivacyOptionsRequirementStatus() ==
+        PrivacyOptionsRequirementStatus.required;
+  } catch (e) {
+    debugPrint('UMP : $e');
+  }
+}
+
+/// Rouvre le formulaire de Google pour changer son choix (⚙ Paramètres → Publicités).
+Future<void> showPrivacyOptions() async {
+  if (!_native) return;
+  if (!_privacyOptions) {
+    // Pas de formulaire « modifier mes choix » proposé : on refait la demande de consentement complète.
+    await init();
+    return;
+  }
+  final done = Completer<void>();
+  try {
+    ConsentForm.showPrivacyOptionsForm((error) {
+      if (error != null) debugPrint('UMP : ${error.errorCode} ${error.message}');
+      if (!done.isCompleted) done.complete();
+    });
+    await done.future;
+  } catch (e) {
+    debugPrint('UMP : $e');
+  }
+  await _refreshConsent();
+  if (_canRequestAds && !_initialized) {
+    await init();
+  } else if (!_canRequestAds) {
+    _ready?.dispose();
+    _ready = null;
   }
 }
 
@@ -59,8 +136,17 @@ Future<void> _load() {
 }
 
 Future<bool> showRewarded(BuildContext context) async {
-  if (!_native) return showSimulatedAd(context);
   if (!_initialized) await init();
+  if (!context.mounted) return false;
+  switch (mode) {
+    case AdMode.simulated:
+      return showSimulatedAd(context);
+    case AdMode.unavailable:
+      showPrototypeSnack(context, 'Vidéos indisponibles sans ton choix de confidentialité : ⚙ Paramètres → Publicités.');
+      return false;
+    case AdMode.real:
+      break;
+  }
   if (_ready == null) {
     // Pas encore de vidéo en réserve : petite attente, puis on abandonne proprement.
     if (!context.mounted) return false;

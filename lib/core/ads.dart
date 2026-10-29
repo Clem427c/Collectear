@@ -16,6 +16,48 @@ class AdRules {
       (GameConfig.adBonusRunsPerDay - adRunsToday).clamp(0, GameConfig.adBonusRunsPerDay);
 }
 
+/// Comment les vidéos sont servies sur cet appareil.
+enum AdMode {
+  /// Vraies vidéos AdMob (Android, consentement RGPD obtenu ou non requis).
+  real,
+
+  /// Écran de test de 5 s (web, PC, ou Android sans consentement tant qu'on a les identifiants de test).
+  simulated,
+
+  /// Aucune vidéo possible : vrais identifiants mais pas de consentement (refusé ou formulaire en échec).
+  unavailable,
+}
+
+/// Consentement RGPD (UMP, la plateforme de consentement de Google) : en Europe, AdMob exige
+/// que le joueur ait fait son choix avant toute demande de pub. Le formulaire est celui de Google
+/// (configuré dans le compte AdMob → Confidentialité et messages), affiché au démarrage s'il le faut,
+/// et réouvrable depuis ⚙ Paramètres → Publicités.
+class AdConsent {
+  AdConsent._();
+
+  /// Choisit le mode des vidéos.
+  ///  - [nativeAds] : la plateforme sait afficher des vidéos AdMob (Android aujourd'hui) ;
+  ///  - [canRequestAds] : réponse de l'UMP (consentement donné, ou non requis hors d'Europe) ;
+  ///  - [testIds] : on utilise encore les identifiants de test de Google.
+  ///
+  /// PROVISOIRE : sans compte AdMob, aucun message de consentement n'est configuré, donc l'UMP échoue
+  /// en Europe. Avec les identifiants de test, on se rabat alors sur la vidéo simulée pour que Clem
+  /// puisse tester le parcours ; avec les vrais identifiants, plus aucune vidéo sans consentement.
+  static AdMode mode({required bool nativeAds, required bool canRequestAds, required bool testIds}) {
+    if (!nativeAds) return AdMode.simulated;
+    if (canRequestAds) return AdMode.real;
+    return testIds ? AdMode.simulated : AdMode.unavailable;
+  }
+
+  /// Texte d'état affiché dans ⚙ Paramètres → Publicités.
+  static String statusLabel(AdMode mode, {required bool testIds}) => switch (mode) {
+        AdMode.real => testIds ? 'Vidéos de test de Google (aucun revenu).' : 'Vidéos AdMob actives.',
+        AdMode.simulated => 'Vidéos simulées (5 s d\'attente) : aucune donnée envoyée à une régie.',
+        AdMode.unavailable => 'Pas de vidéo : choix de confidentialité non fait ou refusé. '
+            'Tu peux le modifier ci-dessous.',
+      };
+}
+
 /// Identifiants AdMob.
 ///
 /// PROVISOIRE : tant que Clem n'a pas créé son compte AdMob, ce sont les identifiants de TEST

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../ads/ads.dart';
 import '../app_data.dart';
+import '../core/ads.dart';
 import '../game/sfx.dart';
 import '../online.dart';
 import 'account_panel.dart';
@@ -75,6 +77,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ]),
           const SectionTitle('Compte'),
           if (Online.ready || Online.config.isUsable) const AccountPanel() else const _OfflineNote(),
+          const SectionTitle('Publicités'),
+          _Box(children: [
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.ondemand_video, color: AppColors.gold),
+              title: const Text('Vidéos récompensées', style: TextStyle(color: Colors.white)),
+              subtitle: Text(
+                'Toujours au choix, jamais pendant une run. '
+                '${AdConsent.statusLabel(Ads.mode, testIds: AdIds.usingTestIds)}',
+                style: const TextStyle(color: Colors.white54, fontSize: 12),
+              ),
+            ),
+            if (Ads.privacyOptionsRequired || Ads.mode == AdMode.unavailable)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.privacy_tip, color: AppColors.gold),
+                title: const Text('Choix de confidentialité', style: TextStyle(color: Colors.white)),
+                subtitle: const Text('Accepter ou refuser les pubs personnalisées (RGPD)',
+                    style: TextStyle(color: Colors.white54, fontSize: 12)),
+                trailing: const Icon(Icons.chevron_right, color: Colors.white54),
+                onTap: () async {
+                  await Ads.showPrivacyOptions();
+                  if (mounted) setState(() {});
+                },
+              ),
+          ]),
           const SectionTitle('Aide'),
           _Box(children: [
             ListTile(

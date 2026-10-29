@@ -1010,4 +1010,27 @@ void main() {
       expect(AdIds.resolve(' ca-app-pub-1234567890123456/1234567890 ', 'x'), 'ca-app-pub-1234567890123456/1234567890');
     });
   });
+
+  group('Consentement des pubs', () {
+    test('web/PC : toujours la vidéo simulée', () {
+      for (final c in [true, false]) {
+        for (final t in [true, false]) {
+          expect(AdConsent.mode(nativeAds: false, canRequestAds: c, testIds: t), AdMode.simulated);
+        }
+      }
+    });
+    test('Android : vraies vidéos seulement avec le feu vert de l\'UMP', () {
+      expect(AdConsent.mode(nativeAds: true, canRequestAds: true, testIds: false), AdMode.real);
+      expect(AdConsent.mode(nativeAds: true, canRequestAds: true, testIds: true), AdMode.real);
+      expect(AdConsent.mode(nativeAds: true, canRequestAds: false, testIds: false), AdMode.unavailable);
+      // PROVISOIRE : sans compte AdMob, on garde la vidéo simulée pour tester.
+      expect(AdConsent.mode(nativeAds: true, canRequestAds: false, testIds: true), AdMode.simulated);
+    });
+    test('chaque mode a un texte', () {
+      for (final m in AdMode.values) {
+        expect(AdConsent.statusLabel(m, testIds: true), isNotEmpty);
+        expect(AdConsent.statusLabel(m, testIds: false), isNotEmpty);
+      }
+    });
+  });
 }
