@@ -79,8 +79,9 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
   « ses doublons »), demander une carte directement depuis son profil (28/10)
 - [x] Pastille Social dans la barre du bas, amis et échanges rechargés toutes les 90 s (28/10)
 - [ ] Notifications d'échange (push) — plus tard
-- [ ] **Prochaine session** : traiter les réponses de Clem (hors ligne, pseudos, collisions, énergies, pubs) ;
-  sinon consentement RGPD des pubs (UMP), puis skins cosmétiques (étape 4)
+- [ ] **Prochaine session** : traiter les réponses de Clem (hors ligne, pseudos, collisions, énergies, pubs,
+  skins) ; sinon synchro en ligne des skins et des pièces (si Clem dit oui), puis cadres de cartes
+  achetables avec les pièces (même principe que les skins)
 
 ## Étape 4 – Monétisation
 - [x] Vidéos récompensées (P) : run bonus quand il n'en reste plus (3/jour), résurrection à la mort
@@ -90,8 +91,13 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
   16e run du jour, les cartes repartent par la synchro classique au lieu d'être validées par le serveur)
 - [ ] **Clem** : créer le compte AdMob, l'appli Android et un bloc « vidéo avec récompense », puis ajouter
   les secrets GitHub `ADMOB_APP_ID` (ca-app-pub-…~…) et `ADMOB_REWARDED_ANDROID` (ca-app-pub-…/…)
-- [ ] Consentement RGPD (UMP de Google) avant les vraies pubs ; interstitiels rares (jamais en run) ?
-- [ ] Skins cosmétiques, achats intégrés, option sans pub
+- [x] Consentement RGPD (UMP de Google) : formulaire de Google au démarrage si requis, AdMob démarré
+  seulement après ; ⚙ Paramètres → Publicités pour changer son choix (29/10)
+- [ ] **Clem** (avec le compte AdMob) : AdMob → Confidentialité et messages → créer un message RGPD
+  pour l'appli. Sans lui, en Europe, le formulaire ne peut pas s'afficher (vidéo simulée en attendant).
+- [ ] Interstitiels rares (jamais en run) ? (attend la réponse de Clem)
+- [x] Skins d'explorateur (P) : 6 skins achetables avec les pièces, portés en run (tenue recolorée) (29/10)
+- [ ] Cadres de cartes, gemmes, achats intégrés (Google Play Billing), option sans pub
 
 ## Étape 5 – Lancement
 - [ ] Combats entre amis (format à définir par Clem)
@@ -204,6 +210,18 @@ Priorité basse (à toi de juger) :
   ou on retire les bonus vidéo du web ?
 - Pour les vraies pubs : compte AdMob à créer par toi (je n'ai pas le droit de créer de comptes), voir
   Étape 4. Ne jamais cliquer sur tes propres vraies pubs (risque de suspension du compte).
+
+### Consentement et skins (29/10)
+- PROVISOIRE : sur Android, si le formulaire de consentement ne peut pas s'afficher (pas encore de
+  compte AdMob, donc pas de message RGPD configuré), on garde la vidéo simulée de 5 s tant que ce sont
+  les identifiants de test. Avec tes vrais identifiants, plus aucune vidéo sans consentement.
+- PROVISOIRE : skins payés en **pièces** (300 ; Nuit étoilée 600 ; Or royal 1 200), soit ≈ 8 runs de
+  récolte pour un skin courant. Ils entrent en concurrence avec les énergies : ça te va, ou tu préfères
+  des skins en gemmes (achetées en euros) seulement, ou un mélange (courants en pièces, rares en gemmes) ?
+- PROVISOIRE : un skin recolore toute l'image de l'explorateur (cheveux et peau compris, à 50-60 %).
+  Pour de vraies tenues, il faudrait générer 4 images par skin (face, dos, profil, attaque) avec
+  ComfyUI : je prépare les prompts si tu veux.
+- Les skins achetés restent sur l'appareil (comme les pièces) : à sauvegarder en ligne avec elles ?
 
 ### Illustrations (suite)
 Remarque : les 4 bûcherons (035 Hugo, 065 Pio, 070 Milo, 079 Anatole) se ressemblent beaucoup

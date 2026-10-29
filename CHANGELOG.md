@@ -1,5 +1,15 @@
 # Journal des versions
 
+## 0.16.0 – 29/10/2026 – consentement des pubs, skins d'explorateur
+- Pubs (Android) : au premier lancement en Europe, le formulaire de consentement de Google (RGPD)
+  s'affiche avant toute pub ; AdMob ne démarre qu'après. ⚙ Paramètres → Publicités : état des vidéos
+  et « Choix de confidentialité » pour changer d'avis. Sans consentement : vidéo simulée tant que ce
+  sont les identifiants de test, aucune vidéo avec les vrais.
+- Boutique → Skins d'explorateur : 6 skins (Éclaireur azur, Braise, Sylve, Corail, Nuit étoilée,
+  Or royal) achetables avec les pièces (300 à 1 200), à porter ou changer quand on veut. En run,
+  la tenue de l'explorateur prend les couleurs du skin porté. Purement cosmétique.
+- CI : le test de fumée web fait aussi une capture de la Boutique.
+
 ## 0.15.0 – 29/10/2026 – vidéos récompensées (provisoire)
 - Plus aucune run ? Bouton « VIDÉO · +1 RUN » sous le bouton Jouer : une courte vidéo = une run de
   plus, 3 fois par jour au plus.
