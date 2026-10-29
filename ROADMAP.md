@@ -79,11 +79,18 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
   « ses doublons »), demander une carte directement depuis son profil (28/10)
 - [x] Pastille Social dans la barre du bas, amis et échanges rechargés toutes les 90 s (28/10)
 - [ ] Notifications d'échange (push) — plus tard
-- [ ] **Prochaine session** : traiter les réponses de Clem (hors ligne, pseudos, collisions, énergies) ;
-  sinon la pub (étape 4, demande un compte AdMob créé par Clem)
+- [ ] **Prochaine session** : traiter les réponses de Clem (hors ligne, pseudos, collisions, énergies, pubs) ;
+  sinon consentement RGPD des pubs (UMP), puis skins cosmétiques (étape 4)
 
 ## Étape 4 – Monétisation
-- [ ] AdMob : run bonus au-delà de 10/jour, résurrection (vidéos récompensées)
+- [x] Vidéos récompensées (P) : run bonus quand il n'en reste plus (3/jour), résurrection à la mort
+  (1 vie, 1 fois par run). Android : AdMob avec les identifiants de TEST de Google ; web/PC : vidéo
+  simulée de 5 s. Serveur : 18 runs/jour (29/10)
+- [ ] **Clem** : recoller `supabase/schema.sql` (limite 15 → 18 runs/jour ; sans ça, à partir de la
+  16e run du jour, les cartes repartent par la synchro classique au lieu d'être validées par le serveur)
+- [ ] **Clem** : créer le compte AdMob, l'appli Android et un bloc « vidéo avec récompense », puis ajouter
+  les secrets GitHub `ADMOB_APP_ID` (ca-app-pub-…~…) et `ADMOB_REWARDED_ANDROID` (ca-app-pub-…/…)
+- [ ] Consentement RGPD (UMP de Google) avant les vraies pubs ; interstitiels rares (jamais en run) ?
 - [ ] Skins cosmétiques, achats intégrés, option sans pub
 
 ## Étape 5 – Lancement
@@ -187,6 +194,16 @@ Priorité basse (à toi de juger) :
   et un favori retiré sur un appareil peut revenir via un autre appareil qui l'avait encore (PROVISOIRE).
 - Pseudo : 2 à 24 caractères, lettres (accents compris), chiffres, espaces, - ' . _ — pas d'émojis.
   Pas encore de filtre des gros mots ni d'unicité : à prévoir avant les amis/classements ? 
+
+### Pubs (29/10)
+- PROVISOIRE : 3 vidéos « +1 run » par jour, proposées seulement quand il ne reste plus aucune run
+  (après les énergies) ; résurrection 1 fois par run avec 1 vie et 2,5 s d'invincibilité. Ça te va ?
+- Interstitiels (le GDD dit « rares, jamais pendant une run ») : je n'en ai mis aucun. On en veut
+  (par ex. 1 toutes les 5 runs, sur le récapitulatif) ou on s'en passe ?
+- Sur le web, la vidéo est simulée (5 s d'attente) pour tester : à garder pour la version web publique,
+  ou on retire les bonus vidéo du web ?
+- Pour les vraies pubs : compte AdMob à créer par toi (je n'ai pas le droit de créer de comptes), voir
+  Étape 4. Ne jamais cliquer sur tes propres vraies pubs (risque de suspension du compte).
 
 ### Illustrations (suite)
 Remarque : les 4 bûcherons (035 Hugo, 065 Pio, 070 Milo, 079 Anatole) se ressemblent beaucoup

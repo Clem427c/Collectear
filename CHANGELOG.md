@@ -1,5 +1,16 @@
 # Journal des versions
 
+## 0.15.0 – 29/10/2026 – vidéos récompensées (provisoire)
+- Plus aucune run ? Bouton « VIDÉO · +1 RUN » sous le bouton Jouer : une courte vidéo = une run de
+  plus, 3 fois par jour au plus.
+- Tombé au combat : le jeu se fige et propose « Revenir (vidéo) » : on repart avec 1 vie (et 2,5 s
+  d'invincibilité), une fois par run. « Terminer la run » garde cartes et pièces comme avant.
+- Android : vraies vidéos AdMob, avec les identifiants de TEST de Google (vidéos « Test Ad ») tant que
+  Clem n'a pas son compte AdMob. Web : vidéo simulée de 5 s pour tester le parcours.
+- Serveur : jusqu'à 18 runs par jour (10 + 5 énergies + 3 vidéos). **À faire par Clem** : recoller
+  `supabase/schema.sql`.
+- Guide mis à jour (vies, pièces).
+
 ## 0.14.2 – 28/10/2026 (nuit)
 - Attaque : collé à un ennemi ou en le chevauchant, le coup le touche quelle que soit la direction
   du personnage (avant, il fallait être tourné vers lui, ce qui ratait souvent au contact). À distance,
