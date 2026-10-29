@@ -7,6 +7,7 @@ import 'package:flame/input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../core/cosmetics.dart';
 import '../core/cards.dart';
 import '../core/places.dart';
 import '../core/config.dart';
@@ -52,11 +53,16 @@ class CollectearGame extends FlameGame with KeyboardEvents {
     required this.seed,
     required this.onRunEnd,
     this.onReviveOffer,
-  })  : terrain = Terrain(seed),
+    Skin? skin,
+  })  : skin = skin ?? Skins.byId(Skins.defaultId),
+        terrain = Terrain(seed),
         run = RunState(rules),
         _rng = math.Random(seed ^ 0x5bd1e995);
 
   final CardPool pool;
+
+  /// Skin d'explorateur porté pendant la run (cosmétique).
+  final Skin skin;
   final RunRules rules;
   final int seed;
   final void Function(RunState run) onRunEnd;

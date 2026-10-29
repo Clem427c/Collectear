@@ -42,6 +42,7 @@ class _RunScreenState extends State<RunScreen> {
       seed: math.Random().nextInt(1 << 31),
       onRunEnd: _onRunEnd,
       onReviveOffer: _offerRevive,
+      skin: widget.data.collection.equippedSkin,
     );
     unawaited(_onlineRun);
   }

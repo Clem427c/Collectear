@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'cloud_sync.dart' show defaultPseudo, normalizePseudo;
 import 'ads.dart';
 import 'config.dart';
+import 'cosmetics.dart';
 import 'economy.dart';
 
 /// Collection du joueur et compteur de runs du jour, stockés en local.
@@ -28,6 +29,8 @@ class Collection {
   static const _kEnergyBought = 'energy_bought';
   static const _kAdRunsDay = 'ad_runs_day';
   static const _kAdRunsCount = 'ad_runs_count';
+  static const _kSkins = 'owned_skins';
+  static const _kSkin = 'equipped_skin';
 
   static const _kVariants = 'owned_variants'; // "id:seed1,seed2,…"
 
@@ -186,6 +189,31 @@ class Collection {
   }
 
   /// Énergies achetées aujourd'hui avec des pièces (au plus Economy.maxEnergyPurchasesPerDay).
+  /// Skins achetés (le skin par défaut est toujours possédé).
+  Set<String> get ownedSkins => {Skins.defaultId, ...?_prefs.getStringList(_kSkins)};
+
+  /// Skin porté en run (le skin par défaut si celui enregistré n'existe plus ou n'est pas possédé).
+  Skin get equippedSkin {
+    final id = _prefs.getString(_kSkin);
+    return ownedSkins.contains(id) ? Skins.byId(id) : Skins.byId(Skins.defaultId);
+  }
+
+  /// Achète un skin avec des pièces et le porte aussitôt. Renvoie false si c'est impossible.
+  Future<bool> buySkin(Skin skin) async {
+    if (Skins.whyNotBuy(skin, owned: ownedSkins, coins: coins) != null) return false;
+    await _prefs.setInt(_kCoins, coins - skin.price);
+    await _prefs.setStringList(_kSkins, [...ownedSkins.where((id) => id != Skins.defaultId), skin.id]);
+    await _prefs.setString(_kSkin, skin.id);
+    return true;
+  }
+
+  /// Porte un skin déjà possédé.
+  Future<bool> equipSkin(Skin skin) async {
+    if (!ownedSkins.contains(skin.id)) return false;
+    await _prefs.setString(_kSkin, skin.id);
+    return true;
+  }
+
   int get energyBoughtToday => _prefs.getString(_kEnergyDay) == _today() ? (_prefs.getInt(_kEnergyBought) ?? 0) : 0;
 
   /// Prix de la prochaine énergie (null : limite du jour atteinte).

@@ -8,6 +8,7 @@ import 'package:collectear/core/cloud_sync.dart';
 import 'package:collectear/core/collection.dart';
 import 'package:collectear/core/combat.dart';
 import 'package:collectear/core/config.dart';
+import 'package:collectear/core/cosmetics.dart';
 import 'package:collectear/core/decor.dart';
 import 'package:collectear/core/economy.dart';
 import 'package:collectear/core/noise.dart';
@@ -1031,6 +1032,44 @@ void main() {
         expect(AdConsent.statusLabel(m, testIds: true), isNotEmpty);
         expect(AdConsent.statusLabel(m, testIds: false), isNotEmpty);
       }
+    });
+  });
+
+  group('Skins', () {
+    test('catalogue : identifiants uniques, un seul skin offert, en premier', () {
+      expect(Skins.all.map((s) => s.id).toSet().length, Skins.all.length);
+      expect(Skins.all.where((s) => s.isDefault).length, 1);
+      expect(Skins.all.first.id, Skins.defaultId);
+      expect(Skins.byId('inconnu').id, Skins.defaultId);
+      for (final s in Skins.all) {
+        expect(s.tintStrength, inInclusiveRange(0, 1));
+      }
+    });
+
+    test('achat avec les pièces, puis équipement', () async {
+      SharedPreferences.setMockInitialValues({});
+      final col = await Collection.load();
+      final azur = Skins.byId('azur');
+      expect(col.equippedSkin.id, Skins.defaultId);
+      expect(col.ownedSkins, {Skins.defaultId});
+      expect(await col.buySkin(azur), isFalse); // pas assez de pièces
+      expect(Skins.whyNotBuy(azur, owned: col.ownedSkins, coins: col.coins), contains('manque'));
+      await col.addCoins(azur.price + 5);
+      expect(await col.buySkin(azur), isTrue);
+      expect(col.coins, 5);
+      expect(col.ownedSkins, {Skins.defaultId, 'azur'});
+      expect(col.equippedSkin.id, 'azur');
+      expect(await col.buySkin(azur), isFalse); // déjà possédé, pas débité deux fois
+      expect(col.coins, 5);
+      expect(await col.equipSkin(Skins.byId('or')), isFalse); // pas possédé
+      expect(await col.equipSkin(Skins.byId(Skins.defaultId)), isTrue);
+      expect(col.equippedSkin.id, Skins.defaultId);
+    });
+
+    test('skin enregistré mais pas possédé : skin par défaut', () async {
+      SharedPreferences.setMockInitialValues({'equipped_skin': 'or'});
+      final col = await Collection.load();
+      expect(col.equippedSkin.id, Skins.defaultId);
     });
   });
 }

@@ -34,11 +34,12 @@ class DecorArt {
 
   static final Paint _paint = Paint()..filterQuality = FilterQuality.medium;
   static final Paint _tinted = Paint()..filterQuality = FilterQuality.medium;
+  static final Paint _skinTint = Paint()..filterQuality = FilterQuality.medium;
 
   /// Dessine [name] posé au sol : bas de l'image sur [foot], hauteur [height] (unités du monde).
   /// Renvoie false si l'image n'existe pas (l'appelant dessine alors sa version de secours).
   static bool drawOnGround(Canvas canvas, String name, Offset foot, double height,
-      {bool flipX = false, double opacity = 1, Color? flash}) {
+      {bool flipX = false, double opacity = 1, Color? flash, Color? tint, double tintStrength = 0}) {
     final img = _images[name];
     if (img == null) return false;
     final w = height * img.width / img.height;
@@ -50,16 +51,25 @@ class DecorArt {
         ..color = Color.fromRGBO(255, 255, 255, opacity.clamp(0.0, 1.0))
         ..colorFilter = flash != null ? ColorFilter.mode(flash, BlendMode.srcATop) : null;
     }
+    // Teinte d'un skin : 2e passage de l'image recolorée (teinte et saturation du skin, ombres et
+    // lumières de l'image), posé par-dessus avec l'opacité [tintStrength].
+    final Paint? tp = tint != null && tintStrength > 0 && flash == null
+        ? (_skinTint
+          ..color = Color.fromRGBO(255, 255, 255, (tintStrength * opacity).clamp(0.0, 1.0))
+          ..colorFilter = ColorFilter.mode(tint, BlendMode.color))
+        : null;
     if (flipX) {
       canvas.save();
       canvas.translate(foot.dx * 2, 0);
       canvas.scale(-1, 1);
       // dst est symétrique autour de foot.dx : une fois le canvas retourné, l'image tombe au même endroit.
       canvas.drawImageRect(img, src, dst, p);
+      if (tp != null) canvas.drawImageRect(img, src, dst, tp);
       canvas.restore();
       return true;
     }
     canvas.drawImageRect(img, src, dst, p);
+    if (tp != null) canvas.drawImageRect(img, src, dst, tp);
     return true;
   }
 

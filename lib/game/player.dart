@@ -31,7 +31,7 @@ class Player extends PositionComponent with HasGameReference<CollectearGame> {
 
   static const double _radius = 9;
 
-  final _body = Paint()..color = const Color(0xFF7B5CFF);
+  late final _body = Paint()..color = Color(game.skin.isDefault ? 0xFF7B5CFF : game.skin.dark);
   final _bodyHit = Paint()..color = const Color(0xFFFFFFFF);
   final _outline = Paint()
     ..color = const Color(0xFF1B1440)
@@ -204,8 +204,9 @@ class Player extends PositionComponent with HasGameReference<CollectearGame> {
     // Petit rebond pendant la marche.
     final moving = game.moveInput.length2 > 0.01 && !airborne;
     final bob = moving ? (math.sin(game.run.elapsed * 18).abs() * 2) : 0.0;
+    final skin = game.skin;
     DecorArt.drawOnGround(canvas, name, foot - Offset(0, bob), _spriteHeight,
-        flipX: flip, opacity: blink ? 0.35 : 1);
+        flipX: flip, opacity: blink ? 0.35 : 1, tint: Color(skin.dark), tintStrength: skin.tintStrength);
     if (_swing > 0) {
       final angle = math.atan2(facing.y, facing.x);
       canvas.drawArc(

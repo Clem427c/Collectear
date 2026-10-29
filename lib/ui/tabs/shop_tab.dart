@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app_data.dart';
 import '../../core/collection.dart';
+import '../../core/cosmetics.dart';
 import '../../core/economy.dart';
 import '../theme.dart';
 import '../widgets.dart';
@@ -16,15 +17,6 @@ class _Item {
   final IconData? icon;
   final String? tag;
 }
-
-const _skins = [
-  _Item('Éclaireur azur', '120', true, [Color(0xFF4DD6FF), Color(0xFF1E6BFF)], tag: 'Nouveau'),
-  _Item('Braise', '120', true, [Color(0xFFFFB627), Color(0xFFFF4E2A)]),
-  _Item('Sylve', '120', true, [Color(0xFF7BE07B), Color(0xFF1E8A4C)]),
-  _Item('Nuit étoilée', '250', true, [Color(0xFF6B5BFF), Color(0xFF16104A)], tag: 'Rare'),
-  _Item('Corail', '120', true, [Color(0xFFFF8FA3), Color(0xFFE84A5F)]),
-  _Item('Or royal', '500', true, [Color(0xFFFFF1A8), Color(0xFFE0A100)], tag: 'Épique'),
-];
 
 const _frames = [
   _Item('Cadre givré', '80', true, [Color(0xFFE6F7FF), Color(0xFF7FD3FF)], icon: Icons.ac_unit),
@@ -62,6 +54,46 @@ class ShopTab extends StatelessWidget {
     if (context.mounted) showPrototypeSnack(context, msg);
   }
 
+  Future<void> _onSkin(BuildContext context, Skin skin) async {
+    final col = data.collection;
+    final String msg;
+    if (col.ownedSkins.contains(skin.id)) {
+      if (col.equippedSkin.id == skin.id) return;
+      await col.equipSkin(skin);
+      msg = '${skin.name} : porté dès ta prochaine run !';
+    } else {
+      final why = Skins.whyNotBuy(skin, owned: col.ownedSkins, coins: col.coins);
+      if (why != null) {
+        msg = '$why (tu en as ${col.coins}).';
+      } else {
+        if (!context.mounted) return;
+        final ok = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: AppColors.night,
+            title: Text('Acheter ${skin.name} ?', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+            content: Row(children: [
+              _SkinPreview(skin: skin, size: 72),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text('${skin.price} pièces (tu en as ${col.coins}).',
+                    style: const TextStyle(color: Colors.white70)),
+              ),
+            ]),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Non', style: TextStyle(color: Colors.white70))),
+              TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Acheter', style: TextStyle(color: AppColors.gold))),
+            ],
+          ),
+        );
+        if (ok != true) return;
+        msg = await col.buySkin(skin) ? '${skin.name} est à toi, et porté dès ta prochaine run !' : 'Achat impossible.';
+      }
+    }
+    onChanged();
+    if (context.mounted) showPrototypeSnack(context, msg);
+  }
+
   void _buy(BuildContext context, String what) =>
       showPrototypeSnack(context, 'Prototype : les achats arriveront avec l\'étape Monétisation ($what).');
 
@@ -83,8 +115,13 @@ class ShopTab extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         _DailyOffer(onBuy: () => _buy(context, 'Pack Explorateur')),
-        SectionTitle('Skins d\'explorateur', trailing: _Timer(text: 'Renouvelé dans 7 h')),
-        _Grid(items: _skins, preview: (i) => _SkinPreview(item: i), onBuy: (i) => _buy(context, i.name)),
+        const SectionTitle('Skins d\'explorateur'),
+        _SkinGrid(collection: data.collection, onTap: (skin) => _onSkin(context, skin)),
+        const Padding(
+          padding: EdgeInsets.only(top: 6),
+          child: Text('Payés avec les pièces ramassées en run. Le skin porté change la tenue de ton explorateur.',
+              style: TextStyle(color: Colors.white54, fontSize: 12)),
+        ),
         const SectionTitle('Cadres de cartes'),
         _Grid(items: _frames, preview: (i) => _FramePreview(item: i), onBuy: (i) => _buy(context, i.name)),
         const SectionTitle('Confort'),
@@ -116,20 +153,6 @@ class ShopTab extends StatelessWidget {
   }
 }
 
-class _Timer extends StatelessWidget {
-  const _Timer({required this.text});
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(mainAxisSize: MainAxisSize.min, children: [
-      const Icon(Icons.schedule, size: 14, color: Colors.white54),
-      const SizedBox(width: 4),
-      Text(text, style: const TextStyle(color: Colors.white54, fontSize: 12)),
-    ]);
-  }
-}
-
 class _DailyOffer extends StatelessWidget {
   const _DailyOffer({required this.onBuy});
   final VoidCallback onBuy;
@@ -146,10 +169,7 @@ class _DailyOffer extends StatelessWidget {
         boxShadow: const [BoxShadow(color: Colors.black45, blurRadius: 10, offset: Offset(0, 4))],
       ),
       child: Row(children: [
-        const _SkinPreview(
-          item: _Item('Pack', '', true, [Color(0xFFFFF1A8), Color(0xFFE0A100)]),
-          size: 80,
-        ),
+        _SkinPreview(skin: Skins.byId('or'), size: 80),
         const SizedBox(width: 16),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -253,31 +273,127 @@ class _ShopCell extends StatelessWidget {
   }
 }
 
-/// Aperçu d'un skin : le personnage (un rond pour l'instant) aux couleurs du skin.
+/// Aperçu d'un skin : l'explorateur dessiné, teinté comme en run (un rond coloré si l'image manque).
 class _SkinPreview extends StatelessWidget {
-  const _SkinPreview({required this.item, this.size = 58});
-  final _Item item;
+  const _SkinPreview({required this.skin, this.size = 58});
+  final Skin skin;
   final double size;
+
+  static const _asset = 'assets/images/decors/perso_explorateur_face.png';
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final round = Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: LinearGradient(colors: item.colors, begin: Alignment.topLeft, end: Alignment.bottomRight),
+        gradient: LinearGradient(
+            colors: [Color(skin.light), Color(skin.dark)], begin: Alignment.topLeft, end: Alignment.bottomRight),
         border: Border.all(color: AppColors.ink, width: 3),
         boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 6, offset: Offset(0, 3))],
       ),
-      child: Align(
-        alignment: const Alignment(0.45, -0.1),
-        child: Container(
-          width: size * 0.2,
-          height: size * 0.2,
-          decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-        ),
+    );
+    Widget image(Widget fallback) => Image.asset(_asset,
+        width: size * 1.15, height: size * 1.15, fit: BoxFit.contain, errorBuilder: (_, __, ___) => fallback);
+    return SizedBox(
+      width: size * 1.2,
+      height: size * 1.2,
+      child: Stack(alignment: Alignment.center, children: [
+        Opacity(opacity: 0.35, child: round),
+        image(round),
+        if (skin.tintStrength > 0)
+          Opacity(
+            opacity: skin.tintStrength,
+            child: ColorFiltered(
+              colorFilter: ColorFilter.mode(Color(skin.dark), BlendMode.color),
+              child: image(const SizedBox.shrink()),
+            ),
+          ),
+      ]),
+    );
+  }
+}
+
+/// Grille des skins : prix en pièces, « Porter » ou « Porté ».
+class _SkinGrid extends StatelessWidget {
+  const _SkinGrid({required this.collection, required this.onTap});
+  final Collection collection;
+  final void Function(Skin) onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final owned = collection.ownedSkins;
+    final worn = collection.equippedSkin.id;
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 140,
+        childAspectRatio: 0.78,
+        mainAxisSpacing: 10,
+        crossAxisSpacing: 10,
       ),
+      itemCount: Skins.all.length,
+      itemBuilder: (_, i) {
+        final skin = Skins.all[i];
+        final isWorn = skin.id == worn;
+        final isOwned = owned.contains(skin.id);
+        return GestureDetector(
+          onTap: () => onTap(skin),
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF3A2D86),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: isWorn ? AppColors.gold : Colors.white24, width: isWorn ? 3 : 1.5),
+            ),
+            child: Stack(children: [
+              Column(children: [
+                Expanded(child: Center(child: _SkinPreview(skin: skin))),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Text(skin.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                ),
+                Container(
+                  margin: const EdgeInsets.all(6),
+                  padding: const EdgeInsets.symmetric(vertical: 5),
+                  decoration: BoxDecoration(
+                    color: isWorn
+                        ? AppColors.gold
+                        : isOwned
+                            ? const Color(0xFF3FBF5A)
+                            : const Color(0xFF1E6BFF),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.black26, width: 1.5),
+                  ),
+                  child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    if (!isOwned) const Icon(Icons.monetization_on, size: 14, color: AppColors.gold),
+                    if (!isOwned) const SizedBox(width: 4),
+                    Text(
+                      isWorn ? 'Porté' : (isOwned ? 'Porter' : '${skin.price}'),
+                      style: TextStyle(color: isWorn ? AppColors.ink : Colors.white, fontWeight: FontWeight.w900),
+                    ),
+                  ]),
+                ),
+              ]),
+              if (skin.tag != null && !isOwned)
+                Positioned(
+                  top: 6,
+                  left: 6,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(color: AppColors.coral, borderRadius: BorderRadius.circular(6)),
+                    child: Text(skin.tag!,
+                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900)),
+                  ),
+                ),
+            ]),
+          ),
+        );
+      },
     );
   }
 }
