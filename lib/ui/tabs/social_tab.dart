@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../app_data.dart';
+import '../../core/card_search.dart';
 import '../../core/cards.dart';
 import '../../core/social.dart';
 import '../../core/variants.dart';
@@ -736,12 +737,22 @@ class _TradeComposerState extends State<_TradeComposer> {
     final sorted = _sorted(cards);
     var picked = [...current];
     String? hint;
+    var query = '';
+    Rarity? rarity;
     return showModalBottomSheet<List<ServerCard>>(
       context: context,
       backgroundColor: AppColors.night,
       isScrollControlled: true,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setSheet) => SafeArea(
+      builder: (ctx) => StatefulBuilder(builder: (ctx, setSheet) {
+        // Recherche par nom ou numéro, puis filtre par rareté (les compteurs suivent la recherche).
+        final found = sorted.where((sc) => cardMatchesQuery(pool.byId(sc.cardId)!, query)).toList();
+        final counts = <Rarity, int>{};
+        for (final sc in found) {
+          final r = pool.byId(sc.cardId)!.rarity;
+          counts[r] = (counts[r] ?? 0) + 1;
+        }
+        final visible = rarity == null ? found : found.where((sc) => pool.byId(sc.cardId)!.rarity == rarity).toList();
+        return SafeArea(
           child: SizedBox(
             height: MediaQuery.of(ctx).size.height * 0.8,
             child: Column(children: [
@@ -770,10 +781,27 @@ class _TradeComposerState extends State<_TradeComposer> {
                   style: TextStyle(color: hint == null ? Colors.white54 : AppColors.coral, fontSize: 12),
                 ),
               ),
+              if (sorted.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
+                  child: CardSearchField(onChanged: (q) => setSheet(() => query = q)),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: RarityFilterChips(
+                    selected: rarity,
+                    counts: counts,
+                    onChanged: (r) => setSheet(() => rarity = r),
+                  ),
+                ),
+              ],
               Expanded(
-                child: sorted.isEmpty
-                    ? const Center(child: Text('Aucune carte.', style: TextStyle(color: Colors.white60)))
+                child: visible.isEmpty
+                    ? Center(
+                        child: Text(sorted.isEmpty ? 'Aucune carte.' : 'Aucune carte ne correspond.',
+                            style: const TextStyle(color: Colors.white60)))
                     : GridView.builder(
+                        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                         padding: const EdgeInsets.all(12),
                         gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                           maxCrossAxisExtent: 120,
@@ -781,9 +809,9 @@ class _TradeComposerState extends State<_TradeComposer> {
                           mainAxisSpacing: 10,
                           crossAxisSpacing: 10,
                         ),
-                        itemCount: sorted.length,
+                        itemCount: visible.length,
                         itemBuilder: (_, i) {
-                          final sc = sorted[i];
+                          final sc = visible[i];
                           final card = pool.byId(sc.cardId)!;
                           final selected = picked.any((c) => c.rowId == sc.rowId);
                           return Opacity(
@@ -827,8 +855,8 @@ class _TradeComposerState extends State<_TradeComposer> {
               ),
             ]),
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:collectear/core/ads.dart';
+import 'package:collectear/core/card_search.dart';
 import 'package:collectear/core/cards.dart';
 import 'package:collectear/core/cloud_sync.dart';
 import 'package:collectear/core/collection.dart';
@@ -73,6 +74,54 @@ void main() {
         if (pool.drawRarity(rng, luck: 1) == Rarity.commune) common++;
       }
       expect(common / 20000, lessThan(0.40));
+    });
+  });
+
+  group('Recherche de cartes', () {
+    test('par nom, sans majuscules ni accents, mots dans n\'importe quel ordre', () {
+      final pool = _pool();
+      final gaia = pool.byId(72)!;
+      expect(cardMatchesQuery(gaia, ''), isTrue);
+      expect(cardMatchesQuery(gaia, '   '), isTrue);
+      expect(cardMatchesQuery(gaia, 'gaïa'), isTrue);
+      expect(cardMatchesQuery(gaia, 'GAIA'), isTrue);
+      expect(cardMatchesQuery(gaia, 'forg'), isTrue);
+      expect(cardMatchesQuery(gaia, 'forgeronne  gaia'), isTrue);
+      expect(cardMatchesQuery(gaia, 'gaia bergere'), isFalse);
+      expect(foldForSearch('  Gaïa   la Forgeronne '), 'gaia la forgeronne');
+    });
+
+    test('par numéro', () {
+      final pool = _pool();
+      expect(cardMatchesQuery(pool.byId(29)!, '29'), isTrue);
+      expect(cardMatchesQuery(pool.byId(29)!, '029'), isTrue);
+      expect(cardMatchesQuery(pool.byId(29)!, '#29'), isTrue);
+      expect(cardMatchesQuery(pool.byId(290)!, '29'), isFalse);
+      expect(isNumberQuery(' 029 '), isTrue);
+      expect(isNumberQuery('gaia 2'), isFalse);
+    });
+
+    test('bestiaire : une carte cachée (« ??? ») ne se trouve pas par son nom', () {
+      final gaia = _pool().byId(72)!;
+      expect(bestiaryMatches(gaia, 'gaia', owned: true), isTrue);
+      expect(bestiaryMatches(gaia, 'gaia', owned: false), isFalse);
+      expect(bestiaryMatches(gaia, '72', owned: false), isTrue);
+      expect(bestiaryMatches(gaia, '', owned: false), isTrue);
+    });
+
+    test('filtre combiné nom + rareté, ordre conservé', () {
+      final pool = _pool();
+      final ouille = filterCards(pool.cards, query: 'ouille');
+      expect(ouille.map((c) => c.id), containsAll([140, 173]));
+      expect(ouille.every((c) => c.name.toLowerCase().contains('ouille')), isTrue);
+      final ids = ouille.map((c) => c.id).toList();
+      expect(ids, [...ids]..sort());
+      final rare = filterCards(pool.cards, query: 'ouille', rarity: Rarity.peuCommune);
+      expect(rare.map((c) => c.id), contains(140));
+      expect(rare.every((c) => c.rarity == Rarity.peuCommune), isTrue);
+      expect(filterCards(pool.cards, rarity: Rarity.legendaire).length,
+          pool.cards.where((c) => c.rarity == Rarity.legendaire).length);
+      expect(filterCards(pool.cards, query: 'zzzz'), isEmpty);
     });
   });
 

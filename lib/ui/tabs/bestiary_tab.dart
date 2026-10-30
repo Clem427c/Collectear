@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app_data.dart';
+import '../../core/card_search.dart';
 import '../../core/cards.dart';
 import '../../core/variants.dart';
 import '../card_detail_screen.dart';
@@ -22,6 +23,7 @@ class BestiaryTab extends StatefulWidget {
 class _BestiaryTabState extends State<BestiaryTab> {
   _Filter _filter = _Filter.all;
   Rarity? _rarity;
+  String _query = '';
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +31,7 @@ class _BestiaryTabState extends State<BestiaryTab> {
     final owned = data.collection.owned;
     final cards = data.pool.cards.where((c) {
       if (_rarity != null && c.rarity != _rarity) return false;
+      if (!bestiaryMatches(c, _query, owned: owned.containsKey(c.id))) return false;
       return switch (_filter) {
         _Filter.all => true,
         _Filter.owned => owned.containsKey(c.id),
@@ -55,6 +58,10 @@ class _BestiaryTabState extends State<BestiaryTab> {
             ],
           ),
         ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+          child: CardSearchField(onChanged: (q) => setState(() => _query = q)),
+        ),
         SizedBox(
           height: 44,
           child: ListView(
@@ -73,8 +80,20 @@ class _BestiaryTabState extends State<BestiaryTab> {
             ],
           ),
         ),
+        if (cards.isEmpty)
+          Expanded(
+            child: Center(
+              child: Text(
+                _query.trim().isEmpty ? 'Aucune carte.' : 'Aucune carte ne correspond à « ${_query.trim()} ».',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.white60),
+              ),
+            ),
+          )
+        else
         Expanded(
           child: GridView.builder(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: const EdgeInsets.all(12),
             gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
               maxCrossAxisExtent: 130,

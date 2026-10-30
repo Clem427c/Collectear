@@ -151,6 +151,15 @@ def session(p, url: str, width: int, height: int, tag: str, problems: list, gall
             page.mouse.wheel(0, 450)
             time.sleep(1.5)
             shot("8-boutique-cadres")
+        # Bestiaire : champ de recherche (par numéro : un nouveau joueur n'a encore aucune carte).
+        if tap("Bestiaire"):
+            time.sleep(2)
+            shot("9-bestiaire")
+            if tap("Rechercher une carte"):
+                time.sleep(0.8)
+                page.keyboard.type("29", delay=120)
+                time.sleep(1.5)
+                shot("10-bestiaire-recherche")
     browser.close()
     print(f"---- Console du navigateur ({tag}) ----")
     for line in logs[-80:]:

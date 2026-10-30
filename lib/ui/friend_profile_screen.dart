@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app_data.dart';
+import '../core/card_search.dart';
 import '../core/cards.dart';
 import '../core/social.dart';
 import '../core/variants.dart';
@@ -36,6 +37,8 @@ class _FriendProfileScreenState extends State<FriendProfileScreen> {
   FriendCollection? _col;
   String? _error;
   FriendCardFilter _filter = FriendCardFilter.all;
+  String _query = '';
+  Rarity? _rarity;
 
   @override
   void initState() {
@@ -162,6 +165,10 @@ class _FriendProfileScreenState extends State<FriendProfileScreen> {
                         ),
                     ]),
                     const SizedBox(height: 10),
+                    CardSearchField(onChanged: (q) => setState(() => _query = q)),
+                    const SizedBox(height: 8),
+                    RarityFilterChips(selected: _rarity, onChanged: (r) => setState(() => _rarity = r)),
+                    const SizedBox(height: 10),
                   ]),
                 ),
                 _grid(col),
@@ -254,8 +261,17 @@ class _FriendProfileScreenState extends State<FriendProfileScreen> {
   }
 
   Widget _grid(FriendCollection col) {
-    final cards = col.cards(_filter);
+    final all = col.cards(_filter);
+    final cards = filterCards(all, query: _query, rarity: _rarity);
     final owned = widget.data.collection.owned;
+    if (cards.isEmpty && all.isNotEmpty) {
+      return const SliverToBoxAdapter(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Text('Aucune carte ne correspond.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white60)),
+        ),
+      );
+    }
     if (cards.isEmpty) {
       return SliverToBoxAdapter(
         child: Padding(

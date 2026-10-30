@@ -680,3 +680,94 @@ List<double> hueRotation(double degrees) {
     0, 0, 0, 1, 0,
   ];
 }
+
+/// Champ de recherche de cartes par nom ou numéro (bestiaire, échanges, profil d'un ami).
+/// Renvoie le texte tapé à chaque frappe ; la croix efface la recherche.
+class CardSearchField extends StatefulWidget {
+  const CardSearchField({super.key, required this.onChanged, this.hint = 'Rechercher une carte (nom ou n°)'});
+  final ValueChanged<String> onChanged;
+  final String hint;
+
+  @override
+  State<CardSearchField> createState() => _CardSearchFieldState();
+}
+
+class _CardSearchFieldState extends State<CardSearchField> {
+  final _ctrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: _ctrl,
+      autocorrect: false,
+      textInputAction: TextInputAction.search,
+      style: const TextStyle(color: Colors.white),
+      onChanged: (v) {
+        setState(() {}); // affiche ou cache la croix
+        widget.onChanged(v);
+      },
+      decoration: InputDecoration(
+        hintText: widget.hint,
+        hintStyle: const TextStyle(color: Colors.white38),
+        prefixIcon: const Icon(Icons.search, color: Colors.white54),
+        suffixIcon: _ctrl.text.isEmpty
+            ? null
+            : IconButton(
+                tooltip: 'Effacer',
+                icon: const Icon(Icons.close, color: Colors.white54),
+                onPressed: () {
+                  _ctrl.clear();
+                  setState(() {});
+                  widget.onChanged('');
+                },
+              ),
+        isDense: true,
+        filled: true,
+        fillColor: Colors.black.withValues(alpha: 0.25),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+      ),
+    );
+  }
+}
+
+/// Puces de rareté : toucher une rareté n'affiche qu'elle, la retoucher les remet toutes.
+/// [counts] : nombre de cartes de chaque rareté dans la liste (affiché sur la puce), facultatif.
+class RarityFilterChips extends StatelessWidget {
+  const RarityFilterChips({super.key, required this.selected, required this.onChanged, this.counts});
+  final Rarity? selected;
+  final ValueChanged<Rarity?> onChanged;
+  final Map<Rarity, int>? counts;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 40,
+      child: ListView(scrollDirection: Axis.horizontal, children: [
+        for (final r in Rarity.values)
+          Padding(
+            padding: const EdgeInsets.only(right: 6),
+            child: ChoiceChip(
+              label: Text(counts == null ? r.label : '${r.label} (${counts![r] ?? 0})'),
+              labelStyle: TextStyle(
+                color: selected == r ? Colors.white : rarityColor(r),
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+              selectedColor: rarityColor(r).withValues(alpha: 0.55),
+              backgroundColor: Colors.black.withValues(alpha: 0.25),
+              side: BorderSide(color: rarityColor(r)),
+              showCheckmark: false,
+              selected: selected == r,
+              onSelected: (_) => onChanged(selected == r ? null : r),
+            ),
+          ),
+      ]),
+    );
+  }
+}
