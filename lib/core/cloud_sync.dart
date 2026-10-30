@@ -4,6 +4,8 @@
 /// rien n'est jamais supprimé, ni en local ni en ligne.
 library;
 
+import 'moderation.dart';
+
 /// Ce qu'il faut faire pour que la collection locale et la collection en ligne soient identiques.
 class SyncPlan {
   const SyncPlan({required this.toUpload, required this.toAddLocally});
@@ -104,6 +106,8 @@ String? pseudoError(String pseudo) {
   if (!RegExp(r"^[\p{L}\p{N} '’._-]+$", unicode: true).hasMatch(p)) {
     return 'Lettres, chiffres, espaces et - \' . _ seulement.';
   }
+  // PROVISOIRE : filtre côté appli seulement (voir moderation.dart).
+  if (containsProfanity(p)) return 'Ce pseudo n\'est pas autorisé. Choisis-en un autre.';
   return null;
 }
 

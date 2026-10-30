@@ -11,6 +11,7 @@ import 'package:collectear/core/config.dart';
 import 'package:collectear/core/cosmetics.dart';
 import 'package:collectear/core/decor.dart';
 import 'package:collectear/core/economy.dart';
+import 'package:collectear/core/moderation.dart';
 import 'package:collectear/core/noise.dart';
 import 'package:collectear/core/online_config.dart';
 import 'package:collectear/core/places.dart';
@@ -596,6 +597,30 @@ void main() {
       expect(pseudoError('A' * 25), isNotNull);
       expect(pseudoError('Clem<script>'), isNotNull);
       expect(pseudoError('Clem 😀'), isNotNull);
+    });
+
+    test('pseudo : gros mots refusés, même déguisés', () {
+      for (final bad in [
+        'C0NN4RD', 'S.a.l.o.p.e', 'Pûtain', 'xXfuckXx', 'Le Con', 'pute', 'f d p', 'connnnard',
+        'Sale pute', 'Hitler88', 'N4zi', 'b1tch', 'PD', 'fils de pute', 'Merde',
+      ]) {
+        expect(containsProfanity(bad), isTrue, reason: bad);
+        expect(pseudoError(bad), isNotNull, reason: bad);
+      }
+    });
+
+    test('pseudo : pas de faux positifs (mots qui contiennent un gros mot)', () {
+      for (final ok in [
+        'Computer', 'Habite', 'Technique', 'Culture', 'Conan', 'Nigaud', 'Montenegro', 'Clem427',
+        'Élodie-Marie', 'Bobs', 'Cone', 'Niger', 'Pascal', 'Constance', 'Analyse', 'Sextant',
+        'Dickens', 'Cocktail', 'Scunthorpe', 'Shitake', 'Kevin_93', 'Lucas.17', defaultPseudo,
+      ]) {
+        expect(containsProfanity(ok), isFalse, reason: ok);
+      }
+      // Aucun des 300 noms de cartes n'est refusé (« Crocouille », « Glacouille »…).
+      for (final c in _pool().cards) {
+        expect(containsProfanity(c.name), isFalse, reason: c.name);
+      }
     });
 
     test('pseudo choisi à la première connexion : « Explorateur » refusé', () {
