@@ -72,6 +72,8 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
 - [ ] **Clem** : code à 6 chiffres dans l'e-mail de connexion (`docs/SUPABASE.md` §3 : Gmail en SMTP +
   modèles d'e-mail). Sans ça, le lien ne connecte que l'appareil qui l'a demandé.
 - [x] Pseudo choisi à la première connexion (28/10)
+- [x] Recherche de cartes par nom ou numéro (bestiaire, choix des cartes d'un échange, profil d'un ami) et
+  filtre par rareté dans les échanges et le profil d'un ami, comme dans le bestiaire (30/10)
 - [x] Filtre des gros mots dans les pseudos (P), même déguisés (« C0NN4RD », « s.a.l.o.p.e ») ; côté appli seulement (30/10)
 - [x] Variantes plus visibles + galerie des variantes dans le Guide (28/10)
 - [ ] **Clem** : vitrine de test sur son compte (`supabase/showcase.sql` puis `select public.grant_showcase('…')`)
@@ -239,6 +241,10 @@ Priorité basse (à toi de juger) :
 - PROVISOIRE : tes amis voient leurs cartes et les tiennes avec le bord blanc d'origine (le cadre n'est pas
   envoyé en ligne). Faut-il que tes amis voient ton cadre (profil, échanges) ?
 - Le cadre d'une finition (Dorée, Cristal, Ombre, Shiny) reste dessiné autour de l'illustration, en plus.
+
+### Recherche de cartes (30/10)
+- PROVISOIRE : dans le bestiaire, une carte pas encore obtenue (« ??? ») n'est pas trouvée par son nom,
+  pour ne pas dévoiler les noms cachés ; par son numéro, si. Préfères-tu que le nom la trouve aussi ?
 
 ### Illustrations (suite)
 Remarque : les 4 bûcherons (035 Hugo, 065 Pio, 070 Milo, 079 Anatole) se ressemblent beaucoup

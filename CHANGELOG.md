@@ -1,5 +1,16 @@
 # Journal des versions
 
+## 0.18.0 – 30/10/2026 (après-midi) – recherche de cartes
+- Bestiaire : champ « Rechercher une carte » au-dessus des filtres. Par nom, sans se soucier des
+  majuscules ni des accents, mots dans n'importe quel ordre (« forgeronne gaia »), ou par numéro
+  (« 29 », « #029 »). Se combine avec la rareté et les filtres Possédées / Créatures / Héros.
+  Les cartes pas encore obtenues (« ??? ») ne se trouvent que par leur numéro.
+- Échanges : quand on choisit les cartes à donner ou à demander, même recherche + puces de rareté
+  avec le nombre de cartes de chaque rareté (toucher une rareté n'affiche qu'elle, la retoucher les remet toutes).
+- Profil d'un ami : recherche et puces de rareté au-dessus de sa collection, en plus des filtres
+  « il a, pas toi » et « ses doublons ».
+- CI : le test web fait une capture du bestiaire et d'une recherche.
+
 ## 0.17.1 – 30/10/2026 (après-midi) – pseudos sans gros mots
 - Pseudo (première connexion et changement depuis le Profil) : les gros mots et insultes (français et
   anglais) sont refusés, même déguisés avec des chiffres, des points ou des lettres répétées
