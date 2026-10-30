@@ -1081,4 +1081,46 @@ void main() {
       expect(col.equippedSkin.id, Skins.defaultId);
     });
   });
+
+  group('Cadres de cartes', () {
+    test('catalogue : identifiants uniques, un seul cadre offert, en premier, couleurs opaques', () {
+      expect(CardFrames.all.map((f) => f.id).toSet().length, CardFrames.all.length);
+      expect(CardFrames.all.where((f) => f.isDefault).length, 1);
+      expect(CardFrames.all.first.id, CardFrames.defaultId);
+      expect(CardFrames.byId('inconnu').id, CardFrames.defaultId);
+      for (final f in CardFrames.all.where((f) => !f.isDefault)) {
+        expect(f.colors.length, greaterThanOrEqualTo(2), reason: f.id);
+        expect(f.colors.every((c) => c >> 24 == 0xFF), isTrue, reason: f.id);
+        expect(f.price, greaterThan(0));
+      }
+    });
+
+    test('achat avec les pièces, puis équipement', () async {
+      SharedPreferences.setMockInitialValues({});
+      final col = await Collection.load();
+      final holo = CardFrames.byId('holo');
+      expect(col.equippedFrame.id, CardFrames.defaultId);
+      expect(col.ownedFrames, {CardFrames.defaultId});
+      expect(await col.buyFrame(holo), isFalse); // pas assez de pièces
+      expect(CardFrames.whyNotBuy(holo, owned: col.ownedFrames, coins: col.coins), contains('manque'));
+      await col.addCoins(holo.price + 7);
+      expect(await col.buyFrame(holo), isTrue);
+      expect(col.coins, 7);
+      expect(col.ownedFrames, {CardFrames.defaultId, 'holo'});
+      expect(col.equippedFrame.id, 'holo');
+      expect(await col.buyFrame(holo), isFalse); // déjà possédé, pas débité deux fois
+      expect(col.coins, 7);
+      expect(await col.equipFrame(CardFrames.byId('royal')), isFalse); // pas possédé
+      expect(await col.equipFrame(CardFrames.byId(CardFrames.defaultId)), isTrue);
+      expect(col.equippedFrame.id, CardFrames.defaultId);
+      // Les skins ne sont pas touchés.
+      expect(col.ownedSkins, {Skins.defaultId});
+    });
+
+    test('cadre enregistré mais pas possédé : cadre d\'origine', () async {
+      SharedPreferences.setMockInitialValues({'equipped_frame': 'royal'});
+      final col = await Collection.load();
+      expect(col.equippedFrame.id, CardFrames.defaultId);
+    });
+  });
 }

@@ -109,7 +109,7 @@ class PlayTab extends StatelessWidget {
                     onTap: () => _pickCompanion(context),
                     child: SizedBox(
                       width: 170,
-                      child: companion != null ? CardView(card: companion) : const _EmptySlot(),
+                      child: companion != null ? CardView(card: companion, frame: col.equippedFrame) : const _EmptySlot(),
                     ),
                   ),
                   const SizedBox(height: 10),

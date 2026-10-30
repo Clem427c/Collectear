@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 
 import '../core/cards.dart';
+import '../core/cosmetics.dart';
 import '../core/run_state.dart';
 import 'card_detail_screen.dart';
 import 'widgets.dart';
 import 'theme.dart';
 
 class RecapScreen extends StatelessWidget {
-  const RecapScreen({super.key, required this.run, required this.freshIds, this.companion});
+  const RecapScreen({super.key, required this.run, required this.freshIds, this.companion, this.frame});
   final RunState run;
   final Set<int> freshIds;
   final GameCard? companion;
+
+  /// Cadre de cartes porté (Boutique).
+  final CardFrame? frame;
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +62,7 @@ class RecapScreen extends StatelessWidget {
                             card: c.card,
                             instance: c,
                             isNew: freshIds.contains(c.card.id),
+                            frame: frame,
                             onTap: () => openCardDetail(context, c.card, variantSeeds: [c.variantSeed], canFavorite: true),
                           ),
                         ),

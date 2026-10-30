@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
 import '../core/cards.dart';
+import '../core/cosmetics.dart';
 import '../core/variants.dart';
 import '../app_data.dart';
 import 'theme.dart';
@@ -30,9 +31,13 @@ class CardView extends StatelessWidget {
     this.quantity,
     this.isNew = false,
     this.favorite = false,
+    this.frame,
     this.onTap,
   });
   final GameCard card;
+
+  /// Cadre acheté en Boutique (cartes de SA collection seulement) ; null ou Classique = bord blanc.
+  final CardFrame? frame;
 
   /// Exemplaire en favori : étoile dorée dans le coin (il ne peut pas être échangé).
   final bool favorite;
@@ -54,17 +59,21 @@ class CardView extends StatelessWidget {
         child: LayoutBuilder(builder: (context, box) {
           final w = box.maxWidth;
           final small = w < 110;
-          return Container(
+          final f = owned && frame != null && !frame!.isDefault ? frame : null;
+          final body = Container(
             decoration: BoxDecoration(
               gradient: owned ? rarityGradient(rarity) : null,
               color: owned ? null : const Color(0xFF241A4D),
-              borderRadius: BorderRadius.circular(w * 0.08),
-              border: Border.all(color: owned ? Colors.white.withValues(alpha: 0.85) : Colors.white12, width: 2),
-              boxShadow: owned
+              borderRadius: BorderRadius.circular(f != null ? w * 0.055 : w * 0.08),
+              border: f != null
+                  ? null
+                  : Border.all(color: owned ? Colors.white.withValues(alpha: 0.85) : Colors.white12, width: 2),
+              boxShadow: owned && f == null
                   ? [BoxShadow(color: rarityColor(rarity).withValues(alpha: 0.45), blurRadius: 8, offset: const Offset(0, 3))]
                   : null,
             ),
-            padding: EdgeInsets.all(w * 0.05),
+            // Avec un cadre, son épaisseur remplace une partie de la marge : le contenu garde sa place.
+            padding: EdgeInsets.all(f != null ? w * 0.018 : w * 0.05),
             child: Stack(
               clipBehavior: Clip.none,
               children: [
@@ -179,8 +188,36 @@ class CardView extends StatelessWidget {
               ],
             ),
           );
+          if (f == null) return body;
+          return CardFrameBorder(frame: f, width: w, child: body);
         }),
       ),
+    );
+  }
+}
+
+/// Bord d'une carte dessiné avec un cadre de la Boutique (dégradé en biais ou irisé tout autour).
+class CardFrameBorder extends StatelessWidget {
+  const CardFrameBorder({super.key, required this.frame, required this.width, required this.child});
+  final CardFrame frame;
+  final double width;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = [for (final c in frame.colors) Color(c)];
+    final Gradient g = frame.sweep
+        ? SweepGradient(colors: colors)
+        : LinearGradient(colors: colors, begin: Alignment.topLeft, end: Alignment.bottomRight);
+    return Container(
+      padding: EdgeInsets.all(math.max(3.0, width * 0.035)),
+      decoration: BoxDecoration(
+        gradient: g,
+        borderRadius: BorderRadius.circular(width * 0.08),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.35), width: 1),
+        boxShadow: [BoxShadow(color: colors[colors.length ~/ 2].withValues(alpha: 0.55), blurRadius: 10, offset: const Offset(0, 3))],
+      ),
+      child: child,
     );
   }
 }

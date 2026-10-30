@@ -87,7 +87,7 @@ class _RunScreenState extends State<RunScreen> {
     await col.addCoins(run.coins);
     if (!mounted) return;
     Navigator.of(context).pushReplacement(MaterialPageRoute<void>(
-      builder: (_) => RecapScreen(run: run, freshIds: fresh, companion: widget.companion),
+      builder: (_) => RecapScreen(run: run, freshIds: fresh, companion: widget.companion, frame: widget.data.collection.equippedFrame),
     ));
   }
 

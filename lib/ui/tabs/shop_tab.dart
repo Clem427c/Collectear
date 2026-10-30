@@ -18,12 +18,6 @@ class _Item {
   final String? tag;
 }
 
-const _frames = [
-  _Item('Cadre givré', '80', true, [Color(0xFFE6F7FF), Color(0xFF7FD3FF)], icon: Icons.ac_unit),
-  _Item('Cadre de lave', '80', true, [Color(0xFFFFC46B), Color(0xFFD6331F)], icon: Icons.local_fire_department),
-  _Item('Cadre holographique', '200', true, [Color(0xFFFF8FF5), Color(0xFF6BE3FF)], icon: Icons.auto_awesome, tag: 'Rare'),
-];
-
 const _gems = [
   _Item('Poignée de gemmes', '1,99 €', false, [Color(0xFF4DD6FF), Color(0xFF1E6BFF)], icon: Icons.diamond),
   _Item('Sac de gemmes', '4,99 €', false, [Color(0xFF4DD6FF), Color(0xFF6B5BFF)], icon: Icons.diamond, tag: '+10 %'),
@@ -94,6 +88,46 @@ class ShopTab extends StatelessWidget {
     if (context.mounted) showPrototypeSnack(context, msg);
   }
 
+  Future<void> _onFrame(BuildContext context, CardFrame frame) async {
+    final col = data.collection;
+    final String msg;
+    if (col.ownedFrames.contains(frame.id)) {
+      if (col.equippedFrame.id == frame.id) return;
+      await col.equipFrame(frame);
+      msg = '${frame.name} : tes cartes le portent maintenant !';
+    } else {
+      final why = CardFrames.whyNotBuy(frame, owned: col.ownedFrames, coins: col.coins);
+      if (why != null) {
+        msg = '$why (tu en as ${col.coins}).';
+      } else {
+        if (!context.mounted) return;
+        final ok = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: AppColors.night,
+            title: Text('Acheter ${frame.name} ?', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+            content: Row(children: [
+              _FramePreview(frame: frame, width: 60),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text('${frame.price} pièces (tu en as ${col.coins}). Toutes les cartes de ta collection le porteront.',
+                    style: const TextStyle(color: Colors.white70)),
+              ),
+            ]),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Non', style: TextStyle(color: Colors.white70))),
+              TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Acheter', style: TextStyle(color: AppColors.gold))),
+            ],
+          ),
+        );
+        if (ok != true) return;
+        msg = await col.buyFrame(frame) ? '${frame.name} est à toi : tes cartes le portent déjà !' : 'Achat impossible.';
+      }
+    }
+    onChanged();
+    if (context.mounted) showPrototypeSnack(context, msg);
+  }
+
   void _buy(BuildContext context, String what) =>
       showPrototypeSnack(context, 'Prototype : les achats arriveront avec l\'étape Monétisation ($what).');
 
@@ -123,7 +157,26 @@ class ShopTab extends StatelessWidget {
               style: TextStyle(color: Colors.white54, fontSize: 12)),
         ),
         const SectionTitle('Cadres de cartes'),
-        _Grid(items: _frames, preview: (i) => _FramePreview(item: i), onBuy: (i) => _buy(context, i.name)),
+        _CosmeticGrid(
+          count: CardFrames.all.length,
+          cellBuilder: (i) {
+            final f = CardFrames.all[i];
+            return _CosmeticCell(
+              preview: _FramePreview(frame: f),
+              name: f.name,
+              price: f.price,
+              tag: f.tag,
+              owned: data.collection.ownedFrames.contains(f.id),
+              worn: data.collection.equippedFrame.id == f.id,
+              onTap: () => _onFrame(context, f),
+            );
+          },
+        ),
+        const Padding(
+          padding: EdgeInsets.only(top: 6),
+          child: Text('Payés avec les pièces. Le cadre porté entoure toutes les cartes de ta collection (bestiaire, compagnon, récapitulatif).',
+              style: TextStyle(color: Colors.white54, fontSize: 12)),
+        ),
         const SectionTitle('Confort'),
         _WideOffer(
           icon: Icons.block,
@@ -391,23 +444,126 @@ class _SkinGrid extends StatelessWidget {
   }
 }
 
+/// Aperçu d'un cadre : une petite carte vierge entourée du cadre.
 class _FramePreview extends StatelessWidget {
-  const _FramePreview({required this.item});
-  final _Item item;
+  const _FramePreview({required this.frame, this.width = 50});
+  final CardFrame frame;
+  final double width;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 46,
-      height: 62,
+    final inner = Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: item.colors),
-        borderRadius: BorderRadius.circular(8),
+        gradient: const LinearGradient(
+            colors: [Color(0xFF8C7BFF), Color(0xFF4B3BB0)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+        borderRadius: BorderRadius.circular(width * (frame.isDefault ? 0.08 : 0.055)),
+        border: frame.isDefault ? Border.all(color: Colors.white.withValues(alpha: 0.85), width: 2) : null,
       ),
-      padding: const EdgeInsets.all(4),
+      child: Icon(Icons.pets, color: Colors.white70, size: width * 0.45),
+    );
+    return SizedBox(
+      width: width,
+      height: width / 0.72,
+      child: frame.isDefault ? inner : CardFrameBorder(frame: frame, width: width, child: inner),
+    );
+  }
+}
+
+/// Grille d'objets cosmétiques payés en pièces (cadres de cartes).
+class _CosmeticGrid extends StatelessWidget {
+  const _CosmeticGrid({required this.count, required this.cellBuilder});
+  final int count;
+  final Widget Function(int) cellBuilder;
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 140,
+        childAspectRatio: 0.78,
+        mainAxisSpacing: 10,
+        crossAxisSpacing: 10,
+      ),
+      itemCount: count,
+      itemBuilder: (_, i) => cellBuilder(i),
+    );
+  }
+}
+
+/// Case d'un objet cosmétique : prix en pièces, « Porter » ou « Porté ».
+class _CosmeticCell extends StatelessWidget {
+  const _CosmeticCell({
+    required this.preview,
+    required this.name,
+    required this.price,
+    required this.owned,
+    required this.worn,
+    required this.onTap,
+    this.tag,
+  });
+  final Widget preview;
+  final String name;
+  final int price;
+  final bool owned;
+  final bool worn;
+  final String? tag;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
       child: Container(
-        decoration: BoxDecoration(color: AppColors.night, borderRadius: BorderRadius.circular(5)),
-        child: Icon(item.icon, color: item.colors.last, size: 22),
+        decoration: BoxDecoration(
+          color: const Color(0xFF3A2D86),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: worn ? AppColors.gold : Colors.white24, width: worn ? 3 : 1.5),
+        ),
+        child: Stack(children: [
+          Column(children: [
+            Expanded(child: Center(child: preview)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Text(name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+            ),
+            Container(
+              margin: const EdgeInsets.all(6),
+              padding: const EdgeInsets.symmetric(vertical: 5),
+              decoration: BoxDecoration(
+                color: worn
+                    ? AppColors.gold
+                    : owned
+                        ? const Color(0xFF3FBF5A)
+                        : const Color(0xFF1E6BFF),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.black26, width: 1.5),
+              ),
+              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                if (!owned) const Icon(Icons.monetization_on, size: 14, color: AppColors.gold),
+                if (!owned) const SizedBox(width: 4),
+                Text(
+                  worn ? 'Porté' : (owned ? 'Porter' : '$price'),
+                  style: TextStyle(color: worn ? AppColors.ink : Colors.white, fontWeight: FontWeight.w900),
+                ),
+              ]),
+            ),
+          ]),
+          if (tag != null && !owned)
+            Positioned(
+              top: 6,
+              left: 6,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(color: AppColors.coral, borderRadius: BorderRadius.circular(6)),
+                child: Text(tag!, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900)),
+              ),
+            ),
+        ]),
       ),
     );
   }

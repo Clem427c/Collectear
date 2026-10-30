@@ -98,6 +98,7 @@ class _BestiaryTabState extends State<BestiaryTab> {
                 owned: qty != null,
                 quantity: qty,
                 favorite: qty != null && data.collection.favoriteCount(c.id) > 0,
+                frame: data.collection.equippedFrame,
                 onTap: qty == null
                     ? null
                     : () => openCardBrowser(context, data, c.id, onChanged: widget.onChanged)

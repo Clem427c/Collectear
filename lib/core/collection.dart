@@ -31,6 +31,8 @@ class Collection {
   static const _kAdRunsCount = 'ad_runs_count';
   static const _kSkins = 'owned_skins';
   static const _kSkin = 'equipped_skin';
+  static const _kFrames = 'owned_frames';
+  static const _kFrame = 'equipped_frame';
 
   static const _kVariants = 'owned_variants'; // "id:seed1,seed2,…"
 
@@ -211,6 +213,31 @@ class Collection {
   Future<bool> equipSkin(Skin skin) async {
     if (!ownedSkins.contains(skin.id)) return false;
     await _prefs.setString(_kSkin, skin.id);
+    return true;
+  }
+
+  /// Cadres de cartes achetés (le cadre d'origine est toujours possédé).
+  Set<String> get ownedFrames => {CardFrames.defaultId, ...?_prefs.getStringList(_kFrames)};
+
+  /// Cadre porté par les cartes de la collection (celui d'origine si l'enregistré n'est pas possédé).
+  CardFrame get equippedFrame {
+    final id = _prefs.getString(_kFrame);
+    return ownedFrames.contains(id) ? CardFrames.byId(id) : CardFrames.byId(CardFrames.defaultId);
+  }
+
+  /// Achète un cadre avec des pièces et le porte aussitôt. Renvoie false si c'est impossible.
+  Future<bool> buyFrame(CardFrame frame) async {
+    if (CardFrames.whyNotBuy(frame, owned: ownedFrames, coins: coins) != null) return false;
+    await _prefs.setInt(_kCoins, coins - frame.price);
+    await _prefs.setStringList(_kFrames, [...ownedFrames.where((id) => id != CardFrames.defaultId), frame.id]);
+    await _prefs.setString(_kFrame, frame.id);
+    return true;
+  }
+
+  /// Porte un cadre déjà possédé.
+  Future<bool> equipFrame(CardFrame frame) async {
+    if (!ownedFrames.contains(frame.id)) return false;
+    await _prefs.setString(_kFrame, frame.id);
     return true;
   }
 
