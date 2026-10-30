@@ -2,7 +2,7 @@
 
 Sert build/web sous /Collectear/, ouvre le jeu dans Chromium sans écran (Playwright) en format
 téléphone puis en format PC, passe la fenêtre de connexion, lance une run, appuie sur les flèches,
-vérifie que l'image change, puis ouvre la galerie des variantes et la Boutique (skins). Il affiche :
+vérifie que l'image change, puis ouvre la galerie des variantes et la Boutique (skins, cadres de cartes). Il affiche :
   - les messages de la console du navigateur (erreurs comprises) ;
   - des captures d'écran en JPEG base64 entre les balises CAPTURE-DEBUT / CAPTURE-FIN
     (pour que Claude, qui ne peut pas ouvrir le site, puisse les relire dans le journal de la CI).
@@ -148,6 +148,9 @@ def session(p, url: str, width: int, height: int, tag: str, problems: list, gall
             page.mouse.wheel(0, 350)
             time.sleep(1.5)
             shot("7-boutique-skins")
+            page.mouse.wheel(0, 450)
+            time.sleep(1.5)
+            shot("8-boutique-cadres")
     browser.close()
     print(f"---- Console du navigateur ({tag}) ----")
     for line in logs[-80:]:

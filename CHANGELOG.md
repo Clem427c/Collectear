@@ -1,5 +1,13 @@
 # Journal des versions
 
+## 0.17.0 – 30/10/2026 – cadres de cartes
+- Boutique → Cadres de cartes : 5 cadres (givré, de lave, de lierre, holographique, royal) achetables avec
+  les pièces (250 à 1 000), à porter ou changer quand on veut (« Porter » / « Porté »). Le cadre porté
+  entoure toutes les cartes de sa collection : bestiaire, compagnon de run, cartes du récapitulatif.
+  Purement cosmétique ; les cartes des amis gardent leur bord blanc.
+- Guide → Pièces : mention des skins et des cadres.
+- CI : le test de fumée web fait aussi une capture des cadres dans la Boutique.
+
 ## 0.16.0 – 29/10/2026 – consentement des pubs, skins d'explorateur
 - Pubs (Android) : au premier lancement en Europe, le formulaire de consentement de Google (RGPD)
   s'affiche avant toute pub ; AdMob ne démarre qu'après. ⚙ Paramètres → Publicités : état des vidéos

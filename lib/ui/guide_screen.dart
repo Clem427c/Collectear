@@ -89,7 +89,9 @@ class GuideScreen extends StatelessWidget {
             text: 'Ramasse-les en passant dessus (parfois un tas de ${Economy.pileValue}). Chaque ennemi vaincu en '
                 'donne ${Economy.coinsPerKill}, chaque lieu ouvert ${Economy.coinsPerPlace}. Dépense-les dans la '
                 'Boutique : une énergie = une run de plus (${Economy.maxEnergyPurchasesPerDay} par jour au plus). '
-                'Plus aucune run ? Une vidéo t\'en offre une (${GameConfig.adBonusRunsPerDay} par jour au plus).',
+                'Plus aucune run ? Une vidéo t\'en offre une (${GameConfig.adBonusRunsPerDay} par jour au plus). '
+                'Les pièces achètent aussi des skins (la cape de ton explorateur) et des cadres pour tes cartes : '
+                'purement décoratifs, aucun avantage en jeu.',
           ),
           SectionTitle('Les ennemis'),
           _Entry(

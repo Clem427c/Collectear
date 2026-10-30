@@ -80,8 +80,8 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
 - [x] Pastille Social dans la barre du bas, amis et échanges rechargés toutes les 90 s (28/10)
 - [ ] Notifications d'échange (push) — plus tard
 - [ ] **Prochaine session** : traiter les réponses de Clem (hors ligne, pseudos, collisions, énergies, pubs,
-  skins) ; sinon synchro en ligne des skins et des pièces (si Clem dit oui), puis cadres de cartes
-  achetables avec les pièces (même principe que les skins)
+  skins, cadres) ; sinon synchro en ligne des pièces, skins et cadres (si Clem dit oui). Cadres de cartes
+  faits le 30/10. Sans réponse : rien d'autre ne peut avancer sans décision de Clem ou action de sa part.
 
 ## Étape 4 – Monétisation
 - [x] Vidéos récompensées (P) : run bonus quand il n'en reste plus (3/jour), résurrection à la mort
@@ -97,7 +97,9 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
   pour l'appli. Sans lui, en Europe, le formulaire ne peut pas s'afficher (vidéo simulée en attendant).
 - [ ] Interstitiels rares (jamais en run) ? (attend la réponse de Clem)
 - [x] Skins d'explorateur (P) : 6 skins achetables avec les pièces, portés en run (cape recolorée en CI) (29/10)
-- [ ] Cadres de cartes, gemmes, achats intégrés (Google Play Billing), option sans pub
+- [x] Cadres de cartes (P) : 5 cadres achetables avec les pièces (250 à 1 000), portés par toutes les cartes
+  de sa collection (bestiaire, compagnon, récapitulatif) (30/10)
+- [ ] Gemmes, achats intégrés (Google Play Billing), option sans pub
 
 ## Étape 5 – Lancement
 - [ ] Combats entre amis (format à définir par Clem)
@@ -222,6 +224,15 @@ Priorité basse (à toi de juger) :
   4 poses). Pour des tenues entièrement différentes (chapeau, armure…), il faudrait générer 4 images
   par skin avec ComfyUI : je prépare les prompts si tu veux.
 - Les skins achetés restent sur l'appareil (comme les pièces) : à sauvegarder en ligne avec elles ?
+
+### Cadres de cartes (30/10)
+- PROVISOIRE : 5 cadres payés en **pièces** (givré, lave, lierre : 250 ; holographique : 500 ; royal : 1 000),
+  comme les skins. Même question que pour les skins : pièces, gemmes, ou un mélange ?
+- PROVISOIRE : le cadre porté s'applique à **toutes** les cartes de ta collection (un seul cadre à la fois).
+  Préfères-tu choisir un cadre carte par carte (plus de travail pour le joueur, plus de personnalisation) ?
+- PROVISOIRE : tes amis voient leurs cartes et les tiennes avec le bord blanc d'origine (le cadre n'est pas
+  envoyé en ligne). Faut-il que tes amis voient ton cadre (profil, échanges) ?
+- Le cadre d'une finition (Dorée, Cristal, Ombre, Shiny) reste dessiné autour de l'illustration, en plus.
 
 ### Illustrations (suite)
 Remarque : les 4 bûcherons (035 Hugo, 065 Pio, 070 Milo, 079 Anatole) se ressemblent beaucoup
