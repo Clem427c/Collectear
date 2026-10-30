@@ -72,6 +72,7 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
 - [ ] **Clem** : code à 6 chiffres dans l'e-mail de connexion (`docs/SUPABASE.md` §3 : Gmail en SMTP +
   modèles d'e-mail). Sans ça, le lien ne connecte que l'appareil qui l'a demandé.
 - [x] Pseudo choisi à la première connexion (28/10)
+- [x] Filtre des gros mots dans les pseudos (P), même déguisés (« C0NN4RD », « s.a.l.o.p.e ») ; côté appli seulement (30/10)
 - [x] Variantes plus visibles + galerie des variantes dans le Guide (28/10)
 - [ ] **Clem** : vitrine de test sur son compte (`supabase/showcase.sql` puis `select public.grant_showcase('…')`)
 - [ ] Connexion Google (attend la réponse de Clem, voir « Questions »)
@@ -80,8 +81,9 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
 - [x] Pastille Social dans la barre du bas, amis et échanges rechargés toutes les 90 s (28/10)
 - [ ] Notifications d'échange (push) — plus tard
 - [ ] **Prochaine session** : traiter les réponses de Clem (hors ligne, pseudos, collisions, énergies, pubs,
-  skins, cadres) ; sinon synchro en ligne des pièces, skins et cadres (si Clem dit oui). Cadres de cartes
-  faits le 30/10. Sans réponse : rien d'autre ne peut avancer sans décision de Clem ou action de sa part.
+  skins, cadres, gros mots) ; sinon synchro en ligne des pièces, skins et cadres (si Clem dit oui). Cadres de
+  cartes et filtre des pseudos faits le 30/10. Sans réponse : rien d'autre ne peut avancer sans décision de
+  Clem ou action de sa part.
 
 ## Étape 4 – Monétisation
 - [x] Vidéos récompensées (P) : run bonus quand il n'en reste plus (3/jour), résurrection à la mort
@@ -201,7 +203,11 @@ Priorité basse (à toi de juger) :
 - Favoris : un favori mis ou retiré hors ligne n'est transmis au serveur qu'à la prochaine connexion,
   et un favori retiré sur un appareil peut revenir via un autre appareil qui l'avait encore (PROVISOIRE).
 - Pseudo : 2 à 24 caractères, lettres (accents compris), chiffres, espaces, - ' . _ — pas d'émojis.
-  Pas encore de filtre des gros mots ni d'unicité : à prévoir avant les amis/classements ? 
+  Pas d'unicité (deux joueurs peuvent avoir le même pseudo ; le code ami les distingue). Ça te va ?
+- Gros mots (30/10) : PROVISOIRE : liste courte français + anglais (`lib/core/moderation.dart`), reconnue
+  même avec chiffres, points ou lettres répétées ; vérifiée par l'appli seulement. **Question** : je
+  l'ajoute aussi au serveur (il faudra recoller `supabase/schema.sql`) ? Et les pseudos déjà choisis
+  avant le filtre restent tels quels : je les masque chez les amis ?
 
 ### Pubs (29/10)
 - PROVISOIRE : 3 vidéos « +1 run » par jour, proposées seulement quand il ne reste plus aucune run

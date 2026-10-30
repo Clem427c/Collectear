@@ -1,5 +1,12 @@
 # Journal des versions
 
+## 0.17.1 – 30/10/2026 (après-midi) – pseudos sans gros mots
+- Pseudo (première connexion et changement depuis le Profil) : les gros mots et insultes (français et
+  anglais) sont refusés, même déguisés avec des chiffres, des points ou des lettres répétées
+  (« C0NN4RD », « s.a.l.o.p.e », « connnnard »). Les mots qui en contiennent un par hasard restent
+  acceptés (« Computer », « Technique », « Conan », « Crocouille »…) ; les 300 noms de cartes sont testés.
+  Provisoire : vérifié par l'appli seulement, pas encore par le serveur.
+
 ## 0.17.0 – 30/10/2026 – cadres de cartes
 - Boutique → Cadres de cartes : 5 cadres (givré, de lave, de lierre, holographique, royal) achetables avec
   les pièces (250 à 1 000), à porter ou changer quand on veut (« Porter » / « Porté »). Le cadre porté
