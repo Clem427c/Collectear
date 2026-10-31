@@ -86,11 +86,16 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
   souhaits sur son profil (ceux que je peux lui donner d'abord, échange prérempli), filtre « Mes souhaits » (31/10)
 - [ ] **Clem** : recoller `supabase/schema.sql` pour la liste de souhaits (sans ça, ajouter un souhait affiche
   « le serveur n'est pas encore à jour »)
+- [x] Records d'exploration (GDD diapo 12) : distance au point de départ et lieux découverts, dans le
+  récapitulatif (« Nouveau record ! »), le Profil, le profil d'un ami et le classement ; enregistrés par le
+  serveur (`finish_run`, plafonnés) (P) (31/10)
+- [ ] **Clem** : recoller `supabase/schema.sql` (records d'exploration ; sans ça, la distance reste sur
+  l'appareil et n'apparaît pas chez les amis — un seul collage suffit pour tout ce qui est en attente)
 - [ ] Notifications d'échange (push) — plus tard
 - [ ] **Prochaine session** : traiter les réponses de Clem (hors ligne, pseudos, collisions, énergies, pubs,
-  skins, cadres, gros mots) ; sinon synchro en ligne des pièces, skins et cadres (si Clem dit oui). Cadres de
-  cartes et filtre des pseudos faits le 30/10, liste de souhaits le 31/10. Sans réponse : rien d'autre ne peut avancer sans décision de
-  Clem ou action de sa part.
+  skins, cadres, gros mots, records) ; sinon synchro en ligne des pièces, skins et cadres (si Clem dit oui).
+  Records d'exploration faits le 31/10. Encore possible sans décision : « partager ses plus belles
+  trouvailles » (GDD diapo 12, image d'une carte à envoyer).
 
 ## Étape 4 – Monétisation
 - [x] Vidéos récompensées (P) : run bonus quand il n'en reste plus (3/jour), résurrection à la mort
@@ -258,6 +263,15 @@ Priorité basse (à toi de juger) :
 - PROVISOIRE : un souhait reste dans la liste quand on obtient la carte (on peut chercher une autre variante) ;
   on le retire à la main. Préfères-tu qu'il disparaisse tout seul dès qu'on a la carte ?
 - La liste est en ligne seulement (il faut être connecté), visible par tous ses amis.
+
+### Records d'exploration (31/10)
+- PROVISOIRE : la distance est mesurée à vol d'oiseau depuis le point de départ (la plus grande atteinte
+  pendant la run), avec 1 case = 1 mètre (une run à fond en ligne droite ≈ 450 m). Préfères-tu la distance
+  parcourue (chemin total) ? Une autre unité (pas, cases) ?
+- Le classement entre amis reste trié par cartes différentes (ta décision du 28/10) ; le record de distance
+  est seulement affiché. Veux-tu un 2e classement « explorateurs » par distance ?
+- Le serveur ne refuse pas une distance impossible, il la ramène à 8 cases par seconde au plus (la run et
+  ses cartes restent valides). Les runs jouées avant le 31/10 comptent pour 0 m.
 
 ### Illustrations (suite)
 Remarque : les 4 bûcherons (035 Hugo, 065 Pio, 070 Milo, 079 Anatole) se ressemblent beaucoup

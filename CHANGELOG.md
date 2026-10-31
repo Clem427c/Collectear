@@ -1,5 +1,14 @@
 # Journal des versions
 
+## 0.20.0 – 31/10/2026 (après-midi) – records d'exploration
+- Récapitulatif : distance atteinte (la plus loin du point de départ, en mètres, provisoire : 1 case = 1 m)
+  et lieux débloqués ; « Nouveau record de distance ! » / « d'ennemis vaincus ! » en or (jamais à la 1re run).
+- Profil : deux nouvelles stats, « Record de distance » et « Lieux découverts » (appareil + serveur).
+- Profil d'un ami et classement : son record de distance (une fois le schéma recollé).
+- Serveur : colonnes `runs.distance` et `runs.places`, `finish_run` accepte la distance et les lieux
+  (plafonnés : 8 cases/s, pas plus de lieux que de cartes), `my_stats` et `friends_leaderboard` les renvoient.
+  Les applis d'avant continuent de marcher ; l'appli marche aussi avec l'ancien schéma. À recoller par Clem.
+
 ## 0.19.1 – 31/10/2026 – correctif Android
 - APK : l'appli plantait au lancement (« l'application s'est arrêtée »). L'optimiseur du build release (R8)
   retirait la base interne de WorkManager (embarqué par les pubs Google) ; règles de conservation ajoutées.

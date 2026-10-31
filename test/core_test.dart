@@ -1280,11 +1280,11 @@ void main() {
     });
 
     test('la vitesse du joueur reste sous le plafond du serveur', () {
-      final tilesPerSecond = GameConfig.playerSpeed * GameConfig.speedBoostMultiplier / GameConfig.tileSize;
+      const tilesPerSecond = GameConfig.playerSpeed * GameConfig.speedBoostMultiplier / GameConfig.tileSize;
       expect(tilesPerSecond, lessThan(GameConfig.maxTilesPerSecond));
       // Même en esquivant sans arrêt (esquive puis recharge), on reste dessous.
       const dodgeCycle = GameConfig.dodgeDuration + GameConfig.dodgeCooldown;
-      final burst = (GameConfig.dodgeSpeed * GameConfig.dodgeDuration +
+      const burst = (GameConfig.dodgeSpeed * GameConfig.dodgeDuration +
               GameConfig.playerSpeed * GameConfig.speedBoostMultiplier * GameConfig.dodgeCooldown) /
           dodgeCycle /
           GameConfig.tileSize;
