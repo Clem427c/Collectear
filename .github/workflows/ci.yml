@@ -107,6 +107,27 @@ jobs:
             sed -i -E 's/minSdk(Version)? *=? *flutter\.minSdkVersion/minSdkVersion Math.max(flutter.minSdkVersion, 23)/' "$g"
           fi
           grep -n 'minSdk' "$g"
+          # R8 (build release) supprimait le constructeur de WorkDatabase_Impl (Room 2.2, via WorkManager
+          # embarqué par les pubs Google) : plantage « l'application s'est arrêtée » au lancement (31/10).
+          cat > android/app/proguard-rules.pro <<'PRO'
+          # Room instancie <Base>_Impl par réflexion : garder ces classes, leur nom et leur constructeur.
+          -keep class * extends androidx.room.RoomDatabase { <init>(); }
+          -keep class androidx.work.impl.WorkDatabase_Impl { *; }
+          -keep class androidx.work.impl.** extends androidx.room.RoomDatabase { *; }
+          PRO
+          sed -i 's/^ *//' android/app/proguard-rules.pro
+          if [ "$g" = android/app/build.gradle.kts ] && ! grep -q 'proguard-rules.pro' "$g"; then
+            python3 - "$g" <<'PY'
+          import re, sys
+          p = sys.argv[1]
+          s = open(p).read()
+          s2 = re.sub(r'(release\s*\{)', r'\1\n            proguardFiles("proguard-rules.pro")', s, count=1)
+          assert s2 != s, 'bloc release introuvable'
+          open(p, 'w').write(s2)
+          PY
+          fi
+          grep -n -B2 -A4 'proguard' "$g" || true
+          cat android/app/proguard-rules.pro
 
       - name: Illustrations (art/raw → assets/cards)
         run: |
