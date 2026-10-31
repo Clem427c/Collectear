@@ -173,7 +173,7 @@ jobs:
           # Chaque objet attendu de supabase/schema.sql : table (GET) ou fonction (POST rpc, sans session → refus attendu).
           check() {
             code=$(curl -s -o /tmp/r.json -w '%{http_code}' --max-time 15 "$@" -H "apikey: $key" -H "Authorization: Bearer $key" -H 'Content-Type: application/json')
-            if grep -q 'PGRST205\|PGRST202\|42P01\|42883' /tmp/r.json; then echo "absent"; else echo "présent (HTTP $code)"; fi
+            if grep -q 'PGRST205\|PGRST202\|42P01\|42883\|42703' /tmp/r.json; then echo "absent"; else echo "présent (HTTP $code)"; fi
           }
           for t in profiles owned_cards runs friendships trades trade_items wishlist; do
             echo "Table $t : $(check "$url/rest/v1/$t?select=*&limit=0")"
@@ -182,6 +182,8 @@ jobs:
           for f in start_run my_stats my_trades friends_leaderboard my_wishlist; do
             echo "Fonction $f : $(check -X POST "$url/rest/v1/rpc/$f" -d '{}')"
           done
+          # Records d'exploration (31/10) : colonne absente tant que le schéma n'est pas recollé.
+          echo "Colonne runs.distance : $(check "$url/rest/v1/runs?select=distance&limit=0")"
           r=$(check "$url/rest/v1/trade_items?select=*&limit=0")
           case "$r" in
             absent*) echo "::notice::Base Supabase pas à jour : coller supabase/schema.sql dans le SQL Editor (docs/SUPABASE.md)." ;;

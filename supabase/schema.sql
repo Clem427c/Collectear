@@ -116,6 +116,10 @@ create table if not exists public.runs (
 
 create index if not exists runs_user_idx on public.runs (user_id, started_at);
 
+-- Records d'exploration (31/10) : distance max au point de départ (mètres) et lieux débloqués.
+alter table public.runs add column if not exists distance int not null default 0 check (distance >= 0);
+alter table public.runs add column if not exists places int not null default 0 check (places >= 0);
+
 alter table public.runs enable row level security;
 
 drop policy if exists "runs : lecture des siennes" on public.runs;
@@ -150,8 +154,14 @@ end $$;
 -- Refuse : run d'un autre joueur ou déjà fermée, plus de 3 cartes, carte inconnue, run fermée
 -- trop tard (30 min), ou nombre d'ennemis impossible pour la durée (2 par seconde au plus).
 -- Renvoie le nombre d'exemplaires réellement ajoutés (les doublons exacts sont ignorés).
+-- p_distance (mètres) et p_places (lieux débloqués) : records d'exploration, ramenés dans les limites
+-- plausibles (8 cases par seconde au plus, pas plus de lieux que de cartes) plutôt que refusés.
 -- PROVISOIRE : la rareté des cartes n'est pas encore contrôlée (tirage fait par l'appli).
-create or replace function public.finish_run(p_run uuid, p_kills int, p_coins int, p_cards jsonb)
+-- L'ancienne version (4 paramètres) est retirée ; les applis d'avant le 31/10 l'appellent toujours
+-- avec 4 paramètres nommés, ce qui marche grâce aux valeurs par défaut.
+drop function if exists public.finish_run(uuid, int, int, jsonb);
+create or replace function public.finish_run(p_run uuid, p_kills int, p_coins int, p_cards jsonb,
+                                             p_distance int default 0, p_places int default 0)
 returns int
 language plpgsql volatile security definer set search_path = '' as $$
 declare
@@ -159,6 +169,8 @@ declare
   max_cards constant int := 3;
   max_minutes constant int := 30;
   max_kills_per_second constant int := 2;
+  max_tiles_per_second constant int := 8;
+  meters_per_tile constant int := 1;
   r public.runs%rowtype;
   secs double precision;
   n int;
@@ -186,7 +198,12 @@ begin
     raise exception 'carte invalide' using errcode = 'P0001';
   end if;
 
-  update public.runs set finished_at = now(), kills = p_kills, coins = p_coins, cards = n where id = r.id;
+  update public.runs
+  set finished_at = now(), kills = p_kills, coins = p_coins, cards = n,
+      distance = least(greatest(coalesce(p_distance, 0), 0),
+                       greatest(1, ceil(secs))::int * max_tiles_per_second * meters_per_tile),
+      places = least(greatest(coalesce(p_places, 0), 0), n)
+  where id = r.id;
   insert into public.owned_cards (user_id, card_id, seed)
   select uid, (e ->> 'card_id')::smallint, (e ->> 'seed')::bigint from jsonb_array_elements(p_cards) e
   on conflict (user_id, card_id, seed) do nothing;
@@ -195,17 +212,20 @@ begin
 end $$;
 
 -- Statistiques du profil, calculées sur les runs terminées.
+-- (Colonnes best_distance et places ajoutées le 31/10 : on retire l'ancienne version d'abord.)
+drop function if exists public.my_stats();
 create or replace function public.my_stats()
-returns table (runs bigint, kills bigint, cards bigint, best_kills int)
+returns table (runs bigint, kills bigint, cards bigint, best_kills int, best_distance int, places bigint)
 language sql stable security invoker set search_path = '' as $$
-  select count(*), coalesce(sum(r.kills), 0), coalesce(sum(r.cards), 0), coalesce(max(r.kills), 0)
+  select count(*), coalesce(sum(r.kills), 0), coalesce(sum(r.cards), 0), coalesce(max(r.kills), 0),
+         coalesce(max(r.distance), 0), coalesce(sum(r.places), 0)
   from public.runs r
   where r.user_id = (select auth.uid()) and r.finished_at is not null
 $$;
 
-revoke execute on function public.start_run(), public.finish_run(uuid, int, int, jsonb), public.my_stats()
+revoke execute on function public.start_run(), public.finish_run(uuid, int, int, jsonb, int, int), public.my_stats()
   from public, anon;
-grant execute on function public.start_run(), public.finish_run(uuid, int, int, jsonb), public.my_stats()
+grant execute on function public.start_run(), public.finish_run(uuid, int, int, jsonb, int, int), public.my_stats()
   to authenticated;
 
 -- ---------------------------------------------------------------------------
@@ -692,8 +712,11 @@ grant execute on function public.set_wish(smallint, boolean), public.my_wishlist
 -- ---------------------------------------------------------------------------
 -- Classement entre amis : moi et mes amis, par nombre de cartes différentes.
 -- ---------------------------------------------------------------------------
+-- (Colonne best_distance ajoutée le 31/10, affichée sur le profil d'un ami ; le tri ne change pas.)
+drop function if exists public.friends_leaderboard();
 create or replace function public.friends_leaderboard()
-returns table (user_id uuid, display_name text, is_me boolean, species bigint, copies bigint, best_kills int)
+returns table (user_id uuid, display_name text, is_me boolean, species bigint, copies bigint, best_kills int,
+               best_distance int)
 language sql stable security definer set search_path = '' as $$
   with people as (
     select (select auth.uid()) as id
@@ -705,7 +728,8 @@ language sql stable security definer set search_path = '' as $$
   select p.id, pr.display_name, p.id = (select auth.uid()),
          (select count(distinct c.card_id) from public.owned_cards c where c.user_id = p.id),
          (select count(*) from public.owned_cards c where c.user_id = p.id),
-         (select coalesce(max(r.kills), 0) from public.runs r where r.user_id = p.id and r.finished_at is not null)
+         (select coalesce(max(r.kills), 0) from public.runs r where r.user_id = p.id and r.finished_at is not null),
+         (select coalesce(max(r.distance), 0) from public.runs r where r.user_id = p.id and r.finished_at is not null)
   from people p
   join public.profiles pr on pr.id = p.id
   where p.id is not null

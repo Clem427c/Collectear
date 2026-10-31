@@ -40,7 +40,23 @@ select public.start_run() as rid \gset
 select pg_sleep(1.1);
 select pg_temp.check(public.finish_run(:'rid', 3, 20, '[{"card_id":12,"seed":345},{"card_id":300,"seed":0}]') = 2, 'run : 2 cartes ajoutées');
 select pg_temp.check(pg_temp.fails(format('select public.finish_run(%L, 3, 20, %L)', :'rid', '[]')), 'run : déjà terminée');
-select pg_temp.check((select runs = 1 and kills = 3 and cards = 2 and best_kills = 3 from public.my_stats()), 'stats du profil');
+select pg_temp.check((select runs = 1 and kills = 3 and cards = 2 and best_kills = 3 and best_distance = 0 and places = 0
+                      from public.my_stats()), 'stats du profil (ancien appel à 4 paramètres)');
+
+-- Records d'exploration : distance et lieux enregistrés, ramenés dans les limites plausibles.
+select public.start_run() as rid_d \gset
+select pg_sleep(1.1);
+select pg_temp.check(public.finish_run(:'rid_d', 0, 0, '[{"card_id":12,"seed":345}]', p_distance => 12, p_places => 1) = 0,
+                     'run avec distance et lieu (carte déjà possédée : rien d''ajouté)');
+select pg_temp.check((select best_distance = 12 and places = 1 and runs = 2 from public.my_stats()), 'stats : distance et lieux');
+select public.start_run() as rid_e \gset
+select pg_temp.check(public.finish_run(:'rid_e', 0, 0, '[]', p_distance => 999999, p_places => 3) = 0, 'run avec valeurs impossibles');
+select pg_temp.check((select distance between 1 and 32 and places = 0 from public.runs where id = :'rid_e'),
+                     'distance plafonnée (8 cases/s), pas plus de lieux que de cartes');
+select pg_temp.check((select best_distance = 12 from public.my_stats()), 'record = meilleure run (la run plafonnée ne le bat pas)');
+select public.start_run() as rid_f \gset
+select pg_temp.check(public.finish_run(:'rid_f', 0, 0, '[]', p_distance => -4, p_places => -1) = 0, 'valeurs négatives');
+select pg_temp.check((select distance = 0 and places = 0 from public.runs where id = :'rid_f'), 'valeurs négatives ramenées à 0');
 
 -- Run tricheuse : chaque cas est refusé.
 select public.start_run() as rid2 \gset
@@ -122,6 +138,7 @@ select pg_temp.check(exists (select 1 from public.owned_cards where card_id = 50
 select pg_temp.check(not exists (select 1 from public.owned_cards where card_id = 12 and seed = 345), 'échange : A n''a plus 12');
 select pg_temp.check((select count(*) from public.friends_leaderboard()) = 2, 'classement : moi et mon ami');
 select pg_temp.check((select is_me and species = 2 from public.friends_leaderboard() order by species desc limit 1), 'classement : trié (cartes différentes, puis exemplaires, puis pseudo)');
+select pg_temp.check((select count(*) = 2 and bool_and(best_distance >= 0) from public.friends_leaderboard()), 'classement : record de distance');
 -- 2 contre 1 et favoris. A possède 300/0 et 50/7 ; B possède 51/8 et 12/345.
 select id as a300 from public.my_cards() where card_id = 300 \gset
 select id as a50 from public.my_cards() where card_id = 50 \gset
