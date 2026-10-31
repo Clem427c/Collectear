@@ -236,8 +236,9 @@ class _FriendsViewState extends State<_FriendsView> {
   }
 
   void _openProfile(Friend f) {
-    final best = widget.model.leaderboard.where((e) => e.userId == f.userId).firstOrNull?.bestKills;
-    openFriendProfile(context, widget.data, f, widget.model.refresh, bestKills: best);
+    final entry = widget.model.leaderboard.where((e) => e.userId == f.userId).firstOrNull;
+    openFriendProfile(context, widget.data, f, widget.model.refresh,
+        bestKills: entry?.bestKills, bestDistance: entry?.bestDistance);
   }
 
   Future<void> _confirmRemove(Friend f) async {
@@ -499,7 +500,9 @@ class _Leaderboard extends StatelessWidget {
             title: Text(entries[i].isMe ? '${entries[i].name} (toi)' : entries[i].name,
                 style: TextStyle(
                     color: entries[i].isMe ? AppColors.gold : Colors.white, fontWeight: FontWeight.bold)),
-            subtitle: Text('${entries[i].copies} exemplaires · record ${entries[i].bestKills} ennemis',
+            subtitle: Text(
+                '${entries[i].copies} exemplaires · record ${entries[i].bestKills} ennemis'
+                '${entries[i].bestDistance == null ? '' : ' · ${entries[i].bestDistance} m'}',
                 style: const TextStyle(color: Colors.white54, fontSize: 11)),
             trailing: Text('${entries[i].species} / $total',
                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
@@ -724,12 +727,13 @@ Future<void> openTradeComposer(BuildContext context, AppData data, Friend friend
 
 /// Ouvre le profil d'un ami (sa collection en détail), d'où l'on peut lancer un échange.
 Future<void> openFriendProfile(BuildContext context, AppData data, Friend friend, Future<void> Function() onSent,
-        {int? bestKills}) =>
+        {int? bestKills, int? bestDistance}) =>
     Navigator.of(context).push(MaterialPageRoute<void>(
       builder: (ctx) => FriendProfileScreen(
         data: data,
         friend: friend,
         bestKills: bestKills,
+        bestDistance: bestDistance,
         onTrade: (request) => openTradeComposer(ctx, data, friend, onSent, request: request),
         onOffer: (cardId) => openTradeComposer(ctx, data, friend, onSent, offerCardId: cardId),
       ),

@@ -472,18 +472,34 @@ class Online {
   /// Si la run n'a pas pu être ouverte ou est refusée, envoi direct comme avant.
   // PROVISOIRE : l'envoi direct (et la synchro de la collection de l'appareil) reste permis
   // tant que Clem n'a pas décidé du sort des cartes gagnées hors ligne (ROADMAP, Questions).
+  ///
+  /// [distance] (mètres) et [places] : records d'exploration. Si le serveur n'a pas encore le schéma
+  /// du 31/10 (finish_run à 4 paramètres), on rappelle sans eux : la run et ses cartes passent quand même.
   static Future<void> finishRun(Future<String?> runId,
-      {required int kills, required int coins, required List<(int, int)> cards}) async {
+      {required int kills,
+      required int coins,
+      required List<(int, int)> cards,
+      int distance = 0,
+      int places = 0}) async {
     if (user == null) return;
     final id = await runId;
     if (id != null) {
       try {
-        final added = await _client.rpc<dynamic>('finish_run', params: {
+        final params = <String, dynamic>{
           'p_run': id,
           'p_kills': kills,
           'p_coins': coins,
           'p_cards': runCardsPayload(cards),
-        }).timeout(_timeout);
+        };
+        Object? added;
+        try {
+          added = await _client
+              .rpc<dynamic>('finish_run', params: {...params, 'p_distance': distance, 'p_places': places})
+              .timeout(_timeout);
+        } on PostgrestException catch (e) {
+          if (e.code != 'PGRST202') rethrow; // fonction à 6 paramètres introuvable : ancien schéma
+          added = await _client.rpc<dynamic>('finish_run', params: params).timeout(_timeout);
+        }
         if (added is int) onlineCount += added;
         await _loadStats();
         _bump();

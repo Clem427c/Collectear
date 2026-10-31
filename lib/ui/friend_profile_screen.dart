@@ -24,6 +24,7 @@ class FriendProfileScreen extends StatefulWidget {
     required this.onTrade,
     this.onOffer,
     this.bestKills,
+    this.bestDistance,
   });
   final AppData data;
   final Friend friend;
@@ -34,6 +35,9 @@ class FriendProfileScreen extends StatefulWidget {
 
   /// Record d'ennemis vaincus en une run (classement), s'il est connu.
   final int? bestKills;
+
+  /// Record de distance en une run (mètres), s'il est connu (serveur à jour).
+  final int? bestDistance;
 
   @override
   State<FriendProfileScreen> createState() => _FriendProfileScreenState();
@@ -309,6 +313,7 @@ class _FriendProfileScreenState extends State<FriendProfileScreen> {
           _stat('${col.species} / $total', 'cartes'),
           _stat('${col.copies}', 'exemplaires'),
           if (widget.bestKills != null) _stat('${widget.bestKills}', 'record ennemis'),
+          if (widget.bestDistance != null) _stat('${widget.bestDistance} m', 'record distance'),
         ]),
         const SizedBox(height: 10),
         Text(

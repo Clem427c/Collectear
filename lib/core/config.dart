@@ -19,6 +19,14 @@ class GameConfig {
   static const int killsPerCard = 10;
   static const int runsPerDay = 10;
 
+  // --- Records d'exploration (GDD diapo 12 : « record de distance, lieux découverts ») ---
+  /// PROVISOIRE : 1 case = 1 mètre (le personnage fait environ une case ; ≈ 3,75 m/s en marchant).
+  static const double metersPerTile = 1;
+
+  /// Plafond de vraisemblance côté serveur (finish_run) : cases par seconde au plus, esquives comprises.
+  /// Le joueur avance à 3,75 cases/s (5 avec le boost Vitesse) ; l'esquive va plus vite mais peu longtemps.
+  static const int maxTilesPerSecond = 8;
+
   // --- Combat ---
   static const int enemyHitsToKill = 3;
   static const int enemyHitsToKillBoosted = 2;

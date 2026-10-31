@@ -37,6 +37,27 @@ class RunState {
   int kills = 0;
   int hitsTaken = 0;
 
+  /// Plus grande distance au point de départ atteinte pendant la run, en cases (à vol d'oiseau).
+  double maxDistanceTiles = 0;
+
+  /// Lieux débloqués pendant la run (sanctuaire, tour, ruine, coffre).
+  int placesFound = 0;
+
+  /// Record de distance de la run, en mètres (arrondi à l'inférieur).
+  int get distanceMeters => (maxDistanceTiles * GameConfig.metersPerTile).floor();
+
+  /// Position du joueur, en cases depuis le point de départ (ignorée une fois la run terminée).
+  void trackDistance(double tilesFromStart) {
+    if (isOver || !tilesFromStart.isFinite) return;
+    if (tilesFromStart > maxDistanceTiles) maxDistanceTiles = tilesFromStart;
+  }
+
+  /// Un lieu vient d'être débloqué.
+  void registerPlace() {
+    if (isOver) return;
+    placesFound++;
+  }
+
   /// Pièces ramassées pendant la run (ajoutées au porte-monnaie à la fin, même en cas de défaite).
   int coins = 0;
   final List<CardInstance> cards = [];

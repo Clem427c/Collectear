@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/cards.dart';
+import '../core/collection.dart' show RunRecords;
 import '../core/cosmetics.dart';
 import '../core/run_state.dart';
 import 'card_detail_screen.dart';
@@ -8,9 +9,13 @@ import 'widgets.dart';
 import 'theme.dart';
 
 class RecapScreen extends StatelessWidget {
-  const RecapScreen({super.key, required this.run, required this.freshIds, this.companion, this.frame});
+  const RecapScreen(
+      {super.key, required this.run, required this.freshIds, this.records = const RunRecords(), this.companion, this.frame});
   final RunState run;
   final Set<int> freshIds;
+
+  /// Records battus pendant cette run (distance, ennemis).
+  final RunRecords records;
   final GameCard? companion;
 
   /// Cadre de cartes porté (Boutique).
@@ -40,11 +45,25 @@ class RecapScreen extends StatelessWidget {
                   spacing: 24,
                   children: [
                     _Stat(label: 'Durée', value: '${secs ~/ 60}:${(secs % 60).toString().padLeft(2, '0')}'),
-                    _Stat(label: 'Ennemis vaincus', value: '${run.kills}'),
+                    _Stat(label: 'Distance', value: '${run.distanceMeters} m', record: records.distance),
+                    _Stat(label: 'Ennemis vaincus', value: '${run.kills}', record: records.kills),
                     _Stat(label: 'Cartes', value: '${run.cards.length}'),
                     _Stat(label: 'Pièces', value: '+${run.coins}'),
+                    if (run.placesFound > 0) _Stat(label: run.placesFound > 1 ? 'Lieux' : 'Lieu', value: '${run.placesFound}'),
                   ],
                 ),
+                if (records.any) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    records.distance && records.kills
+                        ? 'Nouveaux records : distance et ennemis vaincus !'
+                        : records.distance
+                            ? 'Nouveau record de distance !'
+                            : 'Nouveau record d\'ennemis vaincus !',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.w900, fontSize: 16),
+                  ),
+                ],
                 const SizedBox(height: 24),
                 if (run.cards.isEmpty)
                   const Text('Aucune carte cette fois. Tue 10 ennemis ou trouve un coffre !',
@@ -80,15 +99,22 @@ class RecapScreen extends StatelessWidget {
 }
 
 class _Stat extends StatelessWidget {
-  const _Stat({required this.label, required this.value});
+  const _Stat({required this.label, required this.value, this.record = false});
   final String label;
   final String value;
+
+  /// Record battu : valeur en or avec une coupe.
+  final bool record;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
+        Row(mainAxisSize: MainAxisSize.min, children: [
+          if (record) const Icon(Icons.emoji_events, color: AppColors.gold, size: 20),
+          Text(value,
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: record ? AppColors.gold : Colors.white)),
+        ]),
         Text(label, style: const TextStyle(color: Colors.white60)),
       ],
     );

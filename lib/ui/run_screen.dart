@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../ads/ads.dart';
 import '../core/cards.dart';
+import '../core/collection.dart' show RunRecords;
 import '../core/config.dart';
 import '../core/run_state.dart';
 import '../game/collectear_game.dart';
@@ -82,12 +83,23 @@ class _RunScreenState extends State<RunScreen> {
     final col = widget.data.collection;
     final won = [for (final c in run.cards) (c.card.id, c.variantSeed)];
     final fresh = await col.addAll(won);
-    unawaited(Online.finishRun(_onlineRun, kills: run.kills, coins: run.coins, cards: won));
-    await col.recordRunResult(kills: run.kills, cards: run.cards.length);
+    // Records comparés au plus grand de l'appareil et du serveur (avant d'envoyer cette run).
+    final online = Online.user == null ? null : Online.stats;
+    final records = RunRecords.compare(
+      firstRun: col.totalRuns == 0 && (online?.runs ?? 0) == 0,
+      kills: run.kills,
+      bestKills: math.max(col.bestKills, online?.bestKills ?? 0),
+      distance: run.distanceMeters,
+      bestDistance: math.max(col.bestDistance, online?.bestDistance ?? 0),
+    );
+    unawaited(Online.finishRun(_onlineRun,
+        kills: run.kills, coins: run.coins, cards: won, distance: run.distanceMeters, places: run.placesFound));
+    await col.recordRunResult(
+        kills: run.kills, cards: run.cards.length, distance: run.distanceMeters, places: run.placesFound);
     await col.addCoins(run.coins);
     if (!mounted) return;
     Navigator.of(context).pushReplacement(MaterialPageRoute<void>(
-      builder: (_) => RecapScreen(run: run, freshIds: fresh, companion: widget.companion, frame: widget.data.collection.equippedFrame),
+      builder: (_) => RecapScreen(run: run, freshIds: fresh, records: records, companion: widget.companion, frame: widget.data.collection.equippedFrame),
     ));
   }
 

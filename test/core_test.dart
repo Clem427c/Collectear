@@ -725,6 +725,8 @@ void main() {
       expect(sqlConst('max_cards'), GameConfig.maxCardsPerRun);
       expect(sqlConst('max_side'), maxTradeSide);
       expect(sqlConst('max_wishes'), maxWishes);
+      expect(sqlConst('max_tiles_per_second'), GameConfig.maxTilesPerSecond);
+      expect(sqlConst('meters_per_tile'), GameConfig.metersPerTile.round());
       expect(sql, contains('check (cards between 0 and ${GameConfig.maxCardsPerRun})'));
       expect(sql, contains("display_name text not null default '$defaultPseudo'"));
       expect(sql, contains('char_length(display_name) between 1 and $maxPseudoLength'));
@@ -1253,6 +1255,85 @@ void main() {
       SharedPreferences.setMockInitialValues({'equipped_frame': 'royal'});
       final col = await Collection.load();
       expect(col.equippedFrame.id, CardFrames.defaultId);
+    });
+  });
+
+  group('Records d\'exploration', () {
+    test('distance : on garde la plus grande, en mètres arrondis à l\'inférieur', () {
+      final run = RunState(const RunRules());
+      run.trackDistance(10.7);
+      run.trackDistance(4);
+      run.trackDistance(double.nan);
+      expect(run.maxDistanceTiles, 10.7);
+      expect(run.distanceMeters, (10.7 * GameConfig.metersPerTile).floor());
+    });
+
+    test('distance et lieux figés une fois la run terminée', () {
+      final run = RunState(const RunRules());
+      run.registerPlace();
+      run.trackDistance(5);
+      run.tick(GameConfig.runDuration + 1);
+      run.registerPlace();
+      run.trackDistance(50);
+      expect(run.placesFound, 1);
+      expect(run.maxDistanceTiles, 5);
+    });
+
+    test('la vitesse du joueur reste sous le plafond du serveur', () {
+      final tilesPerSecond = GameConfig.playerSpeed * GameConfig.speedBoostMultiplier / GameConfig.tileSize;
+      expect(tilesPerSecond, lessThan(GameConfig.maxTilesPerSecond));
+      // Même en esquivant sans arrêt (esquive puis recharge), on reste dessous.
+      const dodgeCycle = GameConfig.dodgeDuration + GameConfig.dodgeCooldown;
+      final burst = (GameConfig.dodgeSpeed * GameConfig.dodgeDuration +
+              GameConfig.playerSpeed * GameConfig.speedBoostMultiplier * GameConfig.dodgeCooldown) /
+          dodgeCycle /
+          GameConfig.tileSize;
+      expect(burst, lessThan(GameConfig.maxTilesPerSecond));
+    });
+
+    test('nouveau record : seulement s\'il bat l\'ancien, jamais à la première run ni à zéro', () {
+      expect(RunRecords.compare(firstRun: true, kills: 9, bestKills: 0, distance: 90, bestDistance: 0).any, isFalse);
+      final r = RunRecords.compare(firstRun: false, kills: 5, bestKills: 5, distance: 120, bestDistance: 80);
+      expect(r.distance, isTrue);
+      expect(r.kills, isFalse);
+      expect(RunRecords.compare(firstRun: false, kills: 0, bestKills: 0, distance: 0, bestDistance: 0).any, isFalse);
+    });
+
+    test('profil de l\'appareil : record de distance et lieux cumulés', () async {
+      SharedPreferences.setMockInitialValues({});
+      final col = await Collection.load();
+      final first = await col.recordRunResult(kills: 4, cards: 1, distance: 150, places: 1);
+      expect(first.any, isFalse);
+      final second = await col.recordRunResult(kills: 2, cards: 2, distance: 210, places: 2);
+      expect(second.distance, isTrue);
+      expect(second.kills, isFalse);
+      await col.recordRunResult(kills: 0, cards: 0, distance: 30);
+      expect(col.bestDistance, 210);
+      expect(col.totalPlaces, 3);
+      expect(col.totalRuns, 3);
+    });
+
+    test('stats du serveur : nouvelles colonnes lues, absentes = 0, fusion par maximum', () {
+      final old = ProfileStats.fromRpc([
+        {'runs': 3, 'kills': 10, 'cards': 2, 'best_kills': 6},
+      ])!;
+      expect(old.bestDistance, 0);
+      expect(old.places, 0);
+      final neu = ProfileStats.fromRpc({'runs': 3, 'best_distance': 240, 'places': '4'})!;
+      expect(neu.bestDistance, 240);
+      expect(neu.places, 4);
+      final merged = const ProfileStats(bestDistance: 300, places: 1).merge(neu);
+      expect(merged.bestDistance, 300);
+      expect(merged.places, 4);
+    });
+
+    test('classement : record de distance connu seulement si le serveur l\'envoie', () {
+      final rows = LeaderboardEntry.fromRows([
+        {'user_id': 'a', 'display_name': 'A', 'species': 3, 'copies': 3, 'best_kills': 1, 'best_distance': 87},
+        {'user_id': 'b', 'display_name': 'B', 'species': 1, 'copies': 1, 'best_kills': 1},
+      ]);
+      expect(rows.first.bestDistance, 87);
+      expect(rows.last.bestDistance, isNull);
     });
   });
 }

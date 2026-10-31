@@ -21,6 +21,8 @@ class Collection {
   static const _kTotalKills = 'stat_kills';
   static const _kTotalCards = 'stat_cards';
   static const _kBestKills = 'stat_best_kills';
+  static const _kBestDistance = 'stat_best_distance'; // mètres
+  static const _kTotalPlaces = 'stat_places';
   static const _kFriendCode = 'friend_code';
   static const _kPseudo = 'pseudo';
   static const _kFavorites = 'favorites'; // "id:seed"
@@ -284,12 +286,26 @@ class Collection {
   int get totalKills => _prefs.getInt(_kTotalKills) ?? 0;
   int get totalCards => _prefs.getInt(_kTotalCards) ?? 0;
   int get bestKills => _prefs.getInt(_kBestKills) ?? 0;
+  int get bestDistance => _prefs.getInt(_kBestDistance) ?? 0;
+  int get totalPlaces => _prefs.getInt(_kTotalPlaces) ?? 0;
 
-  Future<void> recordRunResult({required int kills, required int cards}) async {
+  /// Enregistre la fin d'une run et renvoie les records battus (pour le récapitulatif).
+  /// Un record n'est « battu » que s'il y en avait déjà un (pas à la toute première run).
+  Future<RunRecords> recordRunResult({required int kills, required int cards, int distance = 0, int places = 0}) async {
+    final records = RunRecords.compare(
+      firstRun: totalRuns == 0,
+      kills: kills,
+      bestKills: bestKills,
+      distance: distance,
+      bestDistance: bestDistance,
+    );
     await _prefs.setInt(_kTotalRuns, totalRuns + 1);
     await _prefs.setInt(_kTotalKills, totalKills + kills);
     await _prefs.setInt(_kTotalCards, totalCards + cards);
+    await _prefs.setInt(_kTotalPlaces, totalPlaces + math.max(0, places));
     if (kills > bestKills) await _prefs.setInt(_kBestKills, kills);
+    if (distance > bestDistance) await _prefs.setInt(_kBestDistance, distance);
+    return records;
   }
 
   /// Pseudo affiché dans le Profil (et en ligne une fois connecté).
@@ -306,4 +322,27 @@ class Collection {
     _prefs.setString(_kFriendCode, code);
     return code;
   }
+}
+
+/// Records battus pendant une run (affichés dans le récapitulatif).
+class RunRecords {
+  const RunRecords({this.kills = false, this.distance = false});
+
+  final bool kills;
+  final bool distance;
+
+  bool get any => kills || distance;
+
+  /// Compare une run aux records précédents. Pas de « nouveau record » à la toute première run
+  /// (tout serait un record) ni pour une valeur nulle ; [best] peut venir du serveur (plus grand des deux).
+  static RunRecords compare({
+    required bool firstRun,
+    required int kills,
+    required int bestKills,
+    required int distance,
+    required int bestDistance,
+  }) =>
+      firstRun
+          ? const RunRecords()
+          : RunRecords(kills: kills > 0 && kills > bestKills, distance: distance > 0 && distance > bestDistance);
 }

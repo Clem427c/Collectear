@@ -202,6 +202,7 @@ class LeaderboardEntry {
     required this.species,
     required this.copies,
     required this.bestKills,
+    this.bestDistance,
   });
   final String userId;
   final String name;
@@ -211,6 +212,9 @@ class LeaderboardEntry {
   final int species;
   final int copies;
   final int bestKills;
+
+  /// Record de distance en une run (mètres) ; null si le serveur n'a pas encore le schéma du 31/10.
+  final int? bestDistance;
 
   /// Lit les lignes du serveur et les range : cartes différentes, puis exemplaires, puis pseudo.
   static List<LeaderboardEntry> fromRows(Iterable<dynamic> rows) {
@@ -224,6 +228,7 @@ class LeaderboardEntry {
             species: _int(r['species']) ?? 0,
             copies: _int(r['copies']) ?? 0,
             bestKills: _int(r['best_kills']) ?? 0,
+            bestDistance: _int(r['best_distance']),
           ),
     ];
     out.sort((a, b) {

@@ -27,6 +27,8 @@ class ProfileTab extends StatelessWidget {
       kills: col.totalKills,
       cards: col.totalCards,
       bestKills: col.bestKills,
+      bestDistance: col.bestDistance,
+      places: col.totalPlaces,
     ).merge(Online.user == null ? null : Online.stats);
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -72,6 +74,8 @@ class ProfileTab extends StatelessWidget {
             _StatBox(icon: Icons.sports_martial_arts, label: 'Ennemis vaincus', value: '${stats.kills}'),
             _StatBox(icon: Icons.style, label: 'Cartes gagnées', value: '${stats.cards}'),
             _StatBox(icon: Icons.emoji_events, label: 'Record de kills', value: '${stats.bestKills}'),
+            _StatBox(icon: Icons.straighten, label: 'Record de distance', value: '${stats.bestDistance} m'),
+            _StatBox(icon: Icons.account_balance, label: 'Lieux découverts', value: '${stats.places}'),
           ],
         ),
         const SectionTitle('Bestiaire par rareté'),

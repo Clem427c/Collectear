@@ -97,6 +97,9 @@ class CollectearGame extends FlameGame with KeyboardEvents {
   /// Dernière carte obtenue (animation dans le HUD).
   final ValueNotifier<CardInstance?> cardEvent = ValueNotifier(null);
 
+  /// Point de départ du joueur (centre de la première case) : référence du record de distance.
+  static final Vector2 _start = Vector2.all(GameConfig.tileSize / 2);
+
   /// La run est en cours : après le compte à rebours et avant la fin.
   bool get active => started && !run.isOver;
 
@@ -107,7 +110,7 @@ class CollectearGame extends FlameGame with KeyboardEvents {
   Future<void> onLoad() async {
     await DecorArt.load(images);
     world.add(TerrainComponent());
-    player = Player()..position = Vector2.all(GameConfig.tileSize / 2);
+    player = Player()..position = _start.clone();
     world.add(player);
     spawner = Spawner();
     world.add(spawner);
@@ -206,7 +209,10 @@ class CollectearGame extends FlameGame with KeyboardEvents {
   void update(double dt) {
     super.update(dt);
     if (countdown.value != null) _updateCountdown(dt);
-    if (started) run.tick(dt);
+    if (started) {
+      run.tick(dt);
+      run.trackDistance(player.position.distanceTo(_start) / GameConfig.tileSize);
+    }
     // Alerte des 15 dernières secondes : un seul son, au moment où le chrono passe en rouge.
     if (started && !_hurryPlayed && !run.isOver && run.remaining <= GameConfig.hurrySeconds) {
       _hurryPlayed = true;
@@ -319,6 +325,7 @@ class CollectearGame extends FlameGame with KeyboardEvents {
 
   void placeCompleted(PlaceComponent place) {
     spawner.consumed.add(place.spec.id);
+    run.registerPlace();
     world.add(Burst(position: place.position.clone(), color: const Color(0xFFFFB627), count: 22, speed: 170, life: 0.7));
     Sfx.play('chest');
     _earnCoins(Economy.coinsPerPlace, place.position);

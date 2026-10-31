@@ -141,19 +141,38 @@ bool needsPseudoChoice({required bool signedIn, required bool profileLoaded, req
 
 /// Statistiques du profil d'explorateur.
 class ProfileStats {
-  const ProfileStats({this.runs = 0, this.kills = 0, this.cards = 0, this.bestKills = 0});
+  const ProfileStats({
+    this.runs = 0,
+    this.kills = 0,
+    this.cards = 0,
+    this.bestKills = 0,
+    this.bestDistance = 0,
+    this.places = 0,
+  });
 
   final int runs;
   final int kills;
   final int cards;
   final int bestKills;
 
+  /// Record de distance au point de départ en une run (mètres) et lieux débloqués au total.
+  /// Absents d'un serveur pas encore à jour (schéma d'avant le 31/10) : 0.
+  final int bestDistance;
+  final int places;
+
   /// Lit la ligne renvoyée par la fonction serveur my_stats() (liste d'une ligne ou ligne seule).
   static ProfileStats? fromRpc(Object? data) {
     final row = data is List ? (data.isEmpty ? null : data.first) : data;
     if (row is! Map) return null;
     int n(String k) => switch (row[k]) { final int v => v, final num v => v.toInt(), final String v => int.tryParse(v) ?? 0, _ => 0 };
-    return ProfileStats(runs: n('runs'), kills: n('kills'), cards: n('cards'), bestKills: n('best_kills'));
+    return ProfileStats(
+      runs: n('runs'),
+      kills: n('kills'),
+      cards: n('cards'),
+      bestKills: n('best_kills'),
+      bestDistance: n('best_distance'),
+      places: n('places'),
+    );
   }
 
   /// Fusion appareil + serveur. Le serveur ne compte que les runs jouées connecté (depuis la
@@ -166,6 +185,8 @@ class ProfileStats {
           kills: kills > other.kills ? kills : other.kills,
           cards: cards > other.cards ? cards : other.cards,
           bestKills: bestKills > other.bestKills ? bestKills : other.bestKills,
+          bestDistance: bestDistance > other.bestDistance ? bestDistance : other.bestDistance,
+          places: places > other.places ? places : other.places,
         );
 }
 
