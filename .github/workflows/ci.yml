@@ -228,6 +228,46 @@ jobs:
           files: collectear.apk
           make_latest: true
 
+  android-smoke:
+    # Installe l'APK sur un émulateur Android, le lance et relève les plantages (journal logcat + capture).
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: collectear-apk
+      - name: Activer KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Lancer l'appli sur un émulateur (Android 14)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          script: |
+            adb install -r collectear.apk
+            adb logcat -c
+            adb shell monkey -p com.clem427c.collectear -c android.intent.category.LAUNCHER 1
+            sleep 40
+            adb exec-out screencap -p > android-lancement.png || true
+            adb logcat -d > logcat.txt || true
+            echo "=== Processus de l'appli ==="; adb shell pidof com.clem427c.collectear || echo "PAS EN COURS D'EXÉCUTION"
+            echo "=== Plantages (AndroidRuntime / FATAL) ==="; grep -E -A40 'FATAL EXCEPTION|AndroidRuntime: |Abort message|F DEBUG|F libc' logcat.txt | head -200 || true
+            echo "=== Flutter ==="; grep -E ' flutter ' logcat.txt | head -60 || true
+            if grep -q 'FATAL EXCEPTION' logcat.txt; then echo "::error::L'appli plante au lancement sur Android (voir le journal ci-dessus)"; exit 1; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-smoke
+          path: |
+            logcat.txt
+            android-lancement.png
+
   deploy:
     if: github.event_name != 'pull_request'
     needs: build
