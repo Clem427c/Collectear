@@ -4,6 +4,7 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
 
 ## Étape 1 – Prototype jouable (en cours)
 - [x] Projet Flutter + Flame, CI GitHub Actions (tests, build web + APK, Pages, release APK)
+- [x] CI : lancement de l'APK sur émulateur Android (détecte les plantages au démarrage) (31/10)
 - [x] Terrain infini procédural en niveaux de hauteur (seed par run)
 - [x] Joueur : déplacement (joystick / clavier), saut (+1 niveau), attaque, esquive
 - [x] Ennemis : corps à corps et tir à distance, attaques télégraphiées, restent sur leur niveau

@@ -1,5 +1,11 @@
 # Journal des versions
 
+## 0.19.1 – 31/10/2026 – correctif Android
+- APK : l'appli plantait au lancement (« l'application s'est arrêtée »). L'optimiseur du build release (R8)
+  retirait la base interne de WorkManager (embarqué par les pubs Google) ; règles de conservation ajoutées.
+- CI : nouveau test qui installe l'APK sur un émulateur Android 14, le lance et échoue si l'appli plante
+  (journal logcat et capture en artefact), pour ne plus livrer un APK cassé sans le voir.
+
 ## 0.19.0 – 31/10/2026 – liste de souhaits
 - Social → Amis : « Mes souhaits » (30 cartes au plus, provisoire), la liste des cartes que je cherche,
   visible par tous mes amis. Toucher une carte la retire.
