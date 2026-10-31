@@ -81,10 +81,14 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
 - [x] Profil d'un ami : progression par rareté, sa collection en grille (filtres « il a, pas toi »,
   « ses doublons »), demander une carte directement depuis son profil (28/10)
 - [x] Pastille Social dans la barre du bas, amis et échanges rechargés toutes les 90 s (28/10)
+- [x] Liste de souhaits partagée (GDD) (P) : 30 cartes au plus, ajoutées depuis le profil d'un ami ; ses
+  souhaits sur son profil (ceux que je peux lui donner d'abord, échange prérempli), filtre « Mes souhaits » (31/10)
+- [ ] **Clem** : recoller `supabase/schema.sql` pour la liste de souhaits (sans ça, ajouter un souhait affiche
+  « le serveur n'est pas encore à jour »)
 - [ ] Notifications d'échange (push) — plus tard
 - [ ] **Prochaine session** : traiter les réponses de Clem (hors ligne, pseudos, collisions, énergies, pubs,
   skins, cadres, gros mots) ; sinon synchro en ligne des pièces, skins et cadres (si Clem dit oui). Cadres de
-  cartes et filtre des pseudos faits le 30/10. Sans réponse : rien d'autre ne peut avancer sans décision de
+  cartes et filtre des pseudos faits le 30/10, liste de souhaits le 31/10. Sans réponse : rien d'autre ne peut avancer sans décision de
   Clem ou action de sa part.
 
 ## Étape 4 – Monétisation
@@ -245,6 +249,14 @@ Priorité basse (à toi de juger) :
 ### Recherche de cartes (30/10)
 - PROVISOIRE : dans le bestiaire, une carte pas encore obtenue (« ??? ») n'est pas trouvée par son nom,
   pour ne pas dévoiler les noms cachés ; par son numéro, si. Préfères-tu que le nom la trouve aussi ?
+
+### Liste de souhaits (31/10)
+- PROVISOIRE : 30 cartes au plus. Une carte s'ajoute depuis le profil d'un ami (toucher une de ses cartes →
+  « Ajouter à mes souhaits ») ; pas depuis le bestiaire, pour ne pas dévoiler le nom des cartes « ??? ».
+  Faut-il pouvoir souhaiter une carte « ??? » du bestiaire (par son numéro, nom caché) ?
+- PROVISOIRE : un souhait reste dans la liste quand on obtient la carte (on peut chercher une autre variante) ;
+  on le retire à la main. Préfères-tu qu'il disparaisse tout seul dès qu'on a la carte ?
+- La liste est en ligne seulement (il faut être connecté), visible par tous ses amis.
 
 ### Illustrations (suite)
 Remarque : les 4 bûcherons (035 Hugo, 065 Pio, 070 Milo, 079 Anatole) se ressemblent beaucoup

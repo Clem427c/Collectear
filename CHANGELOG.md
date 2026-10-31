@@ -1,5 +1,15 @@
 # Journal des versions
 
+## 0.19.0 – 31/10/2026 – liste de souhaits
+- Social → Amis : « Mes souhaits » (30 cartes au plus, provisoire), la liste des cartes que je cherche,
+  visible par tous mes amis. Toucher une carte la retire.
+- Profil d'un ami : toucher une de ses cartes → « Ajouter à mes souhaits ». En haut du profil, « Ses
+  souhaits » : d'abord les cartes que je peux lui donner (« Tu en as 2 »), et toucher l'une d'elles ouvre
+  un échange avec mon exemplaire déjà choisi (le moins rare en apparence, jamais un favori). Nouveau filtre
+  « Mes souhaits » : ses cartes parmi celles que je cherche.
+- Serveur : table `wishlist` (RLS, aucune écriture directe) et fonctions `set_wish`, `my_wishlist`,
+  `friend_wishlist` (vide si on n'est pas amis), testées en CI sur PostgreSQL. À recoller par Clem.
+
 ## 0.18.0 – 30/10/2026 (après-midi) – recherche de cartes
 - Bestiaire : champ « Rechercher une carte » au-dessus des filtres. Par nom, sans se soucier des
   majuscules ni des accents, mots dans n'importe quel ordre (« forgeronne gaia »), ou par numéro
