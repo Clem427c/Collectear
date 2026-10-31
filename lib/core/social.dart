@@ -3,6 +3,7 @@
 library;
 
 import 'cards.dart';
+import 'wishlist.dart';
 
 /// Alphabet des codes ami (sans 0/O ni 1/I), comme public.new_friend_code() côté serveur.
 const String friendCodeAlphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -44,6 +45,8 @@ String socialErrorMessage(String message) {
     'trop_propositions': 'Trop de propositions en attente : attends des réponses ou annules-en.',
     'deja_propose': 'Tu as déjà proposé cet échange.',
     'echange_inconnu': 'Cet échange n\'est plus en attente.',
+    'trop_souhaits': 'Ta liste de souhaits est pleine ($maxWishes cartes) : retires-en une d\'abord.',
+    'carte_inconnue': 'Cette carte n\'existe pas.',
   };
   for (final e in known.entries) {
     if (message.contains(e.key)) return e.value;
@@ -244,17 +247,20 @@ List<int> leaderboardRanks(List<LeaderboardEntry> entries) {
 }
 
 /// Filtres de la collection d'un ami.
-enum FriendCardFilter { all, iLack, duplicates }
+enum FriendCardFilter { all, iLack, duplicates, myWishes }
 
 extension FriendCardFilterInfo on FriendCardFilter {
-  String get label => const ['Toutes', 'Il a, pas toi', 'Ses doublons'][index];
+  String get label => const ['Toutes', 'Il a, pas toi', 'Ses doublons', 'Mes souhaits'][index];
 }
 
 /// Collection d'un ami vue depuis son profil : regroupée par espèce, comparée à la mienne.
 class FriendCollection {
   /// [cards] : exemplaires de l'ami (fonction serveur friend_cards) ; [mine] : mes quantités par carte.
   /// Les cartes inconnues du jeu (id hors du classeur) sont ignorées.
-  FriendCollection(Iterable<ServerCard> cards, this.pool, Map<int, int> mine) : _mine = Map.unmodifiable(mine) {
+  /// [myWishes] : ma liste de souhaits (filtre « Mes souhaits » : ce qu'il a parmi ce que je cherche).
+  FriendCollection(Iterable<ServerCard> cards, this.pool, Map<int, int> mine, {Iterable<int> myWishes = const []})
+      : _mine = Map.unmodifiable(mine),
+        _wishes = Set.unmodifiable(myWishes) {
     for (final c in cards) {
       if (pool.byId(c.cardId) == null) continue;
       bySpecies.putIfAbsent(c.cardId, () => []).add(c);
@@ -263,6 +269,7 @@ class FriendCollection {
 
   final CardPool pool;
   final Map<int, int> _mine;
+  final Set<int> _wishes;
 
   /// Exemplaires de l'ami par espèce (id de carte).
   final Map<int, List<ServerCard>> bySpecies = {};
@@ -289,6 +296,7 @@ class FriendCollection {
         FriendCardFilter.all => true,
         FriendCardFilter.iLack => (_mine[id] ?? 0) == 0,
         FriendCardFilter.duplicates => bySpecies[id]!.length > 1,
+        FriendCardFilter.myWishes => _wishes.contains(id),
       };
 
   /// Espèces à afficher pour un filtre : de la plus rare à la plus commune, puis par nom.

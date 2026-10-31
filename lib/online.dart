@@ -8,6 +8,7 @@ import 'core/cloud_sync.dart';
 import 'core/collection.dart';
 import 'core/online_config.dart';
 import 'core/social.dart';
+import 'core/wishlist.dart';
 
 /// État de la synchronisation de la collection, affiché dans le Profil.
 enum SyncState { idle, syncing, done, error }
@@ -128,6 +129,7 @@ class Online {
     } catch (e) {
       debugPrint('Déconnexion : $e');
     }
+    wishes = const [];
     _bump();
   }
 
@@ -179,6 +181,8 @@ class Online {
       if (plan.toAddLocally.isNotEmpty) await col.addAll(plan.toAddLocally);
       step = 'favoris';
       await _syncFavorites(col);
+      // Liste de souhaits : sans effet si la base n'est pas encore à jour (fonction absente).
+      await loadWishes();
       onlineCount = remote.toSet().length + plan.toUpload.length;
       syncState = SyncState.done;
     } catch (e) {
@@ -379,6 +383,48 @@ class Online {
   static Future<(List<Trade>?, String?)> myTrades() async {
     try {
       return (Trade.fromRows(await _call<List<dynamic>>('my_trades')), null);
+    } catch (e) {
+      return (null, _socialMessage(e));
+    }
+  }
+
+  // --- Liste de souhaits ---
+
+  /// Ma liste de souhaits telle que lue sur le serveur (vide tant qu'elle n'est pas chargée).
+  static List<int> wishes = const [];
+
+  /// Recharge ma liste de souhaits. Renvoie un message d'erreur, ou null.
+  static Future<String?> loadWishes() async {
+    if (user == null) return null;
+    try {
+      wishes = wishesFromRows(await _call<List<dynamic>>('my_wishlist'));
+      _bump();
+      return null;
+    } catch (e) {
+      return _socialMessage(e);
+    }
+  }
+
+  /// Ajoute ou retire une carte de ma liste de souhaits. Renvoie un message d'erreur, ou null.
+  static Future<String?> setWish(int cardId, bool wish) async {
+    if (user == null) return 'Connecte-toi (⚙ → Compte) pour tenir une liste de souhaits.';
+    if (wish && !wishes.contains(cardId) && wishes.length >= maxWishes) {
+      return socialErrorMessage('trop_souhaits');
+    }
+    try {
+      await _call<dynamic>('set_wish', {'p_card': cardId, 'p_wish': wish});
+      wishes = wish ? [cardId, ...wishes.where((id) => id != cardId)] : [for (final id in wishes) if (id != cardId) id];
+      _bump();
+      return null;
+    } catch (e) {
+      return _socialMessage(e);
+    }
+  }
+
+  /// Liste de souhaits d'un ami (null + message si impossible).
+  static Future<(List<int>?, String?)> wishesOf(String userId) async {
+    try {
+      return (wishesFromRows(await _call<List<dynamic>>('friend_wishlist', {'p_friend': userId})), null);
     } catch (e) {
       return (null, _socialMessage(e));
     }

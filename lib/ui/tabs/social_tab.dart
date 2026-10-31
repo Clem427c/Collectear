@@ -8,11 +8,13 @@ import '../../core/card_search.dart';
 import '../../core/cards.dart';
 import '../../core/social.dart';
 import '../../core/variants.dart';
+import '../../core/wishlist.dart';
 import '../../online.dart';
 import '../account_panel.dart';
 import '../friend_profile_screen.dart';
 import '../theme.dart';
 import '../widgets.dart';
+import '../wish_strip.dart';
 
 const _onlineNote = 'Prototype : le format des combats reste à définir.';
 const _panel = Color(0xFF3A2D86);
@@ -370,6 +372,10 @@ class _FriendsViewState extends State<_FriendsView> {
                     ),
                   ],
                 ),
+              ValueListenableBuilder<int>(
+                valueListenable: Online.revision,
+                builder: (context, _, __) => _MyWishes(data: widget.data),
+              ),
               if (friends.isNotEmpty && m.leaderboard.length > 1) ...[
                 const SectionTitle('Classement entre amis'),
                 _Leaderboard(
@@ -412,6 +418,58 @@ class _FriendsViewState extends State<_FriendsView> {
           trailing: Row(mainAxisSize: MainAxisSize.min, children: actions),
         ),
       );
+}
+
+/// Ma liste de souhaits, visible par mes amis : toucher une carte la retire.
+class _MyWishes extends StatelessWidget {
+  const _MyWishes({required this.data});
+  final AppData data;
+
+  Future<void> _remove(BuildContext context, GameCard card) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.night,
+        title: Text('Retirer ${card.name} ?', style: const TextStyle(color: Colors.white)),
+        content: const Text('Tes amis ne la verront plus dans tes souhaits.', style: TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annuler')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Retirer')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    final err = await Online.setWish(card.id, false);
+    if (context.mounted) _snack(context, err ?? '${card.name} retirée de tes souhaits.', error: err != null);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final wishes = sortedWishes(Online.wishes, data.pool);
+    final owned = data.collection.owned;
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      SectionTitle('Mes souhaits (${wishes.length}/$maxWishes)'),
+      if (wishes.isEmpty)
+        const Text(
+          'Ouvre le profil d\'un ami, touche une carte que tu cherches puis « Ajouter à mes souhaits » : '
+          'tous tes amis la verront.',
+          style: TextStyle(color: Colors.white60),
+        )
+      else ...[
+        const Text('Tes amis voient cette liste. Touche une carte pour la retirer.',
+            style: TextStyle(color: Colors.white60, fontSize: 12)),
+        const SizedBox(height: 8),
+        WishStrip(
+          items: [
+            for (final c in wishes)
+              WishItem(c, (owned[c.id] ?? 0) > 0 ? 'Tu en as ${owned[c.id]}' : 'Pas encore',
+                  (owned[c.id] ?? 0) > 0 ? AppColors.teal : Colors.white54),
+          ],
+          onTap: (c) => _remove(context, c),
+        ),
+      ],
+    ]);
+  }
 }
 
 /// Classement : moi et mes amis, par nombre de cartes différentes.
@@ -656,10 +714,12 @@ class _TradeTileState extends State<_TradeTile> {
 
 /// Ouvre l'écran de composition d'un échange avec [friend].
 /// [request] : carte de l'ami déjà choisie (depuis son profil).
+/// [offerCardId] : carte que je lui propose (un de ses souhaits) ; un de mes exemplaires est présélectionné.
 Future<void> openTradeComposer(BuildContext context, AppData data, Friend friend, Future<void> Function() onSent,
-        {ServerCard? request}) =>
+        {ServerCard? request, int? offerCardId}) =>
     Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (_) => _TradeComposer(data: data, friend: friend, onSent: onSent, request: request),
+      builder: (_) =>
+          _TradeComposer(data: data, friend: friend, onSent: onSent, request: request, offerCardId: offerCardId),
     ));
 
 /// Ouvre le profil d'un ami (sa collection en détail), d'où l'on peut lancer un échange.
@@ -671,15 +731,18 @@ Future<void> openFriendProfile(BuildContext context, AppData data, Friend friend
         friend: friend,
         bestKills: bestKills,
         onTrade: (request) => openTradeComposer(ctx, data, friend, onSent, request: request),
+        onOffer: (cardId) => openTradeComposer(ctx, data, friend, onSent, offerCardId: cardId),
       ),
     ));
 
 class _TradeComposer extends StatefulWidget {
-  const _TradeComposer({required this.data, required this.friend, required this.onSent, this.request});
+  const _TradeComposer(
+      {required this.data, required this.friend, required this.onSent, this.request, this.offerCardId});
   final AppData data;
   final Friend friend;
   final Future<void> Function() onSent;
   final ServerCard? request;
+  final int? offerCardId;
 
   @override
   State<_TradeComposer> createState() => _TradeComposerState();
@@ -714,6 +777,17 @@ class _TradeComposerState extends State<_TradeComposer> {
       final req = widget.request;
       final found = req == null ? null : theirs?.where((c) => c.rowId == req.rowId && !c.favorite).firstOrNull;
       if (found != null && _get.isEmpty) _get = [found];
+      // Carte proposée depuis ses souhaits : mon exemplaire le moins rare en apparence (hors favoris).
+      final offer = widget.offerCardId;
+      if (offer != null && _give.isEmpty) {
+        final pool = widget.data.pool;
+        final copies = (mine ?? const <ServerCard>[]).where((c) => c.cardId == offer && !c.favorite).toList();
+        if (copies.isNotEmpty && pool.byId(offer) != null) {
+          int stars(ServerCard c) => CardInstance(pool.byId(offer)!, c.seed).variant.stars;
+          copies.sort((a, b) => stars(a).compareTo(stars(b)));
+          _give = [copies.first];
+        }
+      }
     });
   }
 

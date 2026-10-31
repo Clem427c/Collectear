@@ -165,6 +165,38 @@ select pg_temp.check((select status from public.trades where id = :t4) = 'cancel
 select pg_temp.check((select count(*) from public.list_friends()) = 0, 'ami retiré');
 select pg_temp.check((select count(*) from public.friends_leaderboard()) = 1, 'classement : ancien ami retiré');
 
+-- Liste de souhaits : A et C ne sont pas amis ; A et B ne le sont plus. On refait A ↔ B amis.
+select pg_temp.check((select public.set_wish(12::smallint, true)) = 1, 'souhait : ajouté');
+select pg_temp.check((select public.set_wish(12::smallint, true)) = 1, 'souhait : pas de doublon');
+select pg_temp.check(pg_temp.fails('select public.set_wish(301::smallint, true)'), 'souhait : carte inconnue refusée');
+select pg_temp.check(pg_temp.fails('insert into public.wishlist (user_id, card_id) values (auth.uid(), 5)'), 'souhait : pas d''ajout direct');
+select pg_temp.check(pg_temp.fails('delete from public.wishlist'), 'souhait : pas de suppression directe');
+select count(*) from (select public.set_wish(i::smallint, true) from generate_series(100, 128) i) s;
+select pg_temp.check((select count(*) from public.my_wishlist()) = 30, 'souhaits : 30 cartes');
+select pg_temp.check(pg_temp.fails('select public.set_wish(200::smallint, true)'), 'souhaits : 31e refusée');
+select pg_temp.check((select public.set_wish(12::smallint, true)) = 30, 'souhaits : carte déjà présente acceptée quand la liste est pleine');
+select pg_temp.check((select public.set_wish(100::smallint, false)) = 29, 'souhait : retiré');
+select pg_temp.check((select count(*) from public.friend_wishlist('22222222-2222-2222-2222-222222222222')) = 0
+                     , 'souhaits : rien chez un non-ami');
+select set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', false);
+select pg_temp.check((select count(*) from public.friend_wishlist('11111111-1111-1111-1111-111111111111')) = 0
+                     and (select count(*) from public.wishlist) = 0, 'souhaits : invisibles pour un non-ami');
+select public.add_friend(:'code_a');
+select set_config('request.jwt.claim.sub', '11111111-1111-1111-1111-111111111111', false);
+select public.respond_friend('22222222-2222-2222-2222-222222222222', true);
+select set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', false);
+select pg_temp.check((select count(*) from public.friend_wishlist('11111111-1111-1111-1111-111111111111')) = 29
+                     and exists (select 1 from public.friend_wishlist('11111111-1111-1111-1111-111111111111') where card_id = 12),
+                     'souhaits : visibles par un ami');
+select set_config('request.jwt.claim.sub', '33333333-3333-3333-3333-333333333333', false);
+select pg_temp.check((select count(*) from public.friend_wishlist('11111111-1111-1111-1111-111111111111')) = 0, 'souhaits : C ne voit rien');
+reset role;
+set role anon;
+select pg_temp.check(pg_temp.fails('select public.set_wish(1::smallint, true)'), 'souhait : anonyme refusé');
+reset role;
+set role authenticated;
+select set_config('request.jwt.claim.sub', '11111111-1111-1111-1111-111111111111', false);
+
 -- C ne voit aucun échange des autres.
 select set_config('request.jwt.claim.sub', '33333333-3333-3333-3333-333333333333', false);
 select pg_temp.check((select count(*) from public.trades) = 0 and (select count(*) from public.my_trades()) = 0, 'échanges des autres invisibles');

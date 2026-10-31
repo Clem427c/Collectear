@@ -21,6 +21,7 @@ import 'package:collectear/core/settings.dart';
 import 'package:collectear/core/social.dart';
 import 'package:collectear/core/terrain.dart';
 import 'package:collectear/core/variants.dart';
+import 'package:collectear/core/wishlist.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -723,6 +724,7 @@ void main() {
       expect(sqlConst('max_ad_runs_per_day'), GameConfig.adBonusRunsPerDay);
       expect(sqlConst('max_cards'), GameConfig.maxCardsPerRun);
       expect(sqlConst('max_side'), maxTradeSide);
+      expect(sqlConst('max_wishes'), maxWishes);
       expect(sql, contains('check (cards between 0 and ${GameConfig.maxCardsPerRun})'));
       expect(sql, contains("display_name text not null default '$defaultPseudo'"));
       expect(sql, contains('char_length(display_name) between 1 and $maxPseudoLength'));
@@ -731,7 +733,7 @@ void main() {
 
     test('RLS activé sur toutes les tables', () {
       final tables = RegExp(r'create table if not exists public\.(\w+)').allMatches(sql).map((m) => m.group(1)!).toList();
-      expect(tables, containsAll(['profiles', 'owned_cards', 'runs', 'friendships', 'trades', 'traded_away']));
+      expect(tables, containsAll(['profiles', 'owned_cards', 'runs', 'friendships', 'trades', 'traded_away', 'wishlist']));
       for (final t in tables) {
         expect(sql, contains('alter table public.$t enable row level security'), reason: t);
       }
@@ -890,6 +892,62 @@ void main() {
       expect(fc.species, 0);
       expect(fc.copies, 0);
       expect(fc.cards(FriendCardFilter.all), isEmpty);
+    });
+  });
+
+  group('Liste de souhaits', () {
+    test('lecture du serveur : identifiants valides, sans doublon, ordre conservé', () {
+      expect(
+          wishesFromRows([
+            {'card_id': 12},
+            {'card_id': '7'},
+            {'card_id': 12.0},
+            {'card_id': null},
+            {'card_id': 0},
+            'n_importe_quoi',
+            {'card_id': 300},
+          ]),
+          [12, 7, 300]);
+      expect(wishesFromRows(const []), isEmpty);
+    });
+
+    test('ajout, retrait, liste pleine', () {
+      expect(toggleWish([], 5), [5]);
+      expect(toggleWish([5, 6], 5), [6]);
+      final full = [for (var i = 1; i <= maxWishes; i++) i];
+      expect(toggleWish(full, 999), isNull, reason: 'liste pleine');
+      expect(toggleWish(full, 1)!.length, maxWishes - 1, reason: 'on peut toujours retirer');
+      expect(maxWishes, inInclusiveRange(10, 100));
+    });
+
+    test('souhaits d\'un ami : ce que je peux donner d\'abord, favoris exclus', () {
+      final pool = _pool();
+      final legend = pool.cards.firstWhere((c) => c.rarity == Rarity.legendaire);
+      final common = pool.cards.firstWhere((c) => c.rarity == Rarity.commune);
+      final rare = pool.cards.firstWhere((c) => c.rarity == Rarity.rare);
+      final epic = pool.cards.firstWhere((c) => c.rarity == Rarity.epique);
+      final m = matchWishes([legend.id, common.id, rare.id, epic.id, 9999, common.id], pool,
+          {common.id: 2, rare.id: 1, epic.id: 1}, myFavorites: {rare.id: 1, epic.id: 3});
+      expect(m.map((w) => w.card.id), [common.id, legend.id, epic.id, rare.id]);
+      expect(m.first.giveable, 2);
+      expect(m.first.canGive, isTrue);
+      final r = m.firstWhere((w) => w.card.id == rare.id);
+      expect((r.owned, r.giveable, r.canGive), (1, 0, false), reason: 'mon seul exemplaire est en favori');
+      expect(m.firstWhere((w) => w.card.id == epic.id).giveable, 0, reason: 'jamais négatif');
+      expect(m.firstWhere((w) => w.card.id == legend.id).owned, 0);
+    });
+
+    test('mes souhaits triés par rareté ; filtre « Mes souhaits » chez un ami', () {
+      final pool = _pool();
+      final legend = pool.cards.firstWhere((c) => c.rarity == Rarity.legendaire);
+      final common = pool.cards.firstWhere((c) => c.rarity == Rarity.commune);
+      expect(sortedWishes([common.id, 9999, legend.id], pool).map((c) => c.id), [legend.id, common.id]);
+      final fc = FriendCollection([ServerCard(1, common.id, 1), ServerCard(2, legend.id, 2)], pool, const {},
+          myWishes: [legend.id]);
+      expect(fc.cards(FriendCardFilter.myWishes).map((c) => c.id), [legend.id]);
+      expect(FriendCollection(fc.bySpecies.values.expand((l) => l), pool, const {}).cards(FriendCardFilter.myWishes),
+          isEmpty);
+      expect(socialErrorMessage('P0001: trop_souhaits'), contains('$maxWishes'));
     });
   });
 

@@ -5,10 +5,12 @@ import '../core/card_search.dart';
 import '../core/cards.dart';
 import '../core/social.dart';
 import '../core/variants.dart';
+import '../core/wishlist.dart';
 import '../online.dart';
 import 'card_detail_screen.dart';
 import 'theme.dart';
 import 'widgets.dart';
+import 'wish_strip.dart';
 
 const _panel = Color(0xFF3A2D86);
 
@@ -20,11 +22,15 @@ class FriendProfileScreen extends StatefulWidget {
     required this.data,
     required this.friend,
     required this.onTrade,
+    this.onOffer,
     this.bestKills,
   });
   final AppData data;
   final Friend friend;
   final void Function(ServerCard? request) onTrade;
+
+  /// Ouvre un échange où je propose un de mes exemplaires de cette carte (souhait de l'ami).
+  final void Function(int cardId)? onOffer;
 
   /// Record d'ennemis vaincus en une run (classement), s'il est connu.
   final int? bestKills;
@@ -35,6 +41,8 @@ class FriendProfileScreen extends StatefulWidget {
 
 class _FriendProfileScreenState extends State<FriendProfileScreen> {
   FriendCollection? _col;
+  List<ServerCard> _cards = const [];
+  List<int> _theirWishes = const [];
   String? _error;
   FriendCardFilter _filter = FriendCardFilter.all;
   String _query = '';
@@ -48,11 +56,87 @@ class _FriendProfileScreenState extends State<FriendProfileScreen> {
 
   Future<void> _load() async {
     final (cards, err) = await Online.cardsOf(widget.friend.userId);
+    // Liste de souhaits : absente tant que Clem n'a pas recollé le schéma (pas d'erreur affichée).
+    final (wishes, _) = await Online.wishesOf(widget.friend.userId);
     if (!mounted) return;
     setState(() {
       _error = err;
-      _col = FriendCollection(cards ?? const [], widget.data.pool, widget.data.collection.owned);
+      _cards = cards ?? const [];
+      _theirWishes = wishes ?? const [];
+      _rebuild();
     });
+  }
+
+  void _rebuild() =>
+      _col = FriendCollection(_cards, widget.data.pool, widget.data.collection.owned, myWishes: Online.wishes);
+
+  Future<void> _toggleWish(GameCard card) async {
+    final wished = Online.wishes.contains(card.id);
+    final err = await Online.setWish(card.id, !wished);
+    if (!mounted) return;
+    setState(_rebuild);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        backgroundColor: err != null ? AppColors.coral : AppColors.night,
+        content: Text(
+          err ?? (wished ? '${card.name} retirée de tes souhaits.' : '${card.name} ajoutée à tes souhaits : tes amis la verront.'),
+          style: const TextStyle(color: Colors.white),
+        ),
+      ));
+  }
+
+  /// Mes exemplaires en favori, par carte (ils ne peuvent pas être donnés).
+  Map<int, int> get _myFavorites {
+    final m = <int, int>{};
+    for (final (id, _) in widget.data.collection.favorites) {
+      m[id] = (m[id] ?? 0) + 1;
+    }
+    return m;
+  }
+
+  /// Souhaits de l'ami : ceux que je peux lui donner d'abord.
+  Widget _theirWishList() {
+    final matches = matchWishes(_theirWishes, widget.data.pool, widget.data.collection.owned, myFavorites: _myFavorites);
+    final canGive = matches.where((m) => m.canGive).length;
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      SectionTitle('Ses souhaits (${matches.length})'),
+      Text(
+        canGive == 0
+            ? 'Tu n\'as encore aucune des cartes qu\'il cherche.'
+            : 'Tu peux lui en proposer $canGive : touche une carte que tu as pour lancer l\'échange.',
+        style: const TextStyle(color: Colors.white60, fontSize: 12),
+      ),
+      const SizedBox(height: 8),
+      WishStrip(
+        items: [
+          for (final m in matches)
+            WishItem(
+              m.card,
+              m.canGive ? 'Tu en as ${m.giveable}' : (m.owned > 0 ? 'Tes favoris' : 'Tu ne l\'as pas'),
+              m.canGive ? AppColors.teal : Colors.white38,
+            ),
+        ],
+        onTap: (card) {
+          final m = matches.firstWhere((m) => m.card.id == card.id);
+          if (m.canGive && widget.onOffer != null) {
+            widget.onOffer!(card.id);
+          } else {
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(SnackBar(
+                backgroundColor: AppColors.night,
+                content: Text(
+                  m.owned > 0
+                      ? 'Tes exemplaires de ${card.name} sont en favori : retire-les des favoris pour l\'échanger.'
+                      : 'Tu n\'as pas encore ${card.name}.',
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ));
+          }
+        },
+      ),
+    ]);
   }
 
   /// Exemplaires de l'ami pour une carte : on peut les regarder ou en demander un.
@@ -111,6 +195,22 @@ class _FriendProfileScreenState extends State<FriendProfileScreen> {
               ),
             ),
             const Text('Touche une carte pour la voir en grand.', style: TextStyle(color: Colors.white54, fontSize: 12)),
+            const SizedBox(height: 6),
+            StatefulBuilder(builder: (ctx, setSheet) {
+              final wished = Online.wishes.contains(card.id);
+              return OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: wished ? AppColors.coral : Colors.white,
+                  side: BorderSide(color: wished ? AppColors.coral : Colors.white38),
+                ),
+                onPressed: () async {
+                  await _toggleWish(card);
+                  setSheet(() {});
+                },
+                icon: Icon(wished ? Icons.favorite : Icons.favorite_border),
+                label: Text(wished ? 'Dans mes souhaits' : 'Ajouter à mes souhaits'),
+              );
+            }),
           ]),
         ),
       ),
@@ -149,6 +249,7 @@ class _FriendProfileScreenState extends State<FriendProfileScreen> {
                         child: Text(_error!, style: const TextStyle(color: AppColors.coral)),
                       ),
                     _header(col),
+                    if (_theirWishes.isNotEmpty) _theirWishList(),
                     const SectionTitle('Progression par rareté'),
                     _rarities(col),
                     const SizedBox(height: 14),
@@ -158,7 +259,9 @@ class _FriendProfileScreenState extends State<FriendProfileScreen> {
                           label: Text(switch (flt) {
                             FriendCardFilter.all => '${flt.label} (${col.species})',
                             FriendCardFilter.iLack => '${flt.label} (${col.iLackCount})',
-                            FriendCardFilter.duplicates => '${flt.label} (${col.cards(flt).length})',
+                            FriendCardFilter.duplicates ||
+                            FriendCardFilter.myWishes =>
+                              '${flt.label} (${col.cards(flt).length})',
                           }),
                           selected: _filter == flt,
                           onSelected: (_) => setState(() => _filter = flt),
@@ -281,6 +384,9 @@ class _FriendProfileScreenState extends State<FriendProfileScreen> {
               FriendCardFilter.all => '${widget.friend.name} n\'a pas encore de cartes en ligne.',
               FriendCardFilter.iLack => 'Tu as déjà toutes ses cartes !',
               FriendCardFilter.duplicates => 'Pas de doublons pour l\'instant.',
+              FriendCardFilter.myWishes => Online.wishes.isEmpty
+                  ? 'Ta liste de souhaits est vide : touche une de ses cartes, puis « Ajouter à mes souhaits ».'
+                  : 'Il n\'a aucune des cartes que tu souhaites.',
             },
             textAlign: TextAlign.center,
             style: const TextStyle(color: Colors.white60),

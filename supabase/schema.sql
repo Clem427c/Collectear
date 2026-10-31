@@ -622,6 +622,74 @@ grant execute on function
   to authenticated;
 
 -- ---------------------------------------------------------------------------
+-- Liste de souhaits (GDD) : les cartes que je cherche, visibles par mes amis.
+-- Aucune écriture directe : tout passe par set_wish. PROVISOIRE : 30 cartes au plus.
+-- ---------------------------------------------------------------------------
+create table if not exists public.wishlist (
+  user_id    uuid not null references auth.users (id) on delete cascade,
+  card_id    smallint not null check (card_id between 1 and 300),
+  created_at timestamptz not null default now(),
+  primary key (user_id, card_id)
+);
+
+alter table public.wishlist enable row level security;
+
+drop policy if exists "souhaits : lecture des siens" on public.wishlist;
+create policy "souhaits : lecture des siens" on public.wishlist
+  for select to authenticated using ((select auth.uid()) = user_id);
+
+revoke insert, update, delete, truncate on public.wishlist from authenticated, anon;
+
+-- Ajoute (p_wish = true) ou retire une carte de ma liste. Renvoie le nombre de cartes de la liste.
+create or replace function public.set_wish(p_card smallint, p_wish boolean) returns int
+language plpgsql volatile security definer set search_path = '' as $$
+declare
+  uid uuid := auth.uid();
+  max_wishes constant int := 30;
+  n int;
+begin
+  if uid is null then raise exception 'non connecté' using errcode = '28000'; end if;
+  if p_card is null or p_card not between 1 and 300 then
+    raise exception 'carte_inconnue' using errcode = 'P0001';
+  end if;
+  if p_wish then
+    -- Verrou par joueur : deux ajouts simultanés ne dépassent pas la limite.
+    perform pg_advisory_xact_lock(hashtext('wishlist:' || uid::text));
+    if not exists (select 1 from public.wishlist w where w.user_id = uid and w.card_id = p_card) then
+      if (select count(*) from public.wishlist w where w.user_id = uid) >= max_wishes then
+        raise exception 'trop_souhaits' using errcode = 'P0001';
+      end if;
+      insert into public.wishlist (user_id, card_id) values (uid, p_card);
+    end if;
+  else
+    delete from public.wishlist w where w.user_id = uid and w.card_id = p_card;
+  end if;
+  select count(*) into n from public.wishlist w where w.user_id = uid;
+  return n;
+end $$;
+
+-- Ma liste de souhaits, de la plus récente à la plus ancienne.
+create or replace function public.my_wishlist()
+returns table (card_id smallint)
+language sql stable security invoker set search_path = '' as $$
+  select w.card_id from public.wishlist w where w.user_id = (select auth.uid()) order by w.created_at desc, w.card_id
+$$;
+
+-- Liste de souhaits d'un ami. Vide si vous n'êtes pas amis.
+create or replace function public.friend_wishlist(p_friend uuid)
+returns table (card_id smallint)
+language sql stable security definer set search_path = '' as $$
+  select w.card_id from public.wishlist w
+  where w.user_id = p_friend and public.are_friends((select auth.uid()), p_friend)
+  order by w.created_at desc, w.card_id
+$$;
+
+revoke execute on function public.set_wish(smallint, boolean), public.my_wishlist(), public.friend_wishlist(uuid)
+  from public, anon;
+grant execute on function public.set_wish(smallint, boolean), public.my_wishlist(), public.friend_wishlist(uuid)
+  to authenticated;
+
+-- ---------------------------------------------------------------------------
 -- Classement entre amis : moi et mes amis, par nombre de cartes différentes.
 -- ---------------------------------------------------------------------------
 create or replace function public.friends_leaderboard()
