@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../app_data.dart';
 import '../../core/cards.dart';
 import '../../core/cloud_sync.dart';
+import '../../core/sharing.dart';
 import '../../online.dart';
+import '../card_detail_screen.dart';
 import '../pseudo_dialog.dart';
 import '../theme.dart';
 import '../widgets.dart';
@@ -30,6 +32,7 @@ class ProfileTab extends StatelessWidget {
       bestDistance: col.bestDistance,
       places: col.totalPlaces,
     ).merge(Online.user == null ? null : Online.stats);
+    final finds = bestFinds(data.pool, col.variants);
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -78,6 +81,39 @@ class ProfileTab extends StatelessWidget {
             _StatBox(icon: Icons.account_balance, label: 'Lieux découverts', value: '${stats.places}'),
           ],
         ),
+        if (finds.isNotEmpty) ...[
+          const SectionTitle('Mes plus belles trouvailles'),
+          Row(children: [
+            for (final f in finds)
+              Expanded(
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: () => openCardDetail(context, f.card,
+                      variantSeeds: col.variants[f.card.id] ?? [f.variantSeed],
+                      initialSeed: f.variantSeed,
+                      canFavorite: true),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Column(children: [
+                      VariantEmblem(card: f.card, variant: f.variant, size: 86),
+                      const SizedBox(height: 4),
+                      Text(f.card.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: rarityColor(f.card.rarity), fontWeight: FontWeight.bold, fontSize: 12)),
+                      Text(starsText(f.variant.stars), style: const TextStyle(color: AppColors.gold, fontSize: 11)),
+                    ]),
+                  ),
+                ),
+              ),
+            for (var i = finds.length; i < 3; i++) const Expanded(child: SizedBox()),
+          ]),
+          const Padding(
+            padding: EdgeInsets.only(top: 4),
+            child: Text('Touche une carte puis l\'icône de partage pour l\'envoyer à tes amis.',
+                textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 12)),
+          ),
+        ],
         const SectionTitle('Bestiaire par rareté'),
         for (final r in Rarity.values.reversed)
           _RarityBar(

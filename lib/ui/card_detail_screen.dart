@@ -6,6 +6,7 @@ import '../app_data.dart';
 import '../core/cards.dart';
 import '../core/variants.dart';
 import '../online.dart';
+import 'share_card.dart';
 import 'theme.dart';
 import 'widgets.dart';
 
@@ -178,6 +179,12 @@ class _CardDetailScreenState extends State<CardDetailScreen> with TickerProvider
                     ),
                     const Spacer(),
                     if (widget.canFavorite && current != null) _favoriteButton(card, current.variantSeed),
+                    if (widget.canFavorite && current != null)
+                      IconButton(
+                        tooltip: 'Partager cette trouvaille',
+                        icon: const Icon(Icons.share, color: Colors.white70, size: 26),
+                        onPressed: () => openShareCard(context, current),
+                      ),
                     Text('N° ${card.id.toString().padLeft(3, '0')}',
                         style: const TextStyle(color: Colors.white60, fontWeight: FontWeight.bold)),
                     const SizedBox(width: 16),

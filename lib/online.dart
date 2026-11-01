@@ -247,6 +247,9 @@ class Online {
 
   // --- Favoris ---
 
+  /// Pseudo du joueur (celui de l'appareil, tenu à jour avec le serveur).
+  static String get pseudo => _collection?.pseudo ?? defaultPseudo;
+
   static bool isFavorite(int cardId, int seed) => _collection?.isFavorite(cardId, seed) ?? false;
 
   /// Met un exemplaire en favori (ou l'en retire) sur l'appareil, et en ligne si on est connecté.
