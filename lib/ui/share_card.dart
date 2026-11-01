@@ -38,6 +38,9 @@ class _ShareDialogState extends State<_ShareDialog> {
   Future<void> _share() async {
     setState(() => _busy = true);
     String? error;
+    // Position du bouton (iPad) lue avant les attentes, tant que le contexte est sûr.
+    final box = context.findRenderObject() as RenderBox?;
+    final origin = box == null ? null : box.localToGlobal(Offset.zero) & box.size;
     try {
       final ro = _boundary.currentContext?.findRenderObject() as RenderRepaintBoundary?;
       if (ro == null) throw StateError('aperçu absent');
@@ -47,12 +50,11 @@ class _ShareDialogState extends State<_ShareDialog> {
       if (data == null) throw StateError('image vide');
       final name = shareFileName(widget.inst);
       final file = XFile.fromData(data.buffer.asUint8List(), mimeType: 'image/png', name: name);
-      final box = context.findRenderObject() as RenderBox?;
       await SharePlus.instance.share(ShareParams(
         text: shareMessage(widget.inst),
         files: [file],
         fileNameOverrides: [name],
-        sharePositionOrigin: box == null ? null : box.localToGlobal(Offset.zero) & box.size,
+        sharePositionOrigin: origin,
       ));
     } catch (e) {
       error = kIsWeb

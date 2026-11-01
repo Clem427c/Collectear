@@ -91,11 +91,14 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
   serveur (`finish_run`, plafonnés) (P) (31/10)
 - [ ] **Clem** : recoller `supabase/schema.sql` (records d'exploration ; sans ça, la distance reste sur
   l'appareil et n'apparaît pas chez les amis — un seul collage suffit pour tout ce qui est en attente)
+- [x] Partager ses plus belles trouvailles (GDD diapo 12) (P) : bouton de partage sur la fiche de ses cartes
+  (image de l'exemplaire + message, feuille de partage du téléphone ; téléchargement sur ordinateur), et
+  « Mes plus belles trouvailles » (3 cartes) dans le Profil (01/11)
 - [ ] Notifications d'échange (push) — plus tard
 - [ ] **Prochaine session** : traiter les réponses de Clem (hors ligne, pseudos, collisions, énergies, pubs,
   skins, cadres, gros mots, records) ; sinon synchro en ligne des pièces, skins et cadres (si Clem dit oui).
-  Records d'exploration faits le 31/10. Encore possible sans décision : « partager ses plus belles
-  trouvailles » (GDD diapo 12, image d'une carte à envoyer).
+  Records d'exploration (31/10) et partage des trouvailles (01/11) faits. Encore possible sans décision :
+  collisions des décors en version provisoire, réglages de playtest, préparation de la fiche Google Play.
 
 ## Étape 4 – Monétisation
 - [x] Vidéos récompensées (P) : run bonus quand il n'en reste plus (3/jour), résurrection à la mort
@@ -272,6 +275,13 @@ Priorité basse (à toi de juger) :
   est seulement affiché. Veux-tu un 2e classement « explorateurs » par distance ?
 - Le serveur ne refuse pas une distance impossible, il la ramène à 8 cases par seconde au plus (la run et
   ses cartes restent valides). Les runs jouées avant le 31/10 comptent pour 0 m.
+
+### Partage des trouvailles (01/11)
+- PROVISOIRE : « Mes plus belles trouvailles » = les 3 cartes les plus rares (rareté de l'espèce d'abord, puis
+  les étoiles de l'apparence, puis les stats), un exemplaire par espèce. Une Légendaire unie passe donc devant
+  une Commune Dorée Shiny : préfères-tu l'inverse (l'apparence d'abord) ?
+- PROVISOIRE : l'image montre ton pseudo (« Trouvée par … ») et l'adresse du jeu web. Quand le jeu sera sur
+  Google Play, on mettra plutôt le lien du Play Store ? Faut-il un vrai logo à la place du texte « COLLECTEAR » ?
 
 ### Illustrations (suite)
 Remarque : les 4 bûcherons (035 Hugo, 065 Pio, 070 Milo, 079 Anatole) se ressemblent beaucoup

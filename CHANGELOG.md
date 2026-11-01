@@ -1,5 +1,14 @@
 # Journal des versions
 
+## 0.21.0 – 01/11/2026 – partager ses trouvailles
+- Fiche d'une de ses cartes (bestiaire, récapitulatif) : bouton de partage à côté de l'étoile des favoris.
+  Il montre l'image de l'exemplaire (illustration de la variante, nom, rareté, étoiles, apparence, stats,
+  « Trouvée par <pseudo> », adresse du jeu), puis « Partager » ouvre la feuille de partage du téléphone
+  (WhatsApp, Messages…) avec un petit message. Sur ordinateur, l'image est téléchargée.
+- Profil : « Mes plus belles trouvailles », les 3 cartes les plus rares de la collection (provisoire),
+  à toucher pour ouvrir leur fiche et les partager.
+- Nouvelle dépendance `share_plus` ; logique de choix et message dans `lib/core/sharing.dart`, testée.
+
 ## 0.20.0 – 31/10/2026 (après-midi) – records d'exploration
 - Récapitulatif : distance atteinte (la plus loin du point de départ, en mètres, provisoire : 1 case = 1 m)
   et lieux débloqués ; « Nouveau record de distance ! » / « d'ennemis vaincus ! » en or (jamais à la 1re run).
