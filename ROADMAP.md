@@ -42,7 +42,8 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
 - [x] Prompts ComfyUI des sols, décors, lieux, pièces, personnage jouable et ennemis (`docs/prompts_decors.csv`)
 - [x] Décors générés par Clem (41 images) et intégrés : sols par étage, décors, lieux, pièces, perso, ennemis (27/10)
 - [x] Chrono d'alerte des 15 dernières secondes ; gardiens de sanctuaire au même étage, tenus en laisse, en élite
-- [ ] Décors : collisions avec les arbres et rochers ? (aujourd'hui on passe à travers)
+- [x] Décors solides (P) : arbres, rochers et cristaux bloquent le joueur, qui glisse autour ; toujours isolés
+  pour qu'on puisse en faire le tour ; réglage ⚙ Paramètres → Jeu pour les couper (01/11)
 - [x] Retours du 28/10 : herbe plus douce (prompts + adoucissement auto), sommet des tours en 3×3,
   énergie achetable dès qu'il en manque une (max 10)
 - [x] **Clem** : sols 1, 2, 3 régénérés avec les prompts doux (28/10) ; teinte de chaque étage ajustée en CI
@@ -97,8 +98,9 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
 - [ ] Notifications d'échange (push) — plus tard
 - [ ] **Prochaine session** : traiter les réponses de Clem (hors ligne, pseudos, collisions, énergies, pubs,
   skins, cadres, gros mots, records) ; sinon synchro en ligne des pièces, skins et cadres (si Clem dit oui).
-  Records d'exploration (31/10) et partage des trouvailles (01/11) faits. Encore possible sans décision :
-  collisions des décors en version provisoire, réglages de playtest, préparation de la fiche Google Play.
+  Records d'exploration (31/10), partage des trouvailles, décors solides et brouillon de fiche Google Play
+  (01/11) faits. Encore possible sans décision : prompts ComfyUI de l'icône et de l'image de présentation,
+  build AAB signé prêt à recevoir le keystore, nom affiché « Collectear » sur le téléphone.
 
 ## Étape 4 – Monétisation
 - [x] Vidéos récompensées (P) : run bonus quand il n'en reste plus (3/jour), résurrection à la mort
@@ -120,6 +122,8 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
 
 ## Étape 5 – Lancement
 - [ ] Combats entre amis (format à définir par Clem)
+- [x] Brouillon de fiche Google Play (`docs/GOOGLE_PLAY.md` : textes, sécurité des données, classification)
+  et politique de confidentialité en ligne (https://clem427c.github.io/Collectear/confidentialite.html) (P) (01/11)
 - [ ] Publication Google Play, puis App Store, puis web
 
 ## Décisions de Clem
@@ -186,8 +190,11 @@ Priorité basse (à toi de juger) :
   (« Stats −3 % » = moyenne des trois). Ces paliers te vont ?
 
 ### Décors (27/10)
-- Intégrés. PROVISOIRE : arbres, rochers et buissons sont décoratifs (on passe à travers). Veux-tu
-  qu'ils bloquent le passage (plus de stratégie, mais risque de se coincer) ?
+- **Décors solides (01/11)** : PROVISOIRE, activés par défaut pour que tu les essaies. Arbres (4 sortes),
+  gros rochers et cristaux bloquent le joueur (seulement le tronc : on glisse autour) ; buissons, fleurs,
+  herbes, champignons, souches et petits rochers restent traversables. Un décor solide n'a jamais un autre
+  solide à côté, donc on ne peut pas se coincer. Les ennemis, eux, passent encore à travers. À couper dans
+  ⚙ Paramètres → Jeu. **Questions** : on les garde ? Les ennemis doivent-ils aussi les contourner ?
 - Une image ne te plaît pas ? `py tool\comfy_batch.py --decors --redo N` (N = colonne « numero »).
 - **Herbe (28/10)** : prompts des sols 1 (vallée), 2 (prairie) et 3 (plateau) refaits en style doux (clair, peu
   contrasté, peu de détails, sans contours). Pour les régénérer : `py tool\comfy_batch.py --decors --redo 1,2,3`.
@@ -282,6 +289,12 @@ Priorité basse (à toi de juger) :
   une Commune Dorée Shiny : préfères-tu l'inverse (l'apparence d'abord) ?
 - PROVISOIRE : l'image montre ton pseudo (« Trouvée par … ») et l'adresse du jeu web. Quand le jeu sera sur
   Google Play, on mettra plutôt le lien du Play Store ? Faut-il un vrai logo à la place du texte « COLLECTEAR » ?
+
+### Google Play (01/11)
+- Brouillon dans `docs/GOOGLE_PLAY.md` (nom, descriptions, catégorie Aventure, âge 13+, questionnaires).
+  **À toi** : relire les textes ; choisir une **adresse de contact** pour la politique de confidentialité
+  (obligatoire, visible publiquement) ; plus tard, compte développeur Google Play et keystore (Secrets GitHub).
+- Je prépare les prompts ComfyUI de l'icône (512×512) et de l'image de présentation (1024×500) ?
 
 ### Illustrations (suite)
 Remarque : les 4 bûcherons (035 Hugo, 065 Pio, 070 Milo, 079 Anatole) se ressemblent beaucoup

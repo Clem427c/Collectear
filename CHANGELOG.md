@@ -1,5 +1,15 @@
 # Journal des versions
 
+## 0.22.0 – 01/11/2026 (après-midi) – décors solides, fiche Google Play
+- En run : les arbres, gros rochers et cristaux bloquent maintenant l'explorateur (provisoire, à l'essai) ;
+  il glisse le long du tronc au lieu de s'arrêter net. Buissons, fleurs et petits décors restent traversables.
+  Un décor solide est toujours seul (jamais un autre à côté, jamais au bord d'un chunk) : on peut toujours
+  en faire le tour. Les ennemis passent encore à travers.
+- ⚙ Paramètres → nouvelle section « Jeu » : « Arbres et rochers solides (à l'essai) » pour les couper.
+- `docs/GOOGLE_PLAY.md` : brouillon de la fiche Play Store (textes, éléments graphiques à fournir, réponses
+  suggérées aux questionnaires « Sécurité des données » et classification, étapes avant l'envoi).
+- Politique de confidentialité (brouillon) publiée avec le jeu web : `confidentialite.html`.
+
 ## 0.21.0 – 01/11/2026 – partager ses trouvailles
 - Fiche d'une de ses cartes (bestiaire, récapitulatif) : bouton de partage à côté de l'étoile des favoris.
   Il montre l'image de l'exemplaire (illustration de la variante, nom, rareté, étoiles, apparence, stats,
