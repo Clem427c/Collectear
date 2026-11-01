@@ -234,6 +234,9 @@ jobs:
           name: collectear-apk
           path: collectear.apk
 
+      - name: Pages annexes (politique de confidentialité…)
+        run: cp docs/site/*.html build/web/
+
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request'
         with:
