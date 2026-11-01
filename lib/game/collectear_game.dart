@@ -11,6 +11,7 @@ import '../core/cosmetics.dart';
 import '../core/cards.dart';
 import '../core/places.dart';
 import '../core/config.dart';
+import '../core/decor.dart';
 import '../core/economy.dart';
 import '../core/run_state.dart';
 import '../core/terrain.dart';
@@ -53,6 +54,7 @@ class CollectearGame extends FlameGame with KeyboardEvents {
     required this.seed,
     required this.onRunEnd,
     this.onReviveOffer,
+    this.solidDecor = GameConfig.solidDecorDefault,
     Skin? skin,
   })  : skin = skin ?? Skins.byId(Skins.defaultId),
         terrain = Terrain(seed),
@@ -71,6 +73,26 @@ class CollectearGame extends FlameGame with KeyboardEvents {
   final Future<bool> Function()? onReviveOffer;
   final Terrain terrain;
   final RunState run;
+
+  /// Arbres et rochers bloquent le joueur (réglage ⚙, PROVISOIRE).
+  final bool solidDecor;
+  final Map<(int, int), List<Prop>> _solidProps = {};
+
+  /// Décors solides des chunks autour d'un point du monde (mis en cache, vide si le réglage est coupé).
+  List<Prop> solidPropsNear(double x, double y) {
+    if (!solidDecor) return const [];
+    final cx = Terrain.chunkOf(Terrain.tileOf(x));
+    final cy = Terrain.chunkOf(Terrain.tileOf(y));
+    if (_solidProps.length > 64) _solidProps.clear();
+    final out = <Prop>[];
+    for (var dy = -1; dy <= 1; dy++) {
+      for (var dx = -1; dx <= 1; dx++) {
+        out.addAll(_solidProps.putIfAbsent((cx + dx, cy + dy),
+            () => DecorRules.propsForChunk(terrain, seed, cx + dx, cy + dy).where((p) => p.solid).toList()));
+      }
+    }
+    return out;
+  }
   final math.Random _rng;
 
   late final Player player;

@@ -5,6 +5,7 @@ import 'package:flame/components.dart';
 
 import '../core/combat.dart';
 import '../core/config.dart';
+import '../core/decor.dart';
 import '../core/terrain.dart';
 import 'collectear_game.dart';
 import 'decor_art.dart';
@@ -78,6 +79,20 @@ class Player extends PositionComponent with HasGameReference<CollectearGame> {
   }
 
   void _move(Vector2 delta) {
+    final beforeX = position.x, beforeY = position.y;
+    _moveOnTerrain(delta);
+    final obstacles = game.solidPropsNear(position.x, position.y);
+    if (obstacles.isEmpty) return;
+    // Décors solides : on glisse autour du tronc ; si ça pousse sur une case interdite, on reste sur place.
+    final (x, y) = DecorCollision.pushOut(position.x, position.y, _radius, obstacles);
+    if (_canEnter(x, y)) {
+      position.setValues(x, y);
+    } else {
+      position.setValues(beforeX, beforeY);
+    }
+  }
+
+  void _moveOnTerrain(Vector2 delta) {
     if (delta.x != 0) {
       final probeX = position.x + delta.x + delta.x.sign * _radius;
       if (_canEnter(probeX, position.y)) position.x += delta.x;

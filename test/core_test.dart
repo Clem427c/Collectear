@@ -402,6 +402,63 @@ void main() {
       }
     });
 
+    test('décors solides : isolés, jamais au bord d\'un chunk, on peut toujours en faire le tour', () {
+      var solids = 0;
+      for (final seed in const [1, 99, 4242]) {
+        final t = Terrain(seed);
+        final all = <(int, int)>{};
+        for (var cx = -8; cx <= 8; cx++) {
+          for (var cy = -8; cy <= 8; cy++) {
+            for (final p in DecorRules.propsForChunk(t, seed, cx, cy).where((p) => p.solid)) {
+              final lx = p.tx - cx * GameConfig.chunkTiles, ly = p.ty - cy * GameConfig.chunkTiles;
+              expect(lx > 0 && ly > 0 && lx < GameConfig.chunkTiles - 1 && ly < GameConfig.chunkTiles - 1, isTrue);
+              all.add((p.tx, p.ty));
+            }
+          }
+        }
+        solids += all.length;
+        for (final (x, y) in all) {
+          for (var dy = -1; dy <= 1; dy++) {
+            for (var dx = -1; dx <= 1; dx++) {
+              if (dx != 0 || dy != 0) expect(all.contains((x + dx, y + dy)), isFalse);
+            }
+          }
+        }
+      }
+      expect(solids, greaterThan(100)); // il y en a bien
+      // Le tronc et le joueur tiennent dans une case : on passe par la case voisine sans le toucher.
+      expect(GameConfig.propSolidRadius + 9 < GameConfig.tileSize * 0.75, isTrue);
+      expect(DecorRules.solidNames.every((n) => DecorRules.byLevel.values.expand((l) => l).any((o) => o.$1 == n)),
+          isTrue);
+    });
+
+    test('décors solides : le joueur est repoussé et glisse autour du tronc', () {
+      const tree = Prop(5, 5, 'prop_arbre_pin', 1.9, false);
+      const bush = Prop(5, 5, 'prop_buisson', 0.9, false);
+      expect(tree.solid, isTrue);
+      expect(bush.solid, isFalse);
+      const r = 9.0, minD = r + GameConfig.propSolidRadius;
+      // Loin : rien ne bouge.
+      expect(DecorCollision.pushOut(0, 0, r, [tree]), (0.0, 0.0));
+      // Un buisson ne bloque pas.
+      expect(DecorCollision.pushOut(tree.footX, tree.footY, r, [bush]), (tree.footX, tree.footY));
+      // Dedans : ressort exactement au contact.
+      final (x, y) = DecorCollision.pushOut(tree.footX - 5, tree.footY + 1, r, [tree]);
+      expect(sqrt(pow(x - tree.footX, 2) + pow(y - tree.footY, 2)), closeTo(minD, 1e-6));
+      expect(DecorCollision.overlaps(x, y, r, [tree]), isFalse);
+      expect(DecorCollision.overlaps(tree.footX + 3, tree.footY, r, [tree]), isTrue);
+      // Pile au centre : ressort quand même.
+      final (cx, cy) = DecorCollision.pushOut(tree.footX, tree.footY, r, [tree]);
+      expect(DecorCollision.overlaps(cx, cy, r, [tree]), isFalse);
+      // On marche droit vers la droite, un peu décalé : on contourne l'arbre au lieu de rester bloqué.
+      var px = tree.footX - 60, py = tree.footY + 4;
+      for (var i = 0; i < 200; i++) {
+        (px, py) = DecorCollision.pushOut(px + 2, py, r, [tree]);
+        expect(DecorCollision.overlaps(px, py, r, [tree]), isFalse);
+      }
+      expect(px, greaterThan(tree.footX + minD));
+    });
+
     test('une tour se gravit niveau par niveau jusqu\'au sommet', () {
       final t = Terrain(2026);
       late int cx, cy;
@@ -1040,7 +1097,10 @@ void main() {
       final s = await Settings.load();
       expect(s.volume, 0.8);
       expect(s.haptics, isTrue);
+      expect(s.solidDecor, GameConfig.solidDecorDefault);
       expect(s.loginPromptShown, isFalse);
+      await s.setSolidDecor(false);
+      expect((await Settings.load()).solidDecor, isFalse);
       await s.setVolume(1.7);
       await s.setHaptics(false);
       await s.markLoginPromptShown();

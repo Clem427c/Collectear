@@ -44,6 +44,7 @@ class _RunScreenState extends State<RunScreen> {
       onRunEnd: _onRunEnd,
       onReviveOffer: _offerRevive,
       skin: widget.data.collection.equippedSkin,
+      solidDecor: widget.data.settings.solidDecor,
     );
     unawaited(_onlineRun);
   }

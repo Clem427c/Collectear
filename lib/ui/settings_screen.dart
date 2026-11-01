@@ -22,6 +22,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   late double _volume = widget.data.settings.volume;
   late bool _haptics = widget.data.settings.haptics;
+  late bool _solidDecor = widget.data.settings.solidDecor;
 
   @override
   Widget build(BuildContext context) {
@@ -72,6 +73,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 setState(() => _haptics = v);
                 Sfx.hapticsEnabled = v;
                 await settings.setHaptics(v);
+              },
+            ),
+          ]),
+          const SectionTitle('Jeu'),
+          _Box(children: [
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              value: _solidDecor,
+              activeThumbColor: AppColors.gold,
+              title: const Text('Arbres et rochers solides (à l\'essai)', style: TextStyle(color: Colors.white)),
+              subtitle: const Text('On en fait le tour au lieu de passer à travers. Pris en compte à la prochaine run.',
+                  style: TextStyle(color: Colors.white54, fontSize: 12)),
+              onChanged: (v) async {
+                setState(() => _solidDecor = v);
+                await settings.setSolidDecor(v);
               },
             ),
           ]),

@@ -53,6 +53,12 @@ class GameConfig {
   static const double dodgeCooldown = 0.9;
   static const double invincibleAfterHit = 1.0;
 
+  // --- Décors solides (PROVISOIRE, question à Clem ; désactivables dans ⚙ Paramètres) ---
+  /// Rayon de l'obstacle au pied d'un arbre ou d'un rocher (le tronc, pas le feuillage).
+  /// Avec le rayon du joueur (9), il reste largement la place de passer dans la case voisine.
+  static const double propSolidRadius = 8;
+  static const bool solidDecorDefault = true;
+
   // --- Ennemis ---
   static const double startGrace = 4; // secondes sans agression au début de la run
   static const double meleeSpeed = 70;

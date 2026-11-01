@@ -1,11 +1,14 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'config.dart';
+
 /// Réglages du joueur (roue crantée), enregistrés sur l'appareil.
 class Settings {
   Settings._(this._prefs);
 
   static const _kVolume = 'set_volume';
   static const _kHaptics = 'set_haptics';
+  static const _kSolidDecor = 'set_solid_decor';
   static const _kLoginPrompt = 'set_login_prompt_shown';
 
   final SharedPreferences _prefs;
@@ -18,6 +21,10 @@ class Settings {
 
   bool get haptics => _prefs.getBool(_kHaptics) ?? true;
   Future<void> setHaptics(bool v) => _prefs.setBool(_kHaptics, v);
+
+  /// Arbres et rochers bloquent le passage (PROVISOIRE, à l'essai).
+  bool get solidDecor => _prefs.getBool(_kSolidDecor) ?? GameConfig.solidDecorDefault;
+  Future<void> setSolidDecor(bool v) => _prefs.setBool(_kSolidDecor, v);
 
   /// La fenêtre « Connecte-toi » du premier lancement a-t-elle déjà été proposée ?
   bool get loginPromptShown => _prefs.getBool(_kLoginPrompt) ?? false;
