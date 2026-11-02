@@ -68,8 +68,9 @@ Prompts dans `docs/prompts_store.csv` (régénérés par `tool/gen_store_prompts
 ## Questionnaire « Sécurité des données » (réponses suggérées)
 - Données collectées ou partagées : **oui**.
 - Chiffrées en transit : **oui** (HTTPS vers Supabase et Google).
-- Suppression des données sur demande : **oui** (par e-mail, voir la politique) — il faudra un moyen de
-  demander la suppression ; Google exige aussi un lien web de demande de suppression de compte.
+- Suppression des données sur demande : **oui**. Dans l'appli : ⚙ Paramètres → Compte → « Supprimer mon
+  compte… » (immédiat, tout est supprimé côté serveur). **Lien de suppression du compte** à donner à Google :
+  https://clem427c.github.io/Collectear/suppression-compte.html (marche aussi sans l'appli, via le jeu web).
 - Types de données :
   - Informations personnelles → **Adresse e-mail** : collectée, non partagée, facultative, pour la
     gestion du compte.

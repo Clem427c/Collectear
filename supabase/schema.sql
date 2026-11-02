@@ -738,3 +738,20 @@ $$;
 
 revoke execute on function public.friends_leaderboard() from public, anon;
 grant execute on function public.friends_leaderboard() to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Suppression du compte (exigée par Google Play), depuis ⚙ Paramètres → Compte.
+-- Supprime l'utilisateur de auth.users : tout le reste part en cascade (profil, collection, runs,
+-- amis, échanges, souhaits, cartes données). Immédiat et définitif.
+-- ---------------------------------------------------------------------------
+create or replace function public.delete_my_account() returns void
+language plpgsql volatile security definer set search_path = '' as $$
+declare
+  me uuid := (select auth.uid());
+begin
+  if me is null then raise exception 'non_connecte'; end if;
+  delete from auth.users where id = me;
+end $$;
+
+revoke execute on function public.delete_my_account() from public, anon;
+grant execute on function public.delete_my_account() to authenticated;

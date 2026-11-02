@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../core/cloud_sync.dart';
 import '../core/online_config.dart';
+import '../core/social.dart';
 import '../online.dart';
 import 'theme.dart';
 
@@ -220,6 +221,111 @@ class _AccountInfo extends StatelessWidget {
           label: const Text('Synchroniser'),
         ),
       ]),
+      const SizedBox(height: 4),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: TextButton.icon(
+          onPressed: () => _confirmDelete(context),
+          icon: const Icon(Icons.delete_forever, color: AppColors.coral, size: 18),
+          label: const Text('Supprimer mon compte…', style: TextStyle(color: AppColors.coral, fontSize: 12)),
+        ),
+      ),
     ]);
+  }
+}
+
+/// Suppression du compte (exigée par Google Play) : on recopie « SUPPRIMER » pour confirmer.
+Future<void> _confirmDelete(BuildContext context) async {
+  final messenger = ScaffoldMessenger.maybeOf(context);
+  final deleted = await showDialog<bool>(
+    context: context,
+    builder: (_) => const _DeleteAccountDialog(),
+  );
+  if (deleted == true) {
+    messenger?.showSnackBar(const SnackBar(content: Text('Compte supprimé. Tes cartes restent sur cet appareil.')));
+  }
+}
+
+class _DeleteAccountDialog extends StatefulWidget {
+  const _DeleteAccountDialog();
+
+  @override
+  State<_DeleteAccountDialog> createState() => _DeleteAccountDialogState();
+}
+
+class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
+  final _typed = TextEditingController();
+  bool _busy = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _typed.dispose();
+    super.dispose();
+  }
+
+  Future<void> _delete() async {
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    final err = await Online.deleteAccount();
+    if (!mounted) return;
+    if (err == null) {
+      Navigator.of(context).pop(true);
+    } else {
+      setState(() {
+        _busy = false;
+        _error = err;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ok = isDeleteAccountConfirmation(_typed.text);
+    return AlertDialog(
+      backgroundColor: AppColors.ink,
+      title: const Text('Supprimer mon compte', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+      content: SingleChildScrollView(
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Text(
+            'Ton compte ${Online.user?.email ?? ''} sera supprimé tout de suite et pour toujours : pseudo, code ami, '
+            'collection en ligne, runs, amis, échanges et liste de souhaits. Tes amis ne te verront plus.\n\n'
+            'Les cartes déjà sur cet appareil y restent : tu pourras continuer à jouer sans compte.',
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          const SizedBox(height: 12),
+          const Text('Pour confirmer, écris $deleteAccountWord :', style: TextStyle(color: Colors.white, fontSize: 13)),
+          const SizedBox(height: 6),
+          TextField(
+            controller: _typed,
+            enabled: !_busy,
+            autocorrect: false,
+            textCapitalization: TextCapitalization.characters,
+            style: const TextStyle(color: Colors.white, letterSpacing: 2, fontWeight: FontWeight.bold),
+            decoration: _field(deleteAccountWord, Icons.warning_amber),
+            onChanged: (_) => setState(() {}),
+          ),
+          if (_error != null) ...[
+            const SizedBox(height: 8),
+            Text(_error!, style: const TextStyle(color: AppColors.coral, fontSize: 12)),
+          ],
+        ]),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _busy ? null : () => Navigator.of(context).pop(false),
+          child: const Text('Annuler', style: TextStyle(color: Colors.white70)),
+        ),
+        FilledButton(
+          style: FilledButton.styleFrom(backgroundColor: AppColors.coral),
+          onPressed: ok && !_busy ? _delete : null,
+          child: _busy
+              ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+              : const Text('Supprimer'),
+        ),
+      ],
+    );
   }
 }

@@ -220,6 +220,41 @@ select pg_temp.check((select count(*) from public.trades) = 0 and (select count(
 
 reset role;
 set role authenticated;
+-- Suppression du compte : D a un profil, des cartes, un ami et un souhait ; tout disparaît.
+reset role;
+insert into auth.users values ('44444444-4444-4444-4444-444444444444', 'd@x');
+set role authenticated;
+select set_config('request.jwt.claim.sub', '44444444-4444-4444-4444-444444444444', false);
+select public.start_run() as rid_del \gset
+select pg_sleep(1.1);
+select public.finish_run(:'rid_del', 1, 0, '[{"card_id":5,"seed":7}]');
+select public.set_wish(5::smallint, true);
+select public.add_friend(:'code_a');
+reset role;
+select pg_temp.check((select count(*) from public.profiles where id = '44444444-4444-4444-4444-444444444444') = 1
+                     and (select count(*) from public.owned_cards where user_id = '44444444-4444-4444-4444-444444444444') = 1
+                     and (select count(*) from public.friendships where requester = '44444444-4444-4444-4444-444444444444') = 1,
+                     'compte D prêt à être supprimé');
+set role authenticated;
+select set_config('request.jwt.claim.sub', '33333333-3333-3333-3333-333333333333', false);
+select pg_temp.check(pg_temp.fails($q$delete from auth.users where id = '44444444-4444-4444-4444-444444444444'$q$),
+                     'suppression : impossible de supprimer le compte d''un autre directement');
+select set_config('request.jwt.claim.sub', '44444444-4444-4444-4444-444444444444', false);
+select public.delete_my_account();
+reset role;
+select pg_temp.check((select count(*) from auth.users where id = '44444444-4444-4444-4444-444444444444') = 0
+                     and (select count(*) from public.profiles where id = '44444444-4444-4444-4444-444444444444') = 0
+                     and (select count(*) from public.owned_cards where user_id = '44444444-4444-4444-4444-444444444444') = 0
+                     and (select count(*) from public.runs where user_id = '44444444-4444-4444-4444-444444444444') = 0
+                     and (select count(*) from public.wishlist where user_id = '44444444-4444-4444-4444-444444444444') = 0
+                     and (select count(*) from public.friendships where '44444444-4444-4444-4444-444444444444' in (requester, addressee)) = 0,
+                     'suppression : compte et toutes ses données supprimés');
+select pg_temp.check((select count(*) from auth.users) = 3, 'suppression : les autres comptes restent');
+set role anon;
+select set_config('request.jwt.claim.sub', '', false);
+select pg_temp.check(pg_temp.fails('select public.delete_my_account()'), 'suppression : anonyme refusé');
+reset role;
+set role authenticated;
 -- Sans compte : rien.
 reset role;
 set role anon;

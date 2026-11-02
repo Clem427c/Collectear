@@ -133,6 +133,28 @@ class Online {
     _bump();
   }
 
+  /// Supprime définitivement le compte en ligne (fonction delete_my_account de supabase/schema.sql) :
+  /// profil, collection en ligne, runs, amis, échanges et souhaits. Exigé par Google Play.
+  /// PROVISOIRE : la collection de l'appareil est gardée (on continue à jouer sans compte).
+  /// Renvoie un message d'erreur, ou null si le compte est supprimé (on est alors déconnecté).
+  static Future<String?> deleteAccount() async {
+    if (user == null) return socialErrorMessage('non_connecte');
+    try {
+      await _call<dynamic>('delete_my_account');
+    } catch (e) {
+      return _socialMessage(e);
+    }
+    try {
+      // Le compte n'existe plus sur le serveur : on oublie seulement la session de cet appareil.
+      await _client.auth.signOut(scope: SignOutScope.local);
+    } catch (e) {
+      debugPrint('Déconnexion après suppression : $e');
+    }
+    wishes = const [];
+    _bump();
+    return null;
+  }
+
   static String _authMessage(AuthException e) => authErrorMessage(e.message, code: e.code);
 
   // --- Synchronisation de la collection ---

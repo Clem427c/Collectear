@@ -47,6 +47,7 @@ String socialErrorMessage(String message) {
     'echange_inconnu': 'Cet échange n\'est plus en attente.',
     'trop_souhaits': 'Ta liste de souhaits est pleine ($maxWishes cartes) : retires-en une d\'abord.',
     'carte_inconnue': 'Cette carte n\'existe pas.',
+    'non_connecte': 'Connecte-toi d\'abord (⚙ → Compte).',
   };
   for (final e in known.entries) {
     if (message.contains(e.key)) return e.value;
@@ -55,6 +56,15 @@ String socialErrorMessage(String message) {
     return 'Le serveur n\'est pas encore à jour (Clem doit recoller supabase/schema.sql).';
   }
   return message;
+}
+
+/// Mot à recopier pour confirmer la suppression du compte (irréversible).
+const deleteAccountWord = 'SUPPRIMER';
+
+/// Vrai si [typed] confirme la suppression du compte (majuscules, accents et espaces autour ignorés).
+bool isDeleteAccountConfirmation(String typed) {
+  final t = typed.trim().toUpperCase().replaceAll('É', 'E').replaceAll('È', 'E');
+  return t == deleteAccountWord;
 }
 
 /// Un exemplaire vu par le serveur : identifiant de ligne (owned_cards.id), carte et variante.

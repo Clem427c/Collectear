@@ -813,6 +813,16 @@ void main() {
       expect(socialErrorMessage('P0001: deja_amis'), contains('déjà amis'));
       expect(socialErrorMessage('Could not find the function public.add_friend'), contains('pas encore à jour'));
       expect(socialErrorMessage('autre'), 'autre');
+      expect(socialErrorMessage('P0001: non_connecte'), contains('Connecte-toi'));
+    });
+
+    test('suppression du compte : mot de confirmation', () {
+      expect(isDeleteAccountConfirmation('SUPPRIMER'), isTrue);
+      expect(isDeleteAccountConfirmation('  supprimer '), isTrue);
+      expect(isDeleteAccountConfirmation('Supprimer'), isTrue);
+      expect(isDeleteAccountConfirmation('supprime'), isFalse);
+      expect(isDeleteAccountConfirmation(''), isFalse);
+      expect(isDeleteAccountConfirmation('SUPPRIMER MON COMPTE'), isFalse);
     });
 
     test('amis : lecture des lignes du serveur', () {
