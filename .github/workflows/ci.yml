@@ -63,6 +63,20 @@ jobs:
           grep -q 'android.permission.INTERNET' "$m" || \
             sed -i 's|<application|<uses-permission android:name="android.permission.INTERNET"/>\n    <application|' "$m"
           grep -n 'INTERNET' "$m"
+          # Nom affiché sous l'icône du téléphone et dans l'onglet du navigateur : « Collectear »
+          # (flutter create met le nom du paquet, « collectear », en minuscules).
+          sed -i -E 's/android:label="[^"]*"/android:label="Collectear"/' "$m"
+          grep -n 'android:label' "$m"
+          sed -i -E 's|<title>[^<]*</title>|<title>Collectear</title>|; s|(name="apple-mobile-web-app-title" content=")[^"]*"|\1Collectear"|' web/index.html
+          python3 - web/manifest.json <<'PY'
+          import json, sys
+          p = sys.argv[1]
+          d = json.load(open(p))
+          d.update(name='Collectear', short_name='Collectear',
+                   description='Explore, combats et collectionne 300 cartes.')
+          json.dump(d, open(p, 'w'), ensure_ascii=False, indent=4)
+          PY
+          grep -n 'Collectear' web/index.html web/manifest.json
           # Lien de connexion de l'e-mail → ouvre l'appli (com.clem427c.collectear://login-callback).
           # Le deep linking de Flutter est coupé : c'est supabase_flutter (app_links) qui lit le lien.
           python3 - "$m" <<'PY'
