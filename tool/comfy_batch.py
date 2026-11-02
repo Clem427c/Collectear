@@ -25,6 +25,11 @@ Décors, personnage jouable et ennemis (docs/prompts_decors.csv, regénéré par
   python tool/comfy_batch.py --decors --auto      # 1 image par élément dans art/decors/raw/ + push GitHub
   python tool/comfy_batch.py --decors --redo 3,12 # refaire certains éléments (numéros du CSV)
 
+Icône de l'appli et image de présentation Google Play (docs/prompts_store.csv, tool/gen_store_prompts.py) :
+  python tool/comfy_batch.py --store              # 3 propositions par image dans art/store/candidates/
+  → copier la meilleure dans art/store/raw/ sous le nom de la colonne « fichier » (icone.png ou
+    presentation.png), puis pousser : la CI en fait les icônes Android et web (tool/process_store.py).
+
 Les images arrivent dans art/candidates/ (001_a.png, 001_b.png, …). Choisis la meilleure,
 renomme-la 001.png et place-la dans art/raw/. Les cartes déjà présentes dans art/raw/ sont sautées.
 Aucune dépendance : uniquement la bibliothèque standard de Python.
@@ -132,6 +137,8 @@ def main():
     ap.add_argument("--full", action="store_true", help="FLUX en pleine précision et encodeurs sur la carte graphique")
     ap.add_argument("--decors", action="store_true",
                     help="décors, personnage jouable et ennemis (docs/prompts_decors.csv) au lieu des cartes")
+    ap.add_argument("--store", action="store_true",
+                    help="icône et image de présentation Google Play (docs/prompts_store.csv)")
     ap.add_argument("--no-pull", action="store_true", help="ne pas mettre le dépôt à jour avant de lire les prompts")
     args = ap.parse_args()
     if not args.no_pull:
@@ -141,6 +148,9 @@ def main():
         WEIGHT_DTYPE, CLIP_DEVICE = "default", "default"
     if args.decors:
         return decors_mode(args)
+    if args.store:
+        return decors_mode(args, prompts=STORE_PROMPTS, raw=STORE_RAW, out=STORE_OUT, seed_base=9000,
+                           label="Boutique", prefix="collectear_store")
     if args.auto or args.redo:
         return auto_mode(args)
 
@@ -232,39 +242,43 @@ def auto_mode(args):
 DECOR_PROMPTS = ROOT / "docs/prompts_decors.csv"
 DECOR_RAW = ROOT / "art/decors/raw"
 DECOR_OUT = ROOT / "art/decors/candidates"
+STORE_PROMPTS = ROOT / "docs/prompts_store.csv"
+STORE_RAW = ROOT / "art/store/raw"
+STORE_OUT = ROOT / "art/store/candidates"
 
 
-def decors_mode(args):
+def decors_mode(args, prompts=DECOR_PROMPTS, raw=DECOR_RAW, out=DECOR_OUT, seed_base=5000, label="Décors",
+                prefix="collectear_decors"):
     """Décors / perso / ennemis : 3 propositions par image dans art/decors/candidates/ (au choix de Clem,
     à copier dans art/decors/raw/ sous le nom de la colonne « fichier »), ou avec --auto une image
     directement dans art/decors/raw/ puis envoi sur GitHub. --redo marche avec les numéros du CSV."""
     url = find_server([args.url] if args.url else ["http://127.0.0.1:8000", "http://127.0.0.1:8188"])
     print("ComfyUI trouvé :", url)
-    rows = list(csv.DictReader(DECOR_PROMPTS.open(encoding="utf-8"), delimiter=";"))
+    rows = list(csv.DictReader(prompts.open(encoding="utf-8"), delimiter=";"))
     redo = parse_numbers(args.redo)
     seed_offset = int(time.time()) % 100_000 + 1 if redo else 0
     auto = args.auto or bool(redo)
-    (DECOR_RAW if auto else DECOR_OUT).mkdir(parents=True, exist_ok=True)
+    (raw if auto else out).mkdir(parents=True, exist_ok=True)
     letters = "abcdefghij"
     done = 0
     for row in rows:
         n = int(row["numero"])
         if redo and n not in redo:
             continue
-        final = DECOR_RAW / row["fichier"]
+        final = raw / row["fichier"]
         if final.exists() and n not in redo:
             continue
         w, h = int(row["largeur"]), int(row["hauteur"])
         stem = Path(row["fichier"]).stem
-        targets = [final] if auto else [DECOR_OUT / f"{stem}_{letters[v]}.png" for v in range(args.variants)]
+        targets = [final] if auto else [out / f"{stem}_{letters[v]}.png" for v in range(args.variants)]
         for v, dest in enumerate(targets):
             if dest.exists() and not auto:
                 continue
             for attempt in range(3):
                 try:
                     t0 = time.time()
-                    generate(url, row["prompt"], seed=5000 + n * 100 + v + seed_offset,
-                             prefix=f"collectear_decors/{stem}", dest=dest, width=w, height=h)
+                    generate(url, row["prompt"], seed=seed_base + n * 100 + v + seed_offset,
+                             prefix=f"{prefix}/{stem}", dest=dest, width=w, height=h)
                     print(f"{dest.name}  {row['nom']}  ({time.time() - t0:.1f} s)")
                     break
                 except Exception as e:
@@ -272,10 +286,10 @@ def decors_mode(args):
                     time.sleep(5)
         done += 1
     if auto and not args.no_push:
-        git_push(f"Décors : génération auto FLUX ({done} images)", folder="art/decors/raw")
+        git_push(f"{label} : génération auto FLUX ({done} images)", folder=str(raw.relative_to(ROOT)).replace(chr(92), "/"))
     if not auto:
-        print("Terminé. Choisis dans art/decors/candidates/ et copie la meilleure dans art/decors/raw/ "
-              "sous le nom de la colonne « fichier » (ex. tile_l0_vallee.png).")
+        print(f"Terminé. Choisis dans {out.relative_to(ROOT)} et copie la meilleure dans {raw.relative_to(ROOT)} "
+              "sous le nom de la colonne « fichier ».")
     print(f"Terminé : {done} image(s).")
 
 

@@ -50,11 +50,20 @@ superlatifs du type « meilleur jeu ».)
 ## Éléments graphiques à fournir
 | Élément | Format | Statut |
 |---|---|---|
-| Icône | 512×512 PNG, 32 bits | à faire (aujourd'hui : icône Flutter par défaut) |
-| Image de présentation | 1024×500 JPG/PNG | à faire |
+| Icône | 512×512 PNG, 32 bits | provisoire (carte dorée dessinée par la CI) ; prompts prêts |
+| Image de présentation | 1024×500 JPG/PNG | prompt prêt |
 | Captures téléphone | 2 à 8, 16:9 ou 9:16, côté ≥ 320 px | la CI produit déjà des captures web (artefacts) ; à refaire en plein écran téléphone |
 
-Je peux préparer les prompts ComfyUI de l'icône et de l'image de présentation (comme pour les décors).
+### Icône et image de présentation
+Prompts dans `docs/prompts_store.csv` (régénérés par `tool/gen_store_prompts.py`) : 3 idées d'icône
+(carte brillante, explorateur et carte, coffre ouvert) et l'image de présentation.
+1. `py tool\comfy_batch.py --store` → 3 propositions par image dans `art\store\candidates\`.
+2. Copier l'icône préférée dans `art\store\raw\icone.png` et la bannière dans `art\store\raw\presentation.png`,
+   puis pousser (`git add art/store/raw` + commit + push).
+3. La CI en fait l'icône du téléphone (Android 8+ : icône adaptative, le centre est gardé), celles du jeu
+   web, et l'artefact `google-play-images` (`icone_512.png`, `presentation_1024x500.png`) à envoyer
+   dans la Play Console. En attendant, une icône provisoire (carte dorée sur fond violet) remplace le
+   logo Flutter.
 
 ## Questionnaire « Sécurité des données » (réponses suggérées)
 - Données collectées ou partagées : **oui**.

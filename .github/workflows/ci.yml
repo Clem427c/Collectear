@@ -148,6 +148,8 @@ jobs:
           python3 -m pip install --quiet pillow numpy scipy || python3 -m pip install --quiet --break-system-packages pillow numpy scipy
           python3 tool/process_art.py
           python3 tool/process_decors.py
+          # Icône de l'appli (Android, web) et images Google Play depuis art/store/raw/ (provisoire sinon)
+          python3 tool/process_store.py
 
       - name: Vérifier les secrets Supabase (sans les afficher)
         env:
@@ -290,6 +292,12 @@ jobs:
         with:
           name: collectear-aab
           path: ${{ env.AAB_NAME }}
+          retention-days: 30
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: google-play-images
+          path: build/store/
           retention-days: 30
 
       - uses: actions/upload-artifact@v4

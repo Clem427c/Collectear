@@ -37,3 +37,4 @@ __pycache__/
 /art/decors/candidates/
 # Décors préparés en CI depuis art/decors/raw/ (tool/process_decors.py)
 /assets/images/
+/art/store/candidates/
