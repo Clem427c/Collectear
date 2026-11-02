@@ -95,13 +95,18 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
 - [x] Partager ses plus belles trouvailles (GDD diapo 12) (P) : bouton de partage sur la fiche de ses cartes
   (image de l'exemplaire + message, feuille de partage du téléphone ; téléchargement sur ordinateur), et
   « Mes plus belles trouvailles » (3 cartes) dans le Profil (01/11)
+- [x] Suppression du compte (exigée par Google Play) : ⚙ → Compte → « Supprimer mon compte… » (écrire
+  SUPPRIMER), fonction serveur `delete_my_account` (tout part en cascade, testé en CI), page web
+  https://clem427c.github.io/Collectear/suppression-compte.html ; collection de l'appareil gardée (P) (02/11)
+- [ ] **Clem** : recoller `supabase/schema.sql` (suppression du compte ; sans ça, le bouton affiche « le serveur
+  n'est pas encore à jour »)
 - [ ] Notifications d'échange (push) — plus tard
 - [ ] **Prochaine session** : traiter les réponses de Clem (hors ligne, pseudos, collisions, énergies, pubs,
   skins, cadres, gros mots, records) ; sinon synchro en ligne des pièces, skins et cadres (si Clem dit oui).
   Records d'exploration (31/10), partage des trouvailles, décors solides et brouillon de fiche Google Play
-  (01/11), nom affiché, AAB signé et icône (02/11) faits. Encore possible sans décision : captures d'écran
-  téléphone pour la fiche Play (9:16) produites par la CI ; lien web de demande de suppression de compte
-  (exigé par Google Play).
+  (01/11), nom affiché, AAB signé, icône, suppression du compte et captures Play (02/11) faits. Encore
+  possible sans décision : écran « À propos » (version, liens confidentialité / suppression du compte) ;
+  synchro en ligne des pièces si Clem dit oui.
 
 ## Étape 4 – Monétisation
 - [x] Vidéos récompensées (P) : run bonus quand il n'en reste plus (3/jour), résurrection à la mort
@@ -130,6 +135,8 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
   clé jetable de test en attendant (artefact `collectear-TEST.aab`) (02/11)
 - [x] Icône : prompts ComfyUI (3 idées d'icône + image de présentation, `--store`) ; la CI fait les icônes
   Android (adaptatives) et web depuis `art/store/raw/` ; icône provisoire (carte dorée) en attendant (P) (02/11)
+- [x] Captures d'écran téléphone pour la fiche Play : 6 PNG 1080×1920 faits par la CI avec une collection de
+  démonstration (artefact `google-play-images`, dossier `captures/`) (02/11)
 - [ ] **Clem** : générer l'icône et l'image de présentation (`py tool\comfy_batch.py --store`, puis copier
   les préférées dans `art/store/raw/icone.png` et `presentation.png`, voir `docs/GOOGLE_PLAY.md`)
 - [ ] **Clem** : clé d'envoi (keystore) → 4 secrets `ANDROID_*` (`docs/GOOGLE_PLAY.md`, « Clé d'envoi »)
@@ -306,6 +313,17 @@ Priorité basse (à toi de juger) :
 - Icône (02/11) : prompts prêts, 3 idées (carte brillante, explorateur et carte, coffre ouvert) ; tu choisis.
   PROVISOIRE en attendant : carte dorée à étoile sur fond violet, dessinée par la CI. L'image de présentation
   est sans texte (conseil de Google) : on veut quand même le nom « Collectear » dessus ?
+
+### Suppression du compte (02/11)
+- PROVISOIRE : après la suppression, les cartes **de l'appareil** restent (on continue à jouer sans compte ;
+  elles repartiraient sur un nouveau compte si on se reconnecte). Préfères-tu qu'on vide aussi l'appareil ?
+- Les pages `confidentialite.html` et `suppression-compte.html` attendent toujours ton **adresse de contact**
+  et le **nom du développeur** (celui du compte Google Play) : Google les exige sur la page de suppression.
+
+### Captures Google Play (02/11)
+- Faites par la CI dans le jeu web (collection de démonstration de 159 cartes, pseudo « Aventurière »).
+  Les jeux sur téléphone ont parfois de meilleures captures prises à la main : regarde l'artefact
+  `google-play-images` d'un run de la CI et dis-moi lesquelles garder ou quels écrans changer.
 
 ### Illustrations (suite)
 Remarque : les 4 bûcherons (035 Hugo, 065 Pio, 070 Milo, 079 Anatole) se ressemblent beaucoup

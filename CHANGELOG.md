@@ -1,5 +1,15 @@
 # Journal des versions
 
+## 0.24.0 – 02/11/2026 (après-midi) – suppression du compte, captures Google Play
+- ⚙ Paramètres → Compte : « Supprimer mon compte… ». On écrit SUPPRIMER pour confirmer ; le compte et tout ce
+  qui est en ligne (pseudo, code ami, collection, runs, amis, échanges, souhaits) sont supprimés tout de suite.
+  Les cartes de l'appareil restent (provisoire). Exigé par Google Play.
+- Serveur : fonction `delete_my_account` (tout part en cascade), testée en CI sur PostgreSQL. À recoller par Clem.
+- Page web https://clem427c.github.io/Collectear/suppression-compte.html (lien demandé par Google Play) ;
+  la politique de confidentialité y renvoie.
+- CI : 6 captures d'écran téléphone 1080×1920 pour la fiche Play (Jouer, run, bestiaire, fiche, boutique,
+  profil), avec une collection de démonstration, dans l'artefact `google-play-images` (`captures/`).
+
 ## 0.23.0 – 02/11/2026 – préparation Google Play : nom, icône, AAB signé
 - Le jeu s'appelle « Collectear » (avec la majuscule) sous l'icône du téléphone et dans l'onglet du navigateur.
 - Nouvelle icône provisoire (carte dorée à étoile sur fond violet) à la place du logo Flutter, en icône
