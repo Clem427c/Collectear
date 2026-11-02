@@ -243,6 +243,55 @@ jobs:
       - name: Renommer l'APK
         run: cp build/app/outputs/flutter-apk/app-release.apk collectear.apk
 
+      # AAB pour Google Play, signé avec la clé d'envoi de Clem (Secrets GitHub ANDROID_KEYSTORE_BASE64,
+      # ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD ; voir docs/GOOGLE_PLAY.md).
+      # Sans ces secrets : clé jetable générée ici, pour vérifier que la chaîne marche (AAB « TEST »,
+      # refusé par Google Play). Fait APRÈS l'APK : l'APK de test garde la signature habituelle
+      # (pas besoin de le désinstaller pour le mettre à jour).
+      - name: Build AAB (Google Play)
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ADMOB_REWARDED_ANDROID: ${{ secrets.ADMOB_REWARDED_ANDROID }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          ks=android/app/upload-keystore.jks
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ] && [ -n "$ANDROID_KEYSTORE_PASSWORD" ] && [ -n "$ANDROID_KEY_ALIAS" ]; then
+            printf '%s' "$ANDROID_KEYSTORE_BASE64" | tr -d '[:space:]' | base64 -d > "$ks"
+            store_pw="$ANDROID_KEYSTORE_PASSWORD"; alias="$ANDROID_KEY_ALIAS"
+            key_pw="${ANDROID_KEY_PASSWORD:-$ANDROID_KEYSTORE_PASSWORD}"
+            echo "Clé d'envoi : secrets ANDROID_* (AAB prêt pour Google Play)"
+            echo "AAB_NAME=collectear.aab" >> "$GITHUB_ENV"
+          else
+            store_pw="test-$(openssl rand -hex 12)"; key_pw="$store_pw"; alias=test
+            keytool -genkeypair -keystore "$ks" -storetype PKCS12 -alias "$alias" -keyalg RSA -keysize 2048 \
+              -validity 2 -storepass "$store_pw" -keypass "$key_pw" -dname "CN=Collectear test" -noprompt
+            echo "::notice::Pas de secrets ANDROID_KEYSTORE_* : AAB signé avec une clé jetable (TEST, refusé par Google Play)."
+            echo "AAB_NAME=collectear-TEST.aab" >> "$GITHUB_ENV"
+          fi
+          echo "::add-mask::$store_pw"; echo "::add-mask::$key_pw"
+          printf 'storePassword=%s\nkeyPassword=%s\nkeyAlias=%s\nstoreFile=upload-keystore.jks\n' \
+            "$store_pw" "$key_pw" "$alias" > android/key.properties
+          python3 tool/android_signing.py android/app/build.gradle.kts
+          # Numéro de version (versionCode) = numéro du run CI : toujours croissant, comme l'exige Google Play.
+          flutter build appbundle --release --build-number=${{ github.run_number }} \
+            --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+            --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY" \
+            --dart-define=ADMOB_REWARDED_ANDROID="$ADMOB_REWARDED_ANDROID"
+          aab=build/app/outputs/bundle/release/app-release.aab
+          keytool -printcert -jarfile "$aab" | grep -E 'Owner|Propriétaire|SHA256' | head -3 || true
+          cp "$aab" "$AAB_NAME"
+          rm -f "$ks" android/key.properties
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: collectear-aab
+          path: ${{ env.AAB_NAME }}
+          retention-days: 30
+
       - uses: actions/upload-artifact@v4
         with:
           name: collectear-apk

@@ -89,7 +89,30 @@ Je peux préparer les prompts ComfyUI de l'icône et de l'image de présentation
 - [ ] Compte développeur Google Play (Clem ; les nouveaux comptes personnels doivent faire un test fermé
       avec au moins 12 testeurs pendant 14 jours avant la production).
 - [ ] Clé de signature (keystore) générée par Clem, ajoutée en Secrets GitHub (jamais dans le dépôt) ;
-      la CI signera alors un **AAB** (`flutter build appbundle`) au lieu de l'APK de test.
+      la CI signe alors l'**AAB** `collectear.aab` (voir « Clé d'envoi » ci-dessous). En attendant, elle
+      produit à chaque push un `collectear-TEST.aab` signé avec une clé jetable (refusé par Google Play).
 - [ ] Vrais identifiants AdMob et message RGPD (voir ROADMAP, Étape 4).
-- [ ] Icône et nom affiché sur le téléphone (aujourd'hui « collectear » en minuscules).
+- [x] Nom affiché sur le téléphone : « Collectear » (02/11).
+- [ ] Icône : prompts prêts (`docs/prompts_store.csv`, voir « Icône et image de présentation »).
 - [ ] Adresse de contact dans la politique de confidentialité.
+
+## Clé d'envoi (keystore) — à faire par Clem, une seule fois
+Google Play demande que chaque AAB soit signé avec ta **clé d'envoi**. Avec la « signature d'applications
+par Google Play » (proposée par défaut), Google garde la vraie clé ; si tu perds la clé d'envoi, tu peux
+demander à Google de la réinitialiser. Garde quand même le fichier `.jks` et son mot de passe en lieu sûr
+(gestionnaire de mots de passe), **jamais dans le dépôt**.
+
+1. Sur ton PC (Java est installé avec Android Studio ; sinon `winget install EclipseAdoptium.Temurin.17.JDK`) :
+   `keytool -genkeypair -v -keystore collectear-upload.jks -storetype PKCS12 -keyalg RSA -keysize 2048 -validity 10000 -alias upload`
+   (il demande un mot de passe et ton nom ; le reste peut rester vide).
+2. Encoder le fichier en texte : PowerShell `[Convert]::ToBase64String([IO.File]::ReadAllBytes("collectear-upload.jks")) | Set-Clipboard`
+3. GitHub → dépôt → Settings → Secrets and variables → Actions → New repository secret, 4 secrets :
+   - `ANDROID_KEYSTORE_BASE64` : le texte copié à l'étape 2 ;
+   - `ANDROID_KEYSTORE_PASSWORD` : le mot de passe ;
+   - `ANDROID_KEY_ALIAS` : `upload` ;
+   - `ANDROID_KEY_PASSWORD` : le même mot de passe (PKCS12 n'en a qu'un).
+4. Au push suivant, la CI produit l'artefact `collectear-aab` → `collectear.aab` (onglet Actions → le run →
+   Artifacts), prêt à être envoyé dans la Play Console. Son numéro de version (versionCode) est le numéro
+   du run CI, donc toujours croissant.
+
+L'APK de test (lien « dernier APK ») garde sa signature habituelle : pas besoin de le désinstaller.
