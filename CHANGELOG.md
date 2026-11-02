@@ -9,6 +9,8 @@
   la politique de confidentialité y renvoie.
 - CI : 6 captures d'écran téléphone 1080×1920 pour la fiche Play (Jouer, run, bestiaire, fiche, boutique,
   profil), avec une collection de démonstration, dans l'artefact `google-play-images` (`captures/`).
+- Barre du haut : le nom « Collectear » s'affiche en entier sur les téléphones étroits (il était coupé en
+  « Collect… » alors qu'il restait de la place).
 
 ## 0.23.0 – 02/11/2026 – préparation Google Play : nom, icône, AAB signé
 - Le jeu s'appelle « Collectear » (avec la majuscule) sous l'icône du téléphone et dans l'onglet du navigateur.

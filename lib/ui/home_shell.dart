@@ -129,12 +129,19 @@ class _TopBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
       child: Row(
         children: [
-          const Flexible(
-            child: Text('Collectear',
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900)),
+          // Le nom prend toute la place libre (avant : Flexible + Spacer se la partageaient, d'où « Collect… »
+          // sur les téléphones étroits) et rapetisse seulement s'il ne tient vraiment pas.
+          const Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text('Collectear',
+                    style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900)),
+              ),
+            ),
           ),
-          const Spacer(),
+          const SizedBox(width: 6),
           _Currency(icon: Icons.monetization_on, color: AppColors.gold, value: data.collection.coins),
           const SizedBox(width: 8),
           const _Currency(icon: Icons.diamond, color: Color(0xFF4DD6FF), value: 0),

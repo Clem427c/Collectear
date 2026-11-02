@@ -39,7 +39,11 @@ def demo_collection() -> list[str]:
     # Part des espèces déjà trouvées selon la rareté (commune → légendaire).
     found = {0: 0.75, 1: 0.55, 2: 0.35, 3: 0.2, 4: 0.12}
     out = []
+    # Carte 1 (Cristallichon) : un exemplaire Doré Shiny en premier, pour la capture de la fiche.
+    out.append(f"1:{seeds[1]['golden-shiny']},{seeds[1]['none']}")
     for cid in sorted(seeds):
+        if cid == 1:
+            continue
         if rng.random() >= found.get(rarity.get(cid, 0), 0.1):
             continue
         kinds = ["none", "stripes", "spots"]
@@ -150,15 +154,16 @@ def main():
         if tap("Bestiaire"):
             time.sleep(2.5)
             save("3-bestiaire")
-        home()
-        if tap("Guide") and tap("Voir toutes les variantes", scroll=12):
+        if tap("Cristallichon"):  # fiche de la carte (exemplaire Doré Shiny)
             time.sleep(3)
-            if tap("Dorée Shiny", scroll=2):
-                time.sleep(3)
-                save("4-fiche")
+            save("4-fiche")
         home()
         if tap("Boutique"):
-            time.sleep(2.5)
+            time.sleep(2)
+            # Les skins plutôt que l'offre du jour (achat en euros pas encore branché).
+            page.mouse.move(VIEW_W / 2, VIEW_H / 2)
+            page.mouse.wheel(0, 330)
+            time.sleep(1.5)
             save("5-boutique")
         if tap("Profil"):
             time.sleep(2.5)

@@ -321,7 +321,7 @@ Priorité basse (à toi de juger) :
   et le **nom du développeur** (celui du compte Google Play) : Google les exige sur la page de suppression.
 
 ### Captures Google Play (02/11)
-- Faites par la CI dans le jeu web (collection de démonstration de 159 cartes, pseudo « Aventurière »).
+- Faites par la CI dans le jeu web (collection de démonstration de 160 cartes, pseudo « Aventurière »).
   Les jeux sur téléphone ont parfois de meilleures captures prises à la main : regarde l'artefact
   `google-play-images` d'un run de la CI et dis-moi lesquelles garder ou quels écrans changer.
 
