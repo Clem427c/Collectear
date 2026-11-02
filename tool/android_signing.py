@@ -11,11 +11,13 @@ import sys
 
 MARK = "// Collectear : signature release"
 
+IMPORTS = "import java.io.FileInputStream\nimport java.util.Properties\n\n"
+
 LOAD = f"""{MARK} (android/key.properties, écrit par la CI, jamais dans le dépôt)
-val keystoreProperties = java.util.Properties()
+val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {{
-    java.io.FileInputStream(keystorePropertiesFile).use {{ keystoreProperties.load(it) }}
+    FileInputStream(keystorePropertiesFile).use {{ keystoreProperties.load(it) }}
 }}
 
 """
@@ -40,6 +42,9 @@ USE = ('signingConfig = if (keystorePropertiesFile.exists()) signingConfigs.getB
 def patch(src: str) -> str:
     if MARK in src:
         return src
+    # 0. Imports en tête de fichier (dans un script Gradle Kotlin, « java. » désigne l'extension
+    #    java de Gradle : java.util.Properties() ne compile pas).
+    src = IMPORTS + src
     # 1. Lecture de key.properties, juste avant le bloc android { } (après plugins { }).
     m = re.search(r"^android\s*\{", src, re.M)
     assert m, "bloc android { } introuvable"
