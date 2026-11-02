@@ -231,6 +231,14 @@ jobs:
           python3 -m playwright install --with-deps chromium > /dev/null
           python3 tool/web_smoke.py build/web
 
+      - name: Captures d'écran Google Play (téléphone 1080×1920, artefact google-play-images)
+        continue-on-error: true
+        timeout-minutes: 6
+        run: |
+          python3 -m pip install --quiet playwright pillow || python3 -m pip install --quiet --break-system-packages playwright pillow
+          python3 -m playwright install --with-deps chromium > /dev/null
+          python3 tool/play_screenshots.py build/web build/store/captures
+
       - name: Build APK
         env:
           ADMOB_REWARDED_ANDROID: ${{ secrets.ADMOB_REWARDED_ANDROID }}

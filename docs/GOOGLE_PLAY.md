@@ -52,7 +52,7 @@ superlatifs du type « meilleur jeu ».)
 |---|---|---|
 | Icône | 512×512 PNG, 32 bits | provisoire (carte dorée dessinée par la CI) ; prompts prêts |
 | Image de présentation | 1024×500 JPG/PNG | prompt prêt |
-| Captures téléphone | 2 à 8, 16:9 ou 9:16, côté ≥ 320 px | la CI produit déjà des captures web (artefacts) ; à refaire en plein écran téléphone |
+| Captures téléphone | 2 à 8, 16:9 ou 9:16, côté ≥ 320 px | **prêtes** : 6 captures 1080×1920 (Jouer, run, bestiaire, fiche, boutique, profil) dans l'artefact `google-play-images` de chaque run de la CI (dossier `captures/`), avec une collection de démonstration (`tool/play_screenshots.py`) |
 
 ### Icône et image de présentation
 Prompts dans `docs/prompts_store.csv` (régénérés par `tool/gen_store_prompts.py`) : 3 idées d'icône
