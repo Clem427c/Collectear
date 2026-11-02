@@ -99,8 +99,9 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
 - [ ] **Prochaine session** : traiter les réponses de Clem (hors ligne, pseudos, collisions, énergies, pubs,
   skins, cadres, gros mots, records) ; sinon synchro en ligne des pièces, skins et cadres (si Clem dit oui).
   Records d'exploration (31/10), partage des trouvailles, décors solides et brouillon de fiche Google Play
-  (01/11) faits. Encore possible sans décision : prompts ComfyUI de l'icône et de l'image de présentation,
-  build AAB signé prêt à recevoir le keystore, nom affiché « Collectear » sur le téléphone.
+  (01/11), nom affiché, AAB signé et icône (02/11) faits. Encore possible sans décision : captures d'écran
+  téléphone pour la fiche Play (9:16) produites par la CI ; lien web de demande de suppression de compte
+  (exigé par Google Play).
 
 ## Étape 4 – Monétisation
 - [x] Vidéos récompensées (P) : run bonus quand il n'en reste plus (3/jour), résurrection à la mort
@@ -124,6 +125,14 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
 - [ ] Combats entre amis (format à définir par Clem)
 - [x] Brouillon de fiche Google Play (`docs/GOOGLE_PLAY.md` : textes, sécurité des données, classification)
   et politique de confidentialité en ligne (https://clem427c.github.io/Collectear/confidentialite.html) (P) (01/11)
+- [x] Nom affiché « Collectear » sous l'icône du téléphone et dans l'onglet du navigateur (02/11)
+- [x] AAB Google Play signé par la CI avec la clé d'envoi (secrets `ANDROID_*`), versionCode = n° du run ;
+  clé jetable de test en attendant (artefact `collectear-TEST.aab`) (02/11)
+- [x] Icône : prompts ComfyUI (3 idées d'icône + image de présentation, `--store`) ; la CI fait les icônes
+  Android (adaptatives) et web depuis `art/store/raw/` ; icône provisoire (carte dorée) en attendant (P) (02/11)
+- [ ] **Clem** : générer l'icône et l'image de présentation (`py tool\comfy_batch.py --store`, puis copier
+  les préférées dans `art/store/raw/icone.png` et `presentation.png`, voir `docs/GOOGLE_PLAY.md`)
+- [ ] **Clem** : clé d'envoi (keystore) → 4 secrets `ANDROID_*` (`docs/GOOGLE_PLAY.md`, « Clé d'envoi »)
 - [ ] Publication Google Play, puis App Store, puis web
 
 ## Décisions de Clem
@@ -294,7 +303,9 @@ Priorité basse (à toi de juger) :
 - Brouillon dans `docs/GOOGLE_PLAY.md` (nom, descriptions, catégorie Aventure, âge 13+, questionnaires).
   **À toi** : relire les textes ; choisir une **adresse de contact** pour la politique de confidentialité
   (obligatoire, visible publiquement) ; plus tard, compte développeur Google Play et keystore (Secrets GitHub).
-- Je prépare les prompts ComfyUI de l'icône (512×512) et de l'image de présentation (1024×500) ?
+- Icône (02/11) : prompts prêts, 3 idées (carte brillante, explorateur et carte, coffre ouvert) ; tu choisis.
+  PROVISOIRE en attendant : carte dorée à étoile sur fond violet, dessinée par la CI. L'image de présentation
+  est sans texte (conseil de Google) : on veut quand même le nom « Collectear » dessus ?
 
 ### Illustrations (suite)
 Remarque : les 4 bûcherons (035 Hugo, 065 Pio, 070 Milo, 079 Anatole) se ressemblent beaucoup

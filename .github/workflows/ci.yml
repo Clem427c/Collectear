@@ -266,13 +266,13 @@ jobs:
             store_pw="$ANDROID_KEYSTORE_PASSWORD"; alias="$ANDROID_KEY_ALIAS"
             key_pw="${ANDROID_KEY_PASSWORD:-$ANDROID_KEYSTORE_PASSWORD}"
             echo "Clé d'envoi : secrets ANDROID_* (AAB prêt pour Google Play)"
-            echo "AAB_NAME=collectear.aab" >> "$GITHUB_ENV"
+            aab_name=collectear.aab
           else
             store_pw="test-$(openssl rand -hex 12)"; key_pw="$store_pw"; alias=test
             keytool -genkeypair -keystore "$ks" -storetype PKCS12 -alias "$alias" -keyalg RSA -keysize 2048 \
               -validity 2 -storepass "$store_pw" -keypass "$key_pw" -dname "CN=Collectear test" -noprompt
             echo "::notice::Pas de secrets ANDROID_KEYSTORE_* : AAB signé avec une clé jetable (TEST, refusé par Google Play)."
-            echo "AAB_NAME=collectear-TEST.aab" >> "$GITHUB_ENV"
+            aab_name=collectear-TEST.aab
           fi
           echo "::add-mask::$store_pw"; echo "::add-mask::$key_pw"
           printf 'storePassword=%s\nkeyPassword=%s\nkeyAlias=%s\nstoreFile=upload-keystore.jks\n' \
@@ -285,7 +285,9 @@ jobs:
             --dart-define=ADMOB_REWARDED_ANDROID="$ADMOB_REWARDED_ANDROID"
           aab=build/app/outputs/bundle/release/app-release.aab
           keytool -printcert -jarfile "$aab" | grep -E 'Owner|Propriétaire|SHA256' | head -3 || true
-          cp "$aab" "$AAB_NAME"
+          cp "$aab" "$aab_name"
+          # (GITHUB_ENV n'est lu qu'aux étapes suivantes : le nom sert à l'envoi de l'artefact)
+          echo "AAB_NAME=$aab_name" >> "$GITHUB_ENV"
           rm -f "$ks" android/key.properties
 
       - uses: actions/upload-artifact@v4

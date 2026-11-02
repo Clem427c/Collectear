@@ -1,5 +1,16 @@
 # Journal des versions
 
+## 0.23.0 – 02/11/2026 – préparation Google Play : nom, icône, AAB signé
+- Le jeu s'appelle « Collectear » (avec la majuscule) sous l'icône du téléphone et dans l'onglet du navigateur.
+- Nouvelle icône provisoire (carte dorée à étoile sur fond violet) à la place du logo Flutter, en icône
+  adaptative sur Android 8+ et sur le jeu web. Elle sera remplacée par l'image de Clem.
+- Prompts ComfyUI de l'icône (3 idées) et de l'image de présentation Google Play (`docs/prompts_store.csv`,
+  `tool/gen_store_prompts.py`), générés par `py tool\comfy_batch.py --store`. La CI (`tool/process_store.py`)
+  en fait les icônes et l'artefact `google-play-images` (icône 512×512, présentation 1024×500).
+- CI : AAB Google Play signé avec la clé d'envoi dès que les 4 secrets `ANDROID_*` existent (procédure dans
+  `docs/GOOGLE_PLAY.md`), versionCode = numéro du run ; en attendant, AAB de test signé avec une clé jetable.
+  L'APK de test garde sa signature : pas besoin de le désinstaller.
+
 ## 0.22.0 – 01/11/2026 (après-midi) – décors solides, fiche Google Play
 - En run : les arbres, gros rochers et cristaux bloquent maintenant l'explorateur (provisoire, à l'essai) ;
   il glisse le long du tronc au lieu de s'arrêter net. Buissons, fleurs et petits décors restent traversables.
