@@ -100,13 +100,14 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
   https://clem427c.github.io/Collectear/suppression-compte.html ; collection de l'appareil gardée (P) (02/11)
 - [ ] **Clem** : recoller `supabase/schema.sql` (suppression du compte ; sans ça, le bouton affiche « le serveur
   n'est pas encore à jour »)
+- [x] Écran « À propos » (⚙ → Aide) : version avec n° du build CI, liens confidentialité, suppression du
+  compte et jeu web, licences des logiciels ; version de l'appli alignée sur le journal (0.25.0) (03/11)
 - [ ] Notifications d'échange (push) — plus tard
 - [ ] **Prochaine session** : traiter les réponses de Clem (hors ligne, pseudos, collisions, énergies, pubs,
   skins, cadres, gros mots, records) ; sinon synchro en ligne des pièces, skins et cadres (si Clem dit oui).
   Records d'exploration (31/10), partage des trouvailles, décors solides et brouillon de fiche Google Play
-  (01/11), nom affiché, AAB signé, icône, suppression du compte et captures Play (02/11) faits. Encore
-  possible sans décision : écran « À propos » (version, liens confidentialité / suppression du compte) ;
-  synchro en ligne des pièces si Clem dit oui.
+  (01/11), nom affiché, AAB signé, icône, suppression du compte et captures Play (02/11), écran « À propos »
+  (03/11) faits. Presque tout ce qui reste attend une réponse de Clem (voir « Questions pour Clem »).
 
 ## Étape 4 – Monétisation
 - [x] Vidéos récompensées (P) : run bonus quand il n'en reste plus (3/jour), résurrection à la mort
@@ -319,6 +320,10 @@ Priorité basse (à toi de juger) :
   elles repartiraient sur un nouveau compte si on se reconnecte). Préfères-tu qu'on vide aussi l'appareil ?
 - Les pages `confidentialite.html` et `suppression-compte.html` attendent toujours ton **adresse de contact**
   et le **nom du développeur** (celui du compte Google Play) : Google les exige sur la page de suppression.
+
+### À propos (03/11)
+- Les liens de l'écran « À propos » mènent aux pages du jeu web. Quand tu auras une **adresse de contact**,
+  je l'ajoute aussi dans l'écran (« Nous écrire ») : Google Play la demande dans la fiche.
 
 ### Captures Google Play (02/11)
 - Faites par la CI dans le jeu web (collection de démonstration de 160 cartes, pseudo « Aventurière »).
