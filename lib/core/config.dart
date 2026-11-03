@@ -29,7 +29,7 @@ class GameConfig {
 
   // --- Variantes rares selon la chance (GDD diapos 5 et 10) ---
   /// « Plus on s'éloigne, plus les variantes sont rares » ; « coffre rare : meilleures chances de variante rare ».
-  /// PROVISOIRE : avec une chance (distance + bonus du lieu) de 1, on tire jusqu'à 1 + 2 = 3 apparences et on
+  /// Validé par Clem le 03/11 : avec une chance (distance + bonus du lieu) de 1, on tire jusqu'à 1 + 2 = 3 apparences et on
   /// garde la plus rare (Shiny ≈ 2,5 % → ≈ 7,3 % ; finition ≈ 2,3 % → ≈ 6,8 %). Les stats ne sont pas favorisées.
   static const int variantLuckExtraDraws = 2;
 

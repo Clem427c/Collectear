@@ -3,7 +3,7 @@
 ## 0.26.0 – 03/11/2026 (soir) – variantes plus rares loin du départ
 - Comme prévu par le GDD (diapos 5 et 10) : plus on s'éloigne du point de départ, et dans les lieux (surtout le
   coffre rare), plus l'apparence de la carte obtenue a de chances d'être rare (Shiny, Dorée, Cristal, Ombre).
-  Provisoire : à pleine chance, le jeu tire 3 apparences et garde la plus rare (≈ 13 % d'apparence 3 ★ ou plus,
+  Taux validé par Clem : à pleine chance, le jeu tire 3 apparences et garde la plus rare (≈ 13 % d'apparence 3 ★ ou plus,
   contre ≈ 5 % près du départ). Les stats ±4 % ne sont pas favorisées. Rien ne change près du départ.
 - Guide (bouton ?) : la ligne des étoiles le mentionne.
 
