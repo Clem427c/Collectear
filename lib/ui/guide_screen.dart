@@ -141,7 +141,8 @@ class GuideScreen extends StatelessWidget {
                 '★★★ Shiny (1 sur 40)\n'
                 '★★★★ finition Dorée, Cristal ou Ombre\n'
                 '★★★★★ finition + Shiny (exceptionnel)\n'
-                'Les étoiles ne disent rien de la force de la carte.',
+                'Les étoiles ne disent rien de la force de la carte. Plus tu t\'éloignes du départ, et dans '
+                'les lieux (surtout le coffre rare), plus les apparences rares sont fréquentes.',
           ),
           _GalleryButton(),
           _Entry(

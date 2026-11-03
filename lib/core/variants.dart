@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'cards.dart';
+import 'config.dart';
 
 /// Motif appliqué sur l'illustration d'une variante.
 enum VariantPattern { none, stripes, spots, stars, rings }
@@ -73,6 +74,28 @@ class Variant {
       atkMult: mult(),
       defMult: mult(),
     );
+  }
+
+  /// Nombre d'apparences tirées pour une chance [luck] (0..1, au-delà compté comme 1).
+  static int drawsForLuck(double luck) =>
+      1 + (luck.clamp(0.0, 1.0) * GameConfig.variantLuckExtraDraws).floor();
+
+  /// Tire la seed d'une nouvelle variante. Avec de la chance (loin du départ, lieux), on tire plusieurs
+  /// apparences et on garde celle qui a le plus d'étoiles (la première en cas d'égalité : les stats ne
+  /// sont pas favorisées). La variante reste entièrement définie par sa seed.
+  static int drawSeed(math.Random rng, {double luck = 0}) {
+    final draws = drawsForLuck(luck);
+    var best = rng.nextInt(1 << 30);
+    var bestStars = Variant.fromSeed(best).stars;
+    for (var i = 1; i < draws; i++) {
+      final s = rng.nextInt(1 << 30);
+      final st = Variant.fromSeed(s).stars;
+      if (st > bestStars) {
+        best = s;
+        bestStars = st;
+      }
+    }
+    return best;
   }
 
   final int seed;

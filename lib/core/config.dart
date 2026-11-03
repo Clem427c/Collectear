@@ -27,6 +27,12 @@ class GameConfig {
   /// Le joueur avance à 3,75 cases/s (5 avec le boost Vitesse) ; l'esquive va plus vite mais peu longtemps.
   static const int maxTilesPerSecond = 8;
 
+  // --- Variantes rares selon la chance (GDD diapos 5 et 10) ---
+  /// « Plus on s'éloigne, plus les variantes sont rares » ; « coffre rare : meilleures chances de variante rare ».
+  /// PROVISOIRE : avec une chance (distance + bonus du lieu) de 1, on tire jusqu'à 1 + 2 = 3 apparences et on
+  /// garde la plus rare (Shiny ≈ 2,5 % → ≈ 7,3 % ; finition ≈ 2,3 % → ≈ 6,8 %). Les stats ne sont pas favorisées.
+  static const int variantLuckExtraDraws = 2;
+
   // --- Combat ---
   static const int enemyHitsToKill = 3;
   static const int enemyHitsToKillBoosted = 2;

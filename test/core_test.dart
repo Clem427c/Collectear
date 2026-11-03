@@ -485,6 +485,45 @@ void main() {
   });
 
   group('Variantes', () {
+    test('chance : plus d\'apparences tirées loin du départ, jamais moins d\'une', () {
+      expect(Variant.drawsForLuck(0), 1);
+      expect(Variant.drawsForLuck(-1), 1);
+      expect(Variant.drawsForLuck(0.49), 1);
+      expect(Variant.drawsForLuck(0.5), 1 + GameConfig.variantLuckExtraDraws ~/ 2);
+      expect(Variant.drawsForLuck(1), 1 + GameConfig.variantLuckExtraDraws);
+      expect(Variant.drawsForLuck(1.6), 1 + GameConfig.variantLuckExtraDraws);
+    });
+
+    test('chance : sans chance, tirage identique à l\'ancien ; avec, plus de Shiny et de finitions', () {
+      final a = Random(7), b = Random(7);
+      for (var i = 0; i < 50; i++) {
+        expect(Variant.drawSeed(a), b.nextInt(1 << 30));
+      }
+      double rate(double luck) {
+        final rng = Random(42);
+        var rare = 0;
+        const n = 40000;
+        for (var i = 0; i < n; i++) {
+          if (Variant.fromSeed(Variant.drawSeed(rng, luck: luck)).stars >= 3) rare++;
+        }
+        return rare / n;
+      }
+      final none = rate(0), full = rate(1);
+      expect(none, closeTo(0.048, 0.01)); // Shiny ou finition ≈ 4,8 %
+      expect(full, greaterThan(none * 2.4));
+      expect(full, lessThan(0.16)); // reste rare
+    });
+
+    test('chance : les stats ne sont pas favorisées', () {
+      final rng = Random(3);
+      var sum = 0.0;
+      const n = 20000;
+      for (var i = 0; i < n; i++) {
+        sum += Variant.fromSeed(Variant.drawSeed(rng, luck: 1)).quality;
+      }
+      expect(sum / n, closeTo(0.5, 0.02));
+    });
+
     test('étoiles = rareté de l\'apparence : un Shiny en a toujours plus qu\'un uni', () {
       final byStars = <int, int>{};
       for (var seed = 0; seed < 200000; seed++) {

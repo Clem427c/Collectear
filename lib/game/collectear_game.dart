@@ -318,7 +318,8 @@ class CollectearGame extends FlameGame with KeyboardEvents {
   }
 
   void _giveCard({double bonusLuck = 0}) {
-    final card = CardInstance(pool.draw(_rng, luck: _luck + bonusLuck), _rng.nextInt(1 << 30));
+    final luck = _luck + bonusLuck;
+    final card = CardInstance(pool.draw(_rng, luck: luck), Variant.drawSeed(_rng, luck: luck));
     run.addCard(card);
     cardEvent.value = card;
     Sfx.play('card');
