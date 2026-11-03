@@ -46,6 +46,8 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
   pour qu'on puisse en faire le tour ; réglage ⚙ Paramètres → Jeu pour les couper (01/11)
 - [x] Retours du 28/10 : herbe plus douce (prompts + adoucissement auto), sommet des tours en 3×3,
   énergie achetable dès qu'il en manque une (max 10)
+- [x] Variantes plus rares loin du départ et dans les lieux (GDD diapos 5 et 10) : jusqu'à 3 apparences tirées,
+  la plus rare gardée (P) (03/11)
 - [x] **Clem** : sols 1, 2, 3 régénérés avec les prompts doux (28/10) ; teinte de chaque étage ajustée en CI
 
 ## Étape 3 – En ligne (Supabase) — en cours
@@ -107,7 +109,7 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
   skins, cadres, gros mots, records) ; sinon synchro en ligne des pièces, skins et cadres (si Clem dit oui).
   Records d'exploration (31/10), partage des trouvailles, décors solides et brouillon de fiche Google Play
   (01/11), nom affiché, AAB signé, icône, suppression du compte et captures Play (02/11), écran « À propos »
-  (03/11) faits. Presque tout ce qui reste attend une réponse de Clem (voir « Questions pour Clem »).
+  et variantes plus rares loin du départ (03/11) faits. Presque tout ce qui reste attend une réponse de Clem (voir « Questions pour Clem »).
 
 ## Étape 4 – Monétisation
 - [x] Vidéos récompensées (P) : run bonus quand il n'en reste plus (3/jour), résurrection à la mort
@@ -320,6 +322,13 @@ Priorité basse (à toi de juger) :
   elles repartiraient sur un nouveau compte si on se reconnecte). Préfères-tu qu'on vide aussi l'appareil ?
 - Les pages `confidentialite.html` et `suppression-compte.html` attendent toujours ton **adresse de contact**
   et le **nom du développeur** (celui du compte Google Play) : Google les exige sur la page de suppression.
+
+### Variantes rares loin du départ (03/11)
+- Le GDD dit « plus on s'éloigne, plus les variantes sont rares » et « coffre rare : meilleures chances de variante
+  rare ». PROVISOIRE : la chance (déjà utilisée pour la rareté de l'espèce : distance, + bonus du lieu) fait tirer
+  jusqu'à 3 apparences, et on garde la plus rare. Apparence 3 ★ ou plus : ≈ 5 % près du départ, ≈ 13 % loin
+  ou dans un coffre rare. Trop généreux, pas assez ? (réglage `variantLuckExtraDraws` dans `config.dart`)
+- Les cartes tirées tous les 10 ennemis profitent aussi de la distance (pas de bonus de lieu). Ça te va ?
 
 ### À propos (03/11)
 - Les liens de l'écran « À propos » mènent aux pages du jeu web. Quand tu auras une **adresse de contact**,
