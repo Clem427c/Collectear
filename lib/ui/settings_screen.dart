@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../ads/ads.dart';
 import '../app_data.dart';
+import '../core/about.dart';
 import '../core/ads.dart';
 import '../game/sfx.dart';
 import '../online.dart';
+import 'about_screen.dart';
 import 'account_panel.dart';
 import 'guide_screen.dart';
 import 'theme.dart';
@@ -129,6 +131,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   style: TextStyle(color: Colors.white54, fontSize: 12)),
               trailing: const Icon(Icons.chevron_right, color: Colors.white54),
               onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const GuideScreen())),
+            ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.info_outline, color: AppColors.gold),
+              title: const Text('À propos', style: TextStyle(color: Colors.white)),
+              subtitle: Text('Version ${versionLabel()} · confidentialité · suppression du compte',
+                  style: const TextStyle(color: Colors.white54, fontSize: 12)),
+              trailing: const Icon(Icons.chevron_right, color: Colors.white54),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const AboutScreen())),
             ),
           ]),
         ],

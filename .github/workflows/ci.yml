@@ -222,6 +222,7 @@ jobs:
           flutter build web --release --base-href "/${{ github.event.repository.name }}/"
           --dart-define=SUPABASE_URL="$SUPABASE_URL"
           --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY"
+          --dart-define=BUILD_NUMBER=${{ github.run_number }}
 
       - name: Test de fumée web (lance une run dans Chromium, captures dans le journal)
         continue-on-error: true
@@ -249,6 +250,7 @@ jobs:
           --dart-define=SUPABASE_URL="$SUPABASE_URL"
           --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY"
           --dart-define=ADMOB_REWARDED_ANDROID="$ADMOB_REWARDED_ANDROID"
+          --dart-define=BUILD_NUMBER=${{ github.run_number }}
 
       - name: Renommer l'APK
         run: cp build/app/outputs/flutter-apk/app-release.apk collectear.apk
@@ -290,7 +292,8 @@ jobs:
           flutter build appbundle --release --build-number=${{ github.run_number }} \
             --dart-define=SUPABASE_URL="$SUPABASE_URL" \
             --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY" \
-            --dart-define=ADMOB_REWARDED_ANDROID="$ADMOB_REWARDED_ANDROID"
+            --dart-define=ADMOB_REWARDED_ANDROID="$ADMOB_REWARDED_ANDROID" \
+            --dart-define=BUILD_NUMBER=${{ github.run_number }}
           aab=build/app/outputs/bundle/release/app-release.aab
           keytool -printcert -jarfile "$aab" | grep -E 'Owner|Propriétaire|SHA256' | head -3 || true
           cp "$aab" "$aab_name"

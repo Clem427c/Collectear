@@ -1,5 +1,12 @@
 # Journal des versions
 
+## 0.25.0 – 03/11/2026 – écran « À propos »
+- ⚙ Paramètres → Aide → « À propos » : version du jeu (avec le numéro du build CI, par ex. « 0.25.0 (build 312) » ;
+  appui long pour la copier), liens vers la politique de confidentialité, la page de suppression du compte et
+  le jeu web (ouverts dans le navigateur ; adresse copiée si c'est impossible), licences des logiciels utilisés.
+- La version de l'appli (Android, Google Play) suit maintenant le journal : 0.25.0 au lieu de 0.1.0.
+  Les tests vérifient que `pubspec.yaml`, le code et ce journal ont le même numéro.
+
 ## 0.24.0 – 02/11/2026 (après-midi) – suppression du compte, captures Google Play
 - ⚙ Paramètres → Compte : « Supprimer mon compte… ». On écrit SUPPRIMER pour confirmer ; le compte et tout ce
   qui est en ligne (pseudo, code ami, collection, runs, amis, échanges, souhaits) sont supprimés tout de suite.
