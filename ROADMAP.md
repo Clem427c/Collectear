@@ -165,6 +165,7 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
 
 - Variantes rares loin du départ : jusqu'à 3 apparences tirées à pleine chance, la plus rare gardée
   (≈ 5 % de 3 ★ ou plus près du départ, ≈ 13 % loin ou en coffre rare) : « impeccable comme ceci » (03/11).
+  Les cartes des 10 ennemis en profitent aussi (selon la distance) : oui (03/11).
 
 ## Questions pour Clem
 ### Illustrations à refaire (revue du 27/10)
@@ -331,7 +332,7 @@ Priorité basse (à toi de juger) :
   rare ». PROVISOIRE : la chance (déjà utilisée pour la rareté de l'espèce : distance, + bonus du lieu) fait tirer
   jusqu'à 3 apparences, et on garde la plus rare. Apparence 3 ★ ou plus : ≈ 5 % près du départ, ≈ 13 % loin
   ou dans un coffre rare. **Taux validé par Clem (03/11)**, voir « Décisions de Clem ».
-- Les cartes tirées tous les 10 ennemis profitent aussi de la distance (pas de bonus de lieu). Ça te va ?
+- Les cartes tirées tous les 10 ennemis profitent aussi de la distance (pas de bonus de lieu) : **oui** (Clem, 03/11).
 
 ### À propos (03/11)
 - Les liens de l'écran « À propos » mènent aux pages du jeu web. Quand tu auras une **adresse de contact**,
