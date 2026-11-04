@@ -25,6 +25,7 @@ class FriendProfileScreen extends StatefulWidget {
     this.onOffer,
     this.bestKills,
     this.bestDistance,
+    this.places,
   });
   final AppData data;
   final Friend friend;
@@ -38,6 +39,9 @@ class FriendProfileScreen extends StatefulWidget {
 
   /// Record de distance en une run (mètres), s'il est connu (serveur à jour).
   final int? bestDistance;
+
+  /// Lieux découverts sur toutes ses runs, s'ils sont connus (serveur à jour, schéma du 04/11).
+  final int? places;
 
   @override
   State<FriendProfileScreen> createState() => _FriendProfileScreenState();
@@ -309,12 +313,20 @@ class _FriendProfileScreenState extends State<FriendProfileScreen> {
           ),
         ]),
         const SizedBox(height: 12),
+        // Collection, puis exploration (GDD diapo 12 : lieux découverts, record de distance, variantes rares).
         Row(children: [
           _stat('${col.species} / $total', 'cartes'),
           _stat('${col.copies}', 'exemplaires'),
-          if (widget.bestKills != null) _stat('${widget.bestKills}', 'record ennemis'),
-          if (widget.bestDistance != null) _stat('${widget.bestDistance} m', 'record distance'),
+          _stat('${col.rareVariants}', 'variantes rares'),
         ]),
+        if (widget.bestKills != null || widget.bestDistance != null || widget.places != null) ...[
+          const SizedBox(height: 8),
+          Row(children: [
+            if (widget.bestKills != null) _stat('${widget.bestKills}', 'record ennemis'),
+            if (widget.bestDistance != null) _stat('${widget.bestDistance} m', 'record distance'),
+            if (widget.places != null) _stat('${widget.places}', 'lieux découverts'),
+          ]),
+        ],
         const SizedBox(height: 10),
         Text(
           '${col.iLackCount} carte${col.iLackCount > 1 ? 's' : ''} qu\'il a et pas toi · '

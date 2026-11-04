@@ -139,6 +139,7 @@ select pg_temp.check(not exists (select 1 from public.owned_cards where card_id 
 select pg_temp.check((select count(*) from public.friends_leaderboard()) = 2, 'classement : moi et mon ami');
 select pg_temp.check((select is_me and species = 2 from public.friends_leaderboard() order by species desc limit 1), 'classement : trié (cartes différentes, puis exemplaires, puis pseudo)');
 select pg_temp.check((select count(*) = 2 and bool_and(best_distance >= 0) from public.friends_leaderboard()), 'classement : record de distance');
+select pg_temp.check((select places = 1 from public.friends_leaderboard() where is_me), 'classement : lieux découverts (somme des runs)');
 -- 2 contre 1 et favoris. A possède 300/0 et 50/7 ; B possède 51/8 et 12/345.
 select id as a300 from public.my_cards() where card_id = 300 \gset
 select id as a50 from public.my_cards() where card_id = 50 \gset

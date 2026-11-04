@@ -238,7 +238,7 @@ class _FriendsViewState extends State<_FriendsView> {
   void _openProfile(Friend f) {
     final entry = widget.model.leaderboard.where((e) => e.userId == f.userId).firstOrNull;
     openFriendProfile(context, widget.data, f, widget.model.refresh,
-        bestKills: entry?.bestKills, bestDistance: entry?.bestDistance);
+        bestKills: entry?.bestKills, bestDistance: entry?.bestDistance, places: entry?.places);
   }
 
   Future<void> _confirmRemove(Friend f) async {
@@ -727,13 +727,14 @@ Future<void> openTradeComposer(BuildContext context, AppData data, Friend friend
 
 /// Ouvre le profil d'un ami (sa collection en détail), d'où l'on peut lancer un échange.
 Future<void> openFriendProfile(BuildContext context, AppData data, Friend friend, Future<void> Function() onSent,
-        {int? bestKills, int? bestDistance}) =>
+        {int? bestKills, int? bestDistance, int? places}) =>
     Navigator.of(context).push(MaterialPageRoute<void>(
       builder: (ctx) => FriendProfileScreen(
         data: data,
         friend: friend,
         bestKills: bestKills,
         bestDistance: bestDistance,
+        places: places,
         onTrade: (request) => openTradeComposer(ctx, data, friend, onSent, request: request),
         onOffer: (cardId) => openTradeComposer(ctx, data, friend, onSent, offerCardId: cardId),
       ),

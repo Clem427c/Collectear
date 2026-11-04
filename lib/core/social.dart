@@ -3,6 +3,7 @@
 library;
 
 import 'cards.dart';
+import 'variants.dart';
 import 'wishlist.dart';
 
 /// Alphabet des codes ami (sans 0/O ni 1/I), comme public.new_friend_code() côté serveur.
@@ -213,6 +214,7 @@ class LeaderboardEntry {
     required this.copies,
     required this.bestKills,
     this.bestDistance,
+    this.places,
   });
   final String userId;
   final String name;
@@ -225,6 +227,9 @@ class LeaderboardEntry {
 
   /// Record de distance en une run (mètres) ; null si le serveur n'a pas encore le schéma du 31/10.
   final int? bestDistance;
+
+  /// Lieux découverts (débloqués) sur toutes ses runs ; null si le serveur n'a pas encore le schéma du 04/11.
+  final int? places;
 
   /// Lit les lignes du serveur et les range : cartes différentes, puis exemplaires, puis pseudo.
   static List<LeaderboardEntry> fromRows(Iterable<dynamic> rows) {
@@ -239,6 +244,7 @@ class LeaderboardEntry {
             copies: _int(r['copies']) ?? 0,
             bestKills: _int(r['best_kills']) ?? 0,
             bestDistance: _int(r['best_distance']),
+            places: _int(r['places']),
           ),
     ];
     out.sort((a, b) {
@@ -291,6 +297,16 @@ class FriendCollection {
 
   int get species => bySpecies.length;
   int get copies => bySpecies.values.fold(0, (n, l) => n + l.length);
+
+  /// Étoiles d'apparence à partir desquelles un exemplaire compte comme « variante rare » (Shiny ou mieux).
+  static const rareVariantMinStars = 3;
+
+  /// Exemplaires de l'ami en variante rare (Shiny, Dorée, Cristal, Ombre) : GDD diapo 12, « profil visible
+  /// par les amis : lieux découverts, record de distance, variantes rares ».
+  int get rareVariants => bySpecies.values
+      .expand((l) => l)
+      .where((c) => Variant.fromSeed(c.seed).stars >= rareVariantMinStars)
+      .length;
 
   /// Espèces de l'ami que je n'ai pas encore (cartes à lui demander).
   int get iLackCount => bySpecies.keys.where((id) => (_mine[id] ?? 0) == 0).length;

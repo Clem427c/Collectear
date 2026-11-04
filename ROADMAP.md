@@ -104,12 +104,16 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
   n'est pas encore à jour »)
 - [x] Écran « À propos » (⚙ → Aide) : version avec n° du build CI, liens confidentialité, suppression du
   compte et jeu web, licences des logiciels ; version de l'appli alignée sur le journal (0.25.0) (03/11)
+- [x] Profil d'un ami (GDD diapo 12) : variantes rares (3 ★ ou plus) et lieux découverts, à côté des
+  records d'ennemis et de distance (04/11)
+- [ ] **Clem** : recoller `supabase/schema.sql` (lieux découverts sur le profil d'un ami ; sans ça, la case
+  n'apparaît pas, le reste marche)
 - [ ] Notifications d'échange (push) — plus tard
 - [ ] **Prochaine session** : traiter les réponses de Clem (hors ligne, pseudos, collisions, énergies, pubs,
   skins, cadres, gros mots, records) ; sinon synchro en ligne des pièces, skins et cadres (si Clem dit oui).
   Records d'exploration (31/10), partage des trouvailles, décors solides et brouillon de fiche Google Play
   (01/11), nom affiché, AAB signé, icône, suppression du compte et captures Play (02/11), écran « À propos »
-  et variantes plus rares loin du départ (03/11) faits. Presque tout ce qui reste attend une réponse de Clem (voir « Questions pour Clem »).
+  et variantes plus rares loin du départ (03/11), variantes rares et lieux sur le profil d'un ami (04/11) faits. Presque tout ce qui reste attend une réponse de Clem (voir « Questions pour Clem »).
 
 ## Étape 4 – Monétisation
 - [x] Vidéos récompensées (P) : run bonus quand il n'en reste plus (3/jour), résurrection à la mort

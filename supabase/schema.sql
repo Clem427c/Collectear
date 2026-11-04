@@ -712,11 +712,11 @@ grant execute on function public.set_wish(smallint, boolean), public.my_wishlist
 -- ---------------------------------------------------------------------------
 -- Classement entre amis : moi et mes amis, par nombre de cartes différentes.
 -- ---------------------------------------------------------------------------
--- (Colonne best_distance ajoutée le 31/10, affichée sur le profil d'un ami ; le tri ne change pas.)
+-- (Colonne best_distance ajoutée le 31/10, places le 04/11 : affichées sur le profil d'un ami ; le tri ne change pas.)
 drop function if exists public.friends_leaderboard();
 create or replace function public.friends_leaderboard()
 returns table (user_id uuid, display_name text, is_me boolean, species bigint, copies bigint, best_kills int,
-               best_distance int)
+               best_distance int, places bigint)
 language sql stable security definer set search_path = '' as $$
   with people as (
     select (select auth.uid()) as id
@@ -729,7 +729,8 @@ language sql stable security definer set search_path = '' as $$
          (select count(distinct c.card_id) from public.owned_cards c where c.user_id = p.id),
          (select count(*) from public.owned_cards c where c.user_id = p.id),
          (select coalesce(max(r.kills), 0) from public.runs r where r.user_id = p.id and r.finished_at is not null),
-         (select coalesce(max(r.distance), 0) from public.runs r where r.user_id = p.id and r.finished_at is not null)
+         (select coalesce(max(r.distance), 0) from public.runs r where r.user_id = p.id and r.finished_at is not null),
+         (select coalesce(sum(r.places), 0) from public.runs r where r.user_id = p.id and r.finished_at is not null)
   from people p
   join public.profiles pr on pr.id = p.id
   where p.id is not null

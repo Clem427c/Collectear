@@ -1444,5 +1444,29 @@ void main() {
       expect(rows.first.bestDistance, 87);
       expect(rows.last.bestDistance, isNull);
     });
+
+    test('classement : lieux découverts connus seulement si le serveur les envoie', () {
+      final rows = LeaderboardEntry.fromRows([
+        {'user_id': 'a', 'display_name': 'A', 'species': 3, 'copies': 3, 'best_kills': 1, 'places': '5'},
+        {'user_id': 'b', 'display_name': 'B', 'species': 1, 'copies': 1, 'best_kills': 1},
+      ]);
+      expect(rows.first.places, 5);
+      expect(rows.last.places, isNull);
+    });
+
+    test('profil d\'un ami : variantes rares (Shiny ou mieux) comptées', () {
+      final pool = _pool();
+      final id = pool.cards.first.id;
+      final rare = [for (var s = 0; s < 20000; s++) if (Variant.fromSeed(s).stars >= 3) s].take(2).toList();
+      final plain = [for (var s = 0; s < 200; s++) if (Variant.fromSeed(s).stars < 3) s].take(3).toList();
+      expect(rare.length, 2);
+      final fc = FriendCollection([
+        for (final (i, s) in [...rare, ...plain].indexed) ServerCard(i, id, s),
+        ServerCard(99, 9999, rare.first), // carte inconnue : ignorée
+      ], pool, const {});
+      expect(fc.copies, 5);
+      expect(fc.rareVariants, 2);
+      expect(FriendCollection(const [], pool, const {}).rareVariants, 0);
+    });
   });
 }

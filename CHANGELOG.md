@@ -1,5 +1,13 @@
 # Journal des versions
 
+## 0.27.0 – 04/11/2026 – profil d'un ami : variantes rares et lieux découverts
+- Comme prévu par le GDD (diapo 12, « profil visible par les amis : lieux découverts, record de distance, variantes
+  rares ») : le profil d'un ami affiche maintenant son nombre de **variantes rares** (exemplaires Shiny, Dorée,
+  Cristal ou Ombre, soit 3 ★ ou plus) et, sur une 2e ligne, ses records d'exploration : record d'ennemis, record
+  de distance et **lieux découverts** (total de toutes ses runs).
+- Serveur : le classement entre amis renvoie aussi les lieux découverts (testé en CI). À recoller par Clem ;
+  en attendant, la case « lieux découverts » n'apparaît pas (rien ne casse).
+
 ## 0.26.0 – 03/11/2026 (soir) – variantes plus rares loin du départ
 - Comme prévu par le GDD (diapos 5 et 10) : plus on s'éloigne du point de départ, et dans les lieux (surtout le
   coffre rare), plus l'apparence de la carte obtenue a de chances d'être rare (Shiny, Dorée, Cristal, Ombre).

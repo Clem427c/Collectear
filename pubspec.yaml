@@ -1,7 +1,7 @@
 name: collectear
 description: "Collectear – explore un monde infini en runs de 2 minutes et collectionne créatures et héros."
 publish_to: 'none'
-version: 0.26.0+1
+version: 0.27.0+1
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
