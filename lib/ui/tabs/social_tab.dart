@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../../app_data.dart';
 import '../../core/card_search.dart';
 import '../../core/cards.dart';
+import '../../core/cloud_sync.dart';
 import '../../core/social.dart';
 import '../../core/variants.dart';
 import '../../core/wishlist.dart';
@@ -158,7 +159,7 @@ class _Online extends StatelessWidget {
           const Text('Amis et échanges',
               style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
           const SizedBox(height: 6),
-          const Text('Connecte-toi pour ajouter des amis avec leur code et échanger des cartes avec eux.',
+          const Text('Connecte-toi pour ajouter des amis (code ami ou pseudo) et échanger des cartes avec eux.',
               style: TextStyle(color: Colors.white70)),
           const SizedBox(height: 12),
           if (Online.ready || Online.config.isUsable)
@@ -210,23 +211,94 @@ class _FriendsViewState extends State<_FriendsView> {
     super.dispose();
   }
 
+  /// Ajoute un ami par son code, ou cherche son pseudo (GDD diapo 14 : « ajout par code ami ou pseudo »).
   Future<void> _add() async {
-    if (!isPlausibleFriendCode(_code.text)) {
-      _snack(context, 'Un code ami fait 8 caractères (lettres et chiffres).', error: true);
+    final input = _code.text;
+    final kind = classifyFriendInput(input);
+    if (kind == FriendInputKind.invalid) {
+      _snack(context, 'Tape un code ami (8 caractères) ou le pseudo exact de ton ami.', error: true);
       return;
     }
     setState(() => _busy = true);
-    final (now, err) = await Online.addFriend(_code.text);
+    if (kind == FriendInputKind.code) {
+      final (now, err) = await Online.addFriend(input);
+      if (!mounted) return;
+      if (err == null) {
+        setState(() => _busy = false);
+        _code.clear();
+        _snack(context, now ? 'Vous êtes maintenant amis !' : 'Demande envoyée : elle apparaîtra chez ton ami.');
+        await widget.model.refresh();
+        return;
+      }
+      if (!pseudoFallback(input, err)) {
+        setState(() => _busy = false);
+        _snack(context, err, error: true);
+        return;
+      }
+    }
+    final (players, err) = await Online.findPlayers(input);
     if (!mounted) return;
     setState(() => _busy = false);
     if (err != null) {
       _snack(context, err, error: true);
       return;
     }
+    if (players.isEmpty) {
+      _snack(context, 'Aucun joueur n\'a ce code ami ni ce pseudo exact. Le code ami marche toujours.', error: true);
+      return;
+    }
+    final picked = await _pickPlayer(normalizePseudo(input), players);
+    if (picked == null || !mounted) return;
+    setState(() => _busy = true);
+    final (now, addErr) = await Online.addFriend(picked.code);
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (addErr != null) {
+      _snack(context, addErr, error: true);
+      return;
+    }
     _code.clear();
-    _snack(context, now ? 'Vous êtes maintenant amis !' : 'Demande envoyée : elle apparaîtra chez ton ami.');
+    _snack(context, now ? 'Vous êtes maintenant amis avec ${picked.name} !' : 'Demande envoyée à ${picked.name}.');
     await widget.model.refresh();
   }
+
+  /// Liste des joueurs qui ont ce pseudo : le joueur choisit lequel ajouter.
+  Future<PlayerMatch?> _pickPlayer(String pseudo, List<PlayerMatch> players) => showModalBottomSheet<PlayerMatch>(
+        context: context,
+        backgroundColor: AppColors.night,
+        isScrollControlled: true,
+        builder: (ctx) => SafeArea(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(ctx).height * 0.7),
+            child: ListView(shrinkWrap: true, padding: const EdgeInsets.all(16), children: [
+              Text(players.length == 1 ? 'Un joueur s\'appelle « $pseudo »' : '${players.length} joueurs s\'appellent « $pseudo »',
+                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900)),
+              const SizedBox(height: 4),
+              const Text('Vérifie son code ami avec lui si tu as un doute.', style: TextStyle(color: Colors.white60)),
+              const SizedBox(height: 8),
+              for (final p in players)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: _avatar(p.name),
+                  title: Text(p.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  subtitle: Text(
+                      [
+                        'Code ${formatFriendCode(p.code)}',
+                        '${p.species} / ${widget.data.pool.cards.length} cartes',
+                        if (p.relationLabel.isNotEmpty) p.relationLabel,
+                      ].join(' · '),
+                      style: const TextStyle(color: Colors.white60)),
+                  trailing: p.canAdd
+                      ? ChunkyButton(
+                          label: p.relation == PlayerRelation.incoming ? 'Accepter' : 'Ajouter',
+                          fontSize: 13,
+                          onPressed: () => Navigator.pop(ctx, p))
+                      : null,
+                ),
+            ]),
+          ),
+        ),
+      );
 
   Future<void> _act(Future<String?> action, String done) async {
     final err = await action;
@@ -305,11 +377,10 @@ class _FriendsViewState extends State<_FriendsView> {
                       child: TextField(
                         controller: _code,
                         enabled: !_busy,
-                        textCapitalization: TextCapitalization.characters,
                         autocorrect: false,
-                        style: const TextStyle(color: Colors.white, letterSpacing: 2),
+                        style: const TextStyle(color: Colors.white, letterSpacing: 1),
                         decoration: const InputDecoration(
-                          hintText: 'Code ami à ajouter',
+                          hintText: 'Code ami ou pseudo',
                           hintStyle: TextStyle(color: Colors.white38, letterSpacing: 0),
                           isDense: true,
                           border: OutlineInputBorder(),
@@ -353,7 +424,7 @@ class _FriendsViewState extends State<_FriendsView> {
                       ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
                       : null),
               if (friends.isEmpty)
-                const Text('Pas encore d\'amis : partage ton code ami ou ajoute le leur.',
+                const Text('Pas encore d\'amis : partage ton code ami, ou ajoute le leur ou leur pseudo.',
                     style: TextStyle(color: Colors.white60)),
               for (final f in friends)
                 _row(

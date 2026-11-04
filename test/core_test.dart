@@ -855,6 +855,43 @@ void main() {
       expect(socialErrorMessage('P0001: non_connecte'), contains('Connecte-toi'));
     });
 
+    test('ajout d\'un ami : code ami ou pseudo', () {
+      expect(classifyFriendInput('abcd efgh'), FriendInputKind.code);
+      expect(classifyFriendInput('  Clem  '), FriendInputKind.pseudo);
+      expect(classifyFriendInput('Léa la Rousse'), FriendInputKind.pseudo);
+      expect(classifyFriendInput('x'), FriendInputKind.invalid);
+      expect(classifyFriendInput(''), FriendInputKind.invalid);
+      expect(classifyFriendInput('explorateur'), FriendInputKind.invalid); // pseudo de tout le monde
+      expect(classifyFriendInput('Clem 🎉'), FriendInputKind.invalid);
+      expect(classifyFriendInput('a' * 25), FriendInputKind.invalid);
+      // « MARCELLA » a la forme d'un code : essayé comme code, puis comme pseudo si personne n'a ce code.
+      expect(classifyFriendInput('Marcella'), FriendInputKind.code);
+      expect(pseudoFallback('Marcella', socialErrorMessage('code_inconnu')), isTrue);
+      expect(pseudoFallback('Marcella', socialErrorMessage('deja_amis')), isFalse);
+      expect(pseudoFallback('Explorateur', socialErrorMessage('code_inconnu')), isFalse);
+    });
+
+    test('joueurs trouvés par pseudo : lecture des lignes du serveur', () {
+      final m = PlayerMatch.fromRows([
+        {'display_name': 'Clem', 'friend_code': 'abcdefgh', 'species': 12, 'relation': 'none'},
+        {'display_name': 'Clem', 'friend_code': 'HJKLMNPQ', 'species': '3', 'relation': 'friend'},
+        {'display_name': 'Clem', 'friend_code': 'ZZ', 'relation': 'none'}, // code invalide : ignoré
+        {'display_name': 'Clem', 'friend_code': 'RSTUVWXY', 'relation': 'incoming'},
+        {'display_name': 'Clem', 'friend_code': 'ABCDEFG2', 'relation': 'outgoing'},
+        'pas une ligne',
+      ]);
+      expect(m.length, 4);
+      expect(m[0].code, 'ABCDEFGH');
+      expect(m[0].species, 12);
+      expect(m[0].canAdd, isTrue);
+      expect(m[1].species, 3);
+      expect(m[1].relation, PlayerRelation.friend);
+      expect(m[1].canAdd, isFalse);
+      expect(m[2].canAdd, isTrue); // demande reçue : « Ajouter » l'accepte
+      expect(m[3].canAdd, isFalse);
+      expect(m[3].relationLabel, 'Demande envoyée');
+    });
+
     test('suppression du compte : mot de confirmation', () {
       expect(isDeleteAccountConfirmation('SUPPRIMER'), isTrue);
       expect(isDeleteAccountConfirmation('  supprimer '), isTrue);

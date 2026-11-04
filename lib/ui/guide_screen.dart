@@ -162,7 +162,7 @@ class GuideScreen extends StatelessWidget {
           _Entry(
             art: _IconArt(Icons.swap_horiz_rounded, color: AppColors.teal),
             title: 'Échanges entre amis',
-            text: 'Onglet Social : ajoute un ami avec son code ami, puis propose-lui de 1 à $maxTradeSide cartes '
+            text: 'Onglet Social : ajoute un ami avec son code ami ou son pseudo exact, puis propose-lui de 1 à $maxTradeSide cartes '
                 'contre 1 à $maxTradeSide des siennes, sans restriction de rareté. Les cartes changent de main '
                 'quand il accepte.',
           ),

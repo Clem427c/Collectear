@@ -222,6 +222,29 @@ select pg_temp.check((select count(*) from public.trades) = 0 and (select count(
 reset role;
 set role authenticated;
 -- Suppression du compte : D a un profil, des cartes, un ami et un souhait ; tout disparaît.
+-- Recherche d'un joueur par son pseudo (A = « Clem », amie de B ; C a le pseudo par défaut).
+select set_config('request.jwt.claim.sub', '33333333-3333-3333-3333-333333333333', false);
+select pg_temp.check((select count(*) = 1 and bool_and(friend_code = :'code_a' and relation = 'none' and species > 0)
+                      from public.find_players('  cLeM ')), 'pseudo : trouvé sans tenir compte des majuscules et espaces');
+select pg_temp.check((select count(*) from public.find_players('Cle')) = 0, 'pseudo : seulement le pseudo exact');
+select pg_temp.check((select count(*) from public.find_players('Explorateur')) = 0, 'pseudo : pseudo par défaut jamais trouvé');
+select pg_temp.check((select count(*) from public.find_players('x')) = 0, 'pseudo : trop court');
+select public.add_friend(:'code_a');
+select pg_temp.check((select relation = 'outgoing' from public.find_players('Clem')), 'pseudo : demande envoyée signalée');
+select set_config('request.jwt.claim.sub', '11111111-1111-1111-1111-111111111111', false);
+select pg_temp.check((select count(*) from public.find_players('Clem')) = 0, 'pseudo : on ne se trouve pas soi-même');
+select public.remove_friend('33333333-3333-3333-3333-333333333333');
+select set_config('request.jwt.claim.sub', '33333333-3333-3333-3333-333333333333', false);
+select pg_temp.check((select relation = 'none' from public.find_players('Clem')), 'pseudo : demande annulée');
+reset role;
+update public.profiles set display_name = 'Bob' where id = '22222222-2222-2222-2222-222222222222';
+set role authenticated;
+select set_config('request.jwt.claim.sub', '11111111-1111-1111-1111-111111111111', false);
+select pg_temp.check((select relation = 'friend' from public.find_players('BOB')), 'pseudo : ami signalé');
+reset role;
+set role anon;
+select set_config('request.jwt.claim.sub', '', false);
+select pg_temp.check(pg_temp.fails('select * from public.find_players(''Clem'')'), 'pseudo : anonyme refusé');
 reset role;
 insert into auth.users values ('44444444-4444-4444-4444-444444444444', 'd@x');
 set role authenticated;

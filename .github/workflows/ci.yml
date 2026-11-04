@@ -198,6 +198,8 @@ jobs:
           for f in start_run my_stats my_trades friends_leaderboard my_wishlist; do
             echo "Fonction $f : $(check -X POST "$url/rest/v1/rpc/$f" -d '{}')"
           done
+          # Ajout d'un ami par pseudo (04/11) : sans session, refus attendu (et non « introuvable »).
+          echo "Fonction find_players : $(check -X POST "$url/rest/v1/rpc/find_players" -d '{"p_name":"x"}')"
           # Records d'exploration (31/10) : colonne absente tant que le schéma n'est pas recollé.
           echo "Colonne runs.distance : $(check "$url/rest/v1/runs?select=distance&limit=0")"
           r=$(check "$url/rest/v1/trade_items?select=*&limit=0")

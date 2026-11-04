@@ -756,3 +756,39 @@ end $$;
 
 revoke execute on function public.delete_my_account() from public, anon;
 grant execute on function public.delete_my_account() to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Ajout d'un ami par son pseudo (GDD diapo 14 : « ajout par code ami ou pseudo »).
+-- PROVISOIRE : pseudo EXACT (majuscules et espaces en trop ignorés), pour qu'on ne puisse pas
+-- parcourir la liste des joueurs ; 10 résultats au plus ; le pseudo par défaut « Explorateur »
+-- n'est jamais trouvé (c'est celui de tout le monde) ; on ne se trouve pas soi-même.
+-- Renvoie le code ami de chaque joueur trouvé : l'appli l'ajoute ensuite avec add_friend.
+-- relation : 'friend' (déjà ami), 'outgoing' (demande envoyée), 'incoming' (il t'a demandé), 'none'.
+-- ---------------------------------------------------------------------------
+create index if not exists profiles_display_name_lower_idx on public.profiles (lower(display_name));
+
+create or replace function public.find_players(p_name text)
+returns table (display_name text, friend_code text, species bigint, relation text)
+language plpgsql stable security definer set search_path = '' as $$
+declare
+  uid uuid := (select auth.uid());
+  wanted text := lower(regexp_replace(btrim(coalesce(p_name, '')), '\s+', ' ', 'g'));
+begin
+  if uid is null then raise exception 'non_connecte' using errcode = '28000'; end if;
+  if char_length(wanted) < 2 or char_length(wanted) > 24 or wanted = 'explorateur' then return; end if;
+  return query
+    select p.display_name, p.friend_code,
+           (select count(distinct c.card_id) from public.owned_cards c where c.user_id = p.id),
+           coalesce((select case when f.status = 'accepted' then 'friend'
+                                 when f.requester = uid then 'outgoing' else 'incoming' end
+                     from public.friendships f
+                     where (f.requester = uid and f.addressee = p.id) or (f.requester = p.id and f.addressee = uid)),
+                    'none')
+    from public.profiles p
+    where lower(p.display_name) = wanted and p.id <> uid
+    order by 3 desc, p.created_at
+    limit 10;
+end $$;
+
+revoke execute on function public.find_players(text) from public, anon;
+grant execute on function public.find_players(text) to authenticated;

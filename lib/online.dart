@@ -335,6 +335,16 @@ class Online {
     }
   }
 
+  /// Joueurs qui ont exactement ce pseudo (10 au plus). Renvoie (joueurs, erreur).
+  static Future<(List<PlayerMatch>, String?)> findPlayers(String pseudo) async {
+    try {
+      final rows = await _call<List<dynamic>>('find_players', {'p_name': normalizePseudo(pseudo)});
+      return (PlayerMatch.fromRows(rows), null);
+    } catch (e) {
+      return (const <PlayerMatch>[], _socialMessage(e));
+    }
+  }
+
   static Future<String?> respondFriend(String userId, bool accept) async {
     try {
       await _call<dynamic>('respond_friend', {'p_other': userId, 'p_accept': accept});

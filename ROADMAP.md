@@ -108,12 +108,16 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
   records d'ennemis et de distance (04/11)
 - [ ] **Clem** : recoller `supabase/schema.sql` (lieux découverts sur le profil d'un ami ; sans ça, la case
   n'apparaît pas, le reste marche)
+- [x] Ajout d'un ami par son pseudo exact (GDD diapo 14) (P) : champ « Code ami ou pseudo », liste des joueurs
+  qui ont ce pseudo (code ami, nombre de cartes), fonction serveur `find_players` (04/11)
+- [ ] **Clem** : recoller `supabase/schema.sql` (ajout par pseudo ; sans ça, chercher un pseudo affiche « le serveur
+  n'est pas encore à jour », le code ami marche toujours)
 - [ ] Notifications d'échange (push) — plus tard
 - [ ] **Prochaine session** : traiter les réponses de Clem (hors ligne, pseudos, collisions, énergies, pubs,
   skins, cadres, gros mots, records) ; sinon synchro en ligne des pièces, skins et cadres (si Clem dit oui).
   Records d'exploration (31/10), partage des trouvailles, décors solides et brouillon de fiche Google Play
   (01/11), nom affiché, AAB signé, icône, suppression du compte et captures Play (02/11), écran « À propos »
-  et variantes plus rares loin du départ (03/11), variantes rares et lieux sur le profil d'un ami (04/11) faits. Presque tout ce qui reste attend une réponse de Clem (voir « Questions pour Clem »).
+  et variantes plus rares loin du départ (03/11), variantes rares et lieux sur le profil d'un ami, ajout d'un ami par pseudo (04/11) faits. Presque tout ce qui reste attend une réponse de Clem (voir « Questions pour Clem »).
 
 ## Étape 4 – Monétisation
 - [x] Vidéos récompensées (P) : run bonus quand il n'en reste plus (3/jour), résurrection à la mort
@@ -341,6 +345,12 @@ Priorité basse (à toi de juger) :
 ### À propos (03/11)
 - Les liens de l'écran « À propos » mènent aux pages du jeu web. Quand tu auras une **adresse de contact**,
   je l'ajoute aussi dans l'écran (« Nous écrire ») : Google Play la demande dans la fiche.
+
+### Ajout d'un ami par pseudo (04/11)
+- PROVISOIRE : on trouve un joueur seulement en tapant son pseudo **exact** (majuscules et espaces ignorés, pas
+  les accents : « Lea » ne trouve pas « Léa »), pour qu'on ne puisse pas fouiller la liste des joueurs ; 10 au plus.
+  On voit son code ami et son nombre de cartes différentes. Faut-il aussi la recherche par début de pseudo
+  (« Cle » → « Clem », « Clément »…) ? Et faut-il une option « ne pas me trouver par mon pseudo » dans ⚙ → Compte ?
 
 ### Captures Google Play (02/11)
 - Faites par la CI dans le jeu web (collection de démonstration de 160 cartes, pseudo « Aventurière »).

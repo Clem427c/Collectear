@@ -3,6 +3,7 @@
 library;
 
 import 'cards.dart';
+import 'cloud_sync.dart';
 import 'variants.dart';
 import 'wishlist.dart';
 
@@ -26,6 +27,75 @@ bool isPlausibleFriendCode(String s) {
 String formatFriendCode(String code) {
   final c = normalizeFriendCode(code);
   return c.length == friendCodeLength ? '${c.substring(0, 4)} ${c.substring(4)}' : c;
+}
+
+/// Ce que le joueur a tapé dans le champ « Code ami ou pseudo ».
+enum FriendInputKind {
+  /// 8 caractères de l'alphabet des codes : on essaie d'abord comme code ami.
+  code,
+
+  /// Un pseudo cherchable (2 à 24 caractères, autre que le pseudo par défaut).
+  pseudo,
+
+  /// Ni l'un ni l'autre (vide, trop court, « Explorateur », caractères interdits…).
+  invalid,
+}
+
+/// Classe la saisie : code ami d'abord (un pseudo de 8 lettres comme « MARCELLA » a aussi la forme
+/// d'un code : l'appli essaie le code, puis le pseudo si aucun joueur n'a ce code, voir [pseudoFallback]).
+FriendInputKind classifyFriendInput(String input) {
+  if (isPlausibleFriendCode(input)) return FriendInputKind.code;
+  return isSearchablePseudo(input) ? FriendInputKind.pseudo : FriendInputKind.invalid;
+}
+
+/// Vrai si [input] peut être cherché comme pseudo (mêmes règles que public.find_players du serveur).
+bool isSearchablePseudo(String input) {
+  final p = normalizePseudo(input);
+  final n = p.runes.length;
+  if (n < 2 || n > maxPseudoLength) return false;
+  if (p.toLowerCase() == defaultPseudo.toLowerCase()) return false;
+  return RegExp(r"^[\p{L}\p{N} '’._-]+$", unicode: true).hasMatch(p);
+}
+
+/// Faut-il chercher [input] comme pseudo après l'échec de add_friend (message [error]) ?
+/// Oui seulement si aucun joueur n'a ce code et que la saisie est aussi un pseudo possible.
+bool pseudoFallback(String input, String error) =>
+    error == socialErrorMessage('code_inconnu') && isSearchablePseudo(input);
+
+/// Lien entre moi et un joueur trouvé par son pseudo.
+enum PlayerRelation { none, friend, outgoing, incoming }
+
+/// Un joueur trouvé par son pseudo (public.find_players) : son code ami sert à l'ajouter.
+class PlayerMatch {
+  const PlayerMatch({required this.name, required this.code, this.species = 0, this.relation = PlayerRelation.none});
+  final String name;
+  final String code;
+
+  /// Nombre de cartes différentes (aide à reconnaître le bon joueur quand plusieurs ont le même pseudo).
+  final int species;
+  final PlayerRelation relation;
+
+  /// Bouton « Ajouter » proposé ? (pas pour un ami ni une demande déjà envoyée ; une demande reçue
+  /// est acceptée par add_friend).
+  bool get canAdd => relation == PlayerRelation.none || relation == PlayerRelation.incoming;
+
+  String get relationLabel => switch (relation) {
+        PlayerRelation.friend => 'Déjà ton ami',
+        PlayerRelation.outgoing => 'Demande envoyée',
+        PlayerRelation.incoming => 'Il t\'a demandé en ami',
+        PlayerRelation.none => '',
+      };
+
+  static List<PlayerMatch> fromRows(Iterable<dynamic> rows) => [
+        for (final r in rows)
+          if (r is Map && r['friend_code'] is String && isPlausibleFriendCode(r['friend_code'] as String))
+            PlayerMatch(
+              name: (r['display_name'] as String?) ?? '?',
+              code: normalizeFriendCode(r['friend_code'] as String),
+              species: _int(r['species']) ?? 0,
+              relation: PlayerRelation.values.where((v) => v.name == r['relation']).firstOrNull ?? PlayerRelation.none,
+            ),
+      ];
 }
 
 /// Message en français pour une erreur renvoyée par les fonctions amis / échanges du serveur.

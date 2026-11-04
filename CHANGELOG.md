@@ -1,5 +1,17 @@
 # Journal des versions
 
+## 0.28.0 – 04/11/2026 (soir) – ajouter un ami par son pseudo
+- Comme prévu par le GDD (diapo 14, « ajout par code ami ou pseudo ») : dans Social, le champ s'appelle
+  « Code ami ou pseudo ». On peut taper le **pseudo exact** d'un ami (majuscules et espaces en trop ignorés) :
+  la liste des joueurs qui ont ce pseudo s'ouvre, avec leur code ami et leur nombre de cartes, et un bouton
+  « Ajouter » (ou « Accepter » s'il t'avait déjà demandé). Le code ami marche comme avant ; un pseudo de 8 lettres
+  qui ressemble à un code (« MARCELLA ») est essayé comme code, puis comme pseudo.
+- PROVISOIRE : seulement le pseudo exact (on ne peut pas parcourir la liste des joueurs), 10 joueurs au plus,
+  le pseudo par défaut « Explorateur » n'est jamais trouvé.
+- Serveur : fonction `find_players`, testée en CI sur PostgreSQL. À recoller par Clem ; en attendant, chercher un
+  pseudo affiche « le serveur n'est pas encore à jour » (le code ami marche toujours).
+- Politique de confidentialité et Guide mis à jour (un joueur qui tape ton pseudo exact te trouve).
+
 ## 0.27.0 – 04/11/2026 – profil d'un ami : variantes rares et lieux découverts
 - Comme prévu par le GDD (diapo 12, « profil visible par les amis : lieux découverts, record de distance, variantes
   rares ») : le profil d'un ami affiche maintenant son nombre de **variantes rares** (exemplaires Shiny, Dorée,
