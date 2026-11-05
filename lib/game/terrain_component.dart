@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 
+import '../core/biomes.dart';
 import '../core/config.dart';
 import '../core/decor.dart';
 import '../core/terrain.dart';
@@ -33,6 +34,8 @@ class TerrainComponent extends Component with HasGameReference<CollectearGame> {
   // Voile par étage : assombrit les vallées, éclaircit les sommets (lisibilité des hauteurs).
   static const _levelShade = [Color(0x22000000), Color(0x00000000), Color(0x10FFFFFF), Color(0x1AFFFFFF), Color(0x00FFFFFF)];
   final _shade = Paint();
+  // Voile léger du biome (PROVISOIRE) : forêt plus sombre, rocailles ocre, prairie un peu dorée.
+  final _biomeTints = {for (final b in Biome.values) b: Paint()..color = Color(b.tint)};
   final _propShadow = Paint()..color = const Color(0x40000000);
 
   // Tours : pierre taillée, plus claire vers le sommet.
@@ -115,6 +118,7 @@ class TerrainComponent extends Component with HasGameReference<CollectearGame> {
         canvas.drawRect(Rect.fromLTWH(left + t / 2 - 1, top + t / 2 - 1, 2, 2), _gridDot);
       }
     }
+    if (!tower) canvas.drawRect(rect, _biomeTints[game.biomes.at(tx, ty)]!);
     if (level > 0) {
       // Bord éclairé en haut, falaise sombre en bas si la case du dessous est plus basse.
       if (terrain.levelAt(tx, ty - 1) < level) {

@@ -7,6 +7,7 @@ import 'package:flame/input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../core/biomes.dart';
 import '../core/cosmetics.dart';
 import '../core/cards.dart';
 import '../core/places.dart';
@@ -58,6 +59,7 @@ class CollectearGame extends FlameGame with KeyboardEvents {
     Skin? skin,
   })  : skin = skin ?? Skins.byId(Skins.defaultId),
         terrain = Terrain(seed),
+        biomes = BiomeMap(seed),
         run = RunState(rules),
         _rng = math.Random(seed ^ 0x5bd1e995);
 
@@ -72,6 +74,10 @@ class CollectearGame extends FlameGame with KeyboardEvents {
   /// À la mort, propose une résurrection (vidéo récompensée). Renvoie true si le joueur repart.
   final Future<bool> Function()? onReviveOffer;
   final Terrain terrain;
+
+  /// Biomes du monde (PROVISOIRE) : sol, décors, densité d'ennemis.
+  final BiomeMap biomes;
+  final BiomeTracker _biomeTracker = BiomeTracker();
   final RunState run;
 
   /// Arbres et rochers bloquent le joueur (réglage ⚙, PROVISOIRE).
@@ -234,6 +240,9 @@ class CollectearGame extends FlameGame with KeyboardEvents {
     if (started) {
       run.tick(dt);
       run.trackDistance(player.position.distanceTo(_start) / GameConfig.tileSize);
+      final here = biomes.at(Terrain.tileOf(player.position.x), Terrain.tileOf(player.position.y));
+      final entered = _biomeTracker.update(here, dt, canAnnounce: _messageTime <= 0 && !run.isOver);
+      if (entered != null) _toast(entered.entering);
     }
     // Alerte des 15 dernières secondes : un seul son, au moment où le chrono passe en rouge.
     if (started && !_hurryPlayed && !run.isOver && run.remaining <= GameConfig.hurrySeconds) {

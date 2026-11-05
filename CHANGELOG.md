@@ -1,5 +1,18 @@
 # Journal des versions
 
+## 0.29.0 – 05/11/2026 – biomes
+- Comme prévu par le GDD (diapo 5 : « bruit pour les biomes » ; diapo 8 : « densité selon le biome ») : le monde
+  de chaque run se découpe en 3 **biomes**, en grandes zones (≈ 40 cases) indépendantes des étages. On en
+  traverse plusieurs par run.
+  - **Prairie** : sol un peu doré, fleurs et hautes herbes, peu d'arbres ; ≈ 20 % d'ennemis en moins.
+  - **Forêt** : sol plus sombre, arbres serrés, champignons et souches ; ≈ 25 % d'ennemis en plus, surtout au corps à corps.
+  - **Rocailles** : sol ocre, rochers et cristaux ; ennemis en nombre normal, mais surtout des tireurs.
+- En run, un message annonce chaque nouveau biome (« Tu entres dans la forêt »), sans clignoter aux frontières
+  (8 s au moins entre deux annonces, jamais par-dessus un autre message).
+- Guide (bouton ?) : nouvelle ligne « Biomes ».
+- PROVISOIRE : les biomes ne changent pas encore les cartes obtenues (le GDD dit « chaque biome a ses espèces ») ;
+  question posée à Clem. Les gardiens des lieux ne changent pas.
+
 ## 0.28.0 – 04/11/2026 (soir) – ajouter un ami par son pseudo
 - Comme prévu par le GDD (diapo 14, « ajout par code ami ou pseudo ») : dans Social, le champ s'appelle
   « Code ami ou pseudo ». On peut taper le **pseudo exact** d'un ami (majuscules et espaces en trop ignorés) :

@@ -125,6 +125,13 @@ class GuideScreen extends StatelessWidget {
                 'marchant. Ton attaque touche aussi un ennemi un étage au-dessus ou en dessous. Collé à un '
                 'ennemi (ou sur lui), ton coup le touche quelle que soit la direction.',
           ),
+          _Entry(
+            art: _IconArt(Icons.forest_rounded, color: AppColors.teal),
+            title: 'Biomes',
+            text: 'Le monde change en chemin. Prairie : dégagée et plutôt calme. Forêt : sol plus sombre, '
+                'arbres serrés et davantage d\'ennemis, surtout au corps à corps. Rocailles : sol ocre, rochers '
+                'et cristaux, et surtout des tireurs. Un message t\'annonce chaque nouveau biome.',
+          ),
           SectionTitle('Tes cartes'),
           _Entry(
             art: _IconArt(Icons.style),

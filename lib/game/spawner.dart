@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flame/components.dart';
 
+import '../core/biomes.dart';
 import '../core/config.dart';
 import '../core/economy.dart';
 import '../core/noise.dart';
@@ -57,13 +58,15 @@ class Spawner extends Component with HasGameReference<CollectearGame> {
     const n = GameConfig.chunkTiles;
     final dist = math.sqrt(cx * cx + cy * cy);
 
-    // Ennemis : plus nombreux en s'éloignant du départ.
-    final count = rng.nextInt(2) + (dist > 2 ? 1 : 0) + (dist > 6 ? 1 : 0);
+    // Ennemis : plus nombreux en s'éloignant du départ, et selon le biome (GDD diapo 8 : « densité selon le biome »).
+    final biome = game.biomes.ofChunk(cx, cy);
+    final base = rng.nextInt(2) + (dist > 2 ? 1 : 0) + (dist > 6 ? 1 : 0);
+    final count = BiomeRules.enemyCount(base, biome, rng.nextDouble());
     for (var i = 0; i < count; i++) {
       final id = 'e:$cx:$cy:$i';
       final tx = cx * n + rng.nextInt(n);
       final ty = cy * n + rng.nextInt(n);
-      final kind = rng.nextDouble() < 0.6 ? EnemyKind.melee : EnemyKind.ranged;
+      final kind = rng.nextDouble() < biome.meleeShare ? EnemyKind.melee : EnemyKind.ranged;
       final enemySeed = rng.nextInt(1 << 30);
       if (consumed.contains(id)) continue;
       // Pas d'ennemi dans les premières cases autour du départ.

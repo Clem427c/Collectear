@@ -391,7 +391,7 @@ void main() {
           final props = DecorRules.propsForChunk(t, 99, cx, cy);
           final again = DecorRules.propsForChunk(t, 99, cx, cy);
           expect(props.map((p) => '${p.tx},${p.ty},${p.name}'), again.map((p) => '${p.tx},${p.ty},${p.name}'));
-          expect(props.length, lessThanOrEqualTo(DecorRules.maxPerChunk));
+          expect(props.length, lessThanOrEqualTo(DecorRules.maxPerChunkWithBiome));
           final reserved = DecorRules.reservedTiles(t, 99, cx, cy);
           for (final p in props) {
             expect(reserved.contains((p.tx, p.ty)), isFalse);

@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'biomes.dart';
 import 'config.dart';
 import 'economy.dart';
 import 'noise.dart';
@@ -84,6 +85,9 @@ class DecorRules {
   static const int minPerChunk = 3;
   static const int maxPerChunk = 6;
 
+  /// Plafond réel, biome compris (la forêt ajoute des décors).
+  static const int maxPerChunkWithBiome = maxPerChunk + BiomeRules.maxExtraDecor;
+
   /// Pas de décor autour du départ (zone dégagée).
   static const int clearRadius = 3;
 
@@ -109,7 +113,8 @@ class DecorRules {
     final rng = math.Random(hash3(worldSeed ^ 0xDEC0, cx, cy));
     const n = GameConfig.chunkTiles;
     final reserved = reservedTiles(terrain, worldSeed, cx, cy);
-    final count = minPerChunk + rng.nextInt(maxPerChunk - minPerChunk + 1);
+    final biomes = BiomeMap(worldSeed);
+    final count = minPerChunk + rng.nextInt(maxPerChunk - minPerChunk + 1) + biomes.ofChunk(cx, cy).extraDecor;
     final out = <Prop>[];
     final used = <(int, int)>{};
     for (var attempt = 0; attempt < count * 4 && out.length < count; attempt++) {
@@ -121,10 +126,15 @@ class DecorRules {
       if (reserved.contains((tx, ty)) || !used.add((tx, ty))) continue;
       if (terrain.towerRing(tx, ty) != null) continue;
       final options = byLevel[terrain.levelAt(tx, ty)]!;
-      final total = options.fold<int>(0, (s, o) => s + o.$3);
-      var r = pick % total;
-      for (final (name, h, w) in options) {
-        if (r < w) {
+      // Le biome de la case change le mélange (plus d'arbres en forêt, de rochers dans les rocailles).
+      final biome = biomes.at(tx, ty);
+      double weight((String, double, int) o) => o.$3 * biome.decorWeight(o.$1);
+      final total = options.fold<double>(0, (s, o) => s + weight(o));
+      var r = pick / (1 << 20) * total;
+      for (var i = 0; i < options.length; i++) {
+        final (name, h, _) = options[i];
+        final w = weight(options[i]);
+        if (r < w || i == options.length - 1) {
           final prop = Prop(tx, ty, name, h, flip);
           // Un décor solide est toujours isolé (aucun autre solide sur les 8 cases voisines, jamais au bord
           // du chunk pour ne pas toucher ceux du chunk voisin) : on peut donc toujours en faire le tour.
