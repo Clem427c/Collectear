@@ -5,7 +5,8 @@ import 'noise.dart';
 ///
 /// PROVISOIRE (question à Clem) : 3 biomes tirés d'un bruit à grande échelle, indépendant des étages.
 /// Ils changent la teinte du sol, le mélange des décors, le nombre d'ennemis et la part de tireurs.
-/// Ils ne changent pas (encore) les cartes obtenues : « chaque biome a ses espèces » attend Clem.
+/// Chaque espèce a un biome d'origine (tool/assign_biomes.py), plus fréquente quand on la gagne dans ce biome
+/// (voir CardPool.draw, PROVISOIRE également).
 enum Biome {
   /// Calme et dégagée : fleurs et hautes herbes, peu d'arbres, un peu moins d'ennemis.
   prairie(
@@ -15,6 +16,7 @@ enum Biome {
     meleeShare: 0.6,
     extraDecor: 0,
     tint: 0x10FFF0A0,
+    pillColor: 0xFF8DB33A,
     decorWeights: {
       'prop_fleurs': 2.5,
       'prop_herbes_hautes': 2,
@@ -35,6 +37,7 @@ enum Biome {
     meleeShare: 0.75,
     extraDecor: 2,
     tint: 0x1E0A3A20,
+    pillColor: 0xFF2F7D4F,
     decorWeights: {
       'prop_arbre_rond': 3,
       'prop_arbre_pin': 3,
@@ -56,6 +59,7 @@ enum Biome {
     meleeShare: 0.35,
     extraDecor: 1,
     tint: 0x26A08660,
+    pillColor: 0xFFA0774A,
     decorWeights: {
       'prop_rocher': 3,
       'prop_rochers_petits': 3,
@@ -76,6 +80,7 @@ enum Biome {
     required this.meleeShare,
     required this.extraDecor,
     required this.tint,
+    required this.pillColor,
     required this.decorWeights,
   });
 
@@ -96,6 +101,9 @@ enum Biome {
 
   /// Voile de couleur posé sur le sol (ARGB), très léger pour garder la lisibilité des étages.
   final int tint;
+
+  /// Couleur de l'étiquette « Biome … » sur la fiche d'une carte (ARGB).
+  final int pillColor;
 
   /// Multiplicateur du poids de chaque décor (1 si absent). Ne fait jamais apparaître un décor
   /// qui n'existe pas à cet étage : il change seulement le mélange.

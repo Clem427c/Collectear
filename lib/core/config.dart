@@ -85,4 +85,9 @@ class GameConfig {
   static const int revivesPerRun = 1; // vidéo à la mort = on repart
   static const int reviveLives = 1; // vies rendues par la résurrection
   static const double reviveInvincibility = 2.5; // secondes intouchable après la résurrection
+
+  // --- Espèces des biomes (GDD diapo 11 : « chaque biome a ses espèces » ; voir core/cards.dart) ---
+  // PROVISOIRE (question à Clem) : dans un biome, ses espèces pèsent 3 fois plus que les autres
+  // (≈ 60 % des cartes tirées viennent du biome) ; toutes les cartes restent trouvables partout.
+  static const double biomeSpeciesBias = 3;
 }

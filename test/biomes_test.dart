@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:collectear/core/biomes.dart';
+import 'package:collectear/core/cards.dart';
 import 'package:collectear/core/config.dart';
 import 'package:collectear/core/decor.dart';
 import 'package:collectear/core/terrain.dart';
@@ -146,6 +148,66 @@ void main() {
       expect(t.update(Biome.rocailles, 3.5, canAnnounce: false), isNull); // un autre message est affiché
       expect(t.update(Biome.rocailles, 0.1), Biome.rocailles);
       expect(t.visited, [Biome.prairie, Biome.foret, Biome.rocailles]);
+    });
+  });
+
+  group('Espèces des biomes (PROVISOIRE)', () {
+    final pool = CardPool.fromJsonString(File('assets/data/cards.json').readAsStringSync());
+
+    test('chaque carte a un biome, et chaque biome a des espèces de chaque rareté', () {
+      for (final c in pool.cards) {
+        expect(c.biome, isNotNull, reason: c.name);
+      }
+      for (final b in Biome.values) {
+        for (final r in Rarity.values) {
+          expect(pool.cards.where((c) => c.biome == b && c.rarity == r), isNotEmpty, reason: '${b.label} ${r.label}');
+        }
+        final n = pool.cards.where((c) => c.biome == b).length;
+        expect(n, inInclusiveRange(80, 120), reason: b.label);
+      }
+    });
+
+    test('quelques noms à leur place', () {
+      GameCard named(String n) => pool.cards.firstWhere((c) => c.name == n);
+      expect(named('Galetiot').biome, Biome.rocailles);
+      expect(named('Firmin le Cueilleur').biome, Biome.foret);
+      expect(named('Victor le Pêcheur').biome, Biome.prairie);
+    });
+
+    test('un biome favorise ses espèces sans changer la rareté', () {
+      for (final b in Biome.values) {
+        final rng = Random(7 + b.index);
+        var inBiome = 0;
+        const n = 6000;
+        for (var i = 0; i < n; i++) {
+          if (pool.draw(rng, biome: b).biome == b) inBiome++;
+        }
+        // Sans biome ≈ 1/3 ; avec le poids 3 ≈ 60 %.
+        expect(inBiome / n, inInclusiveRange(0.45, 0.75), reason: b.label);
+      }
+      // Même graine, avec ou sans biome : même rareté tirée.
+      for (var s = 0; s < 200; s++) {
+        final a = pool.draw(Random(s), luck: 0.5).rarity;
+        final b = pool.draw(Random(s), luck: 0.5, biome: Biome.foret).rarity;
+        expect(b, a);
+      }
+    });
+
+    test('sans biome : tirage uniforme dans la rareté (comme avant)', () {
+      final rng = Random(3);
+      var foret = 0;
+      const n = 6000;
+      for (var i = 0; i < n; i++) {
+        if (pool.draw(rng).biome == Biome.foret) foret++;
+      }
+      expect(foret / n, inInclusiveRange(0.25, 0.42));
+    });
+
+    test('part du biome calculée', () {
+      for (final b in Biome.values) {
+        expect(pool.biomeShare(Rarity.commune, b), inInclusiveRange(0.45, 0.75), reason: b.label);
+      }
+      expect(GameConfig.biomeSpeciesBias, greaterThan(1));
     });
   });
 }

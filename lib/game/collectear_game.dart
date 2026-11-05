@@ -326,9 +326,12 @@ class CollectearGame extends FlameGame with KeyboardEvents {
     return (tiles / 150).clamp(0.0, 1.0);
   }
 
-  void _giveCard({double bonusLuck = 0}) {
+  /// [at] : endroit où la carte est gagnée (le joueur par défaut) ; son biome favorise ses espèces (PROVISOIRE).
+  void _giveCard({double bonusLuck = 0, Vector2? at}) {
     final luck = _luck + bonusLuck;
-    final card = CardInstance(pool.draw(_rng, luck: luck), Variant.drawSeed(_rng, luck: luck));
+    final p = at ?? player.position;
+    final biome = biomes.at(Terrain.tileOf(p.x), Terrain.tileOf(p.y));
+    final card = CardInstance(pool.draw(_rng, luck: luck, biome: biome), Variant.drawSeed(_rng, luck: luck));
     run.addCard(card);
     cardEvent.value = card;
     Sfx.play('card');
@@ -361,7 +364,7 @@ class CollectearGame extends FlameGame with KeyboardEvents {
     world.add(Burst(position: place.position.clone(), color: const Color(0xFFFFB627), count: 22, speed: 170, life: 0.7));
     Sfx.play('chest');
     _earnCoins(Economy.coinsPerPlace, place.position);
-    _giveCard(bonusLuck: place.spec.type.luckBonus);
+    _giveCard(bonusLuck: place.spec.type.luckBonus, at: place.position);
   }
 
   void _earnCoins(int amount, Vector2 at) {

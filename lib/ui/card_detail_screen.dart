@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../app_data.dart';
+import '../core/biomes.dart';
 import '../core/cards.dart';
 import '../core/variants.dart';
 import '../online.dart';
@@ -307,10 +308,11 @@ class _CardDetailScreenState extends State<CardDetailScreen> with TickerProvider
         ),
       ),
       const SizedBox(height: 6),
-      Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+      Wrap(alignment: WrapAlignment.center, spacing: 8, runSpacing: 6, children: [
         _Pill(text: card.rarity.label.toUpperCase(), color: color),
-        const SizedBox(width: 8),
         _Pill(text: card.family == CardFamily.hero ? 'HÉROS' : 'CRÉATURE', color: AppColors.night),
+        // Biome d'origine (GDD diapo 11, « Biome forêt ») : PROVISOIRE.
+        if (card.biome != null) _Pill(text: 'BIOME ${card.biome!.label.toUpperCase()}', color: Color(card.biome!.pillColor)),
       ]),
     ]);
   }

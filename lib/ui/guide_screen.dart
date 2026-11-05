@@ -130,7 +130,9 @@ class GuideScreen extends StatelessWidget {
             title: 'Biomes',
             text: 'Le monde change en chemin. Prairie : dégagée et plutôt calme. Forêt : sol plus sombre, '
                 'arbres serrés et davantage d\'ennemis, surtout au corps à corps. Rocailles : sol ocre, rochers '
-                'et cristaux, et surtout des tireurs. Un message t\'annonce chaque nouveau biome.',
+                'et cristaux, et surtout des tireurs. Un message t\'annonce chaque nouveau biome. Chaque espèce a '
+                'son biome (indiqué sur sa fiche) : on l\'y trouve plus souvent, mais toutes les cartes restent '
+                'trouvables partout.',
           ),
           SectionTitle('Tes cartes'),
           _Entry(

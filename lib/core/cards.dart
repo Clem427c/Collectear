@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'biomes.dart';
+import 'config.dart';
+
 enum Rarity { commune, peuCommune, rare, epique, legendaire }
 
 extension RarityInfo on Rarity {
@@ -38,6 +41,7 @@ class GameCard {
     required this.atk,
     required this.def,
     required this.boost,
+    this.biome,
   });
 
   final int id;
@@ -52,6 +56,10 @@ class GameCard {
   /// voir tool/assign_boosts.py).
   final Boost boost;
 
+  /// Biome d'origine de l'espèce (GDD diapo 11 : « chaque biome a ses espèces »), choisi selon son nom
+  /// (voir tool/assign_biomes.py). PROVISOIRE (question à Clem). Null si absent du JSON.
+  final Biome? biome;
+
   factory GameCard.fromJson(Map<String, dynamic> j) => GameCard(
         id: j['id'] as int,
         name: j['name'] as String,
@@ -61,6 +69,7 @@ class GameCard {
         atk: j['atk'] as int,
         def: j['def'] as int,
         boost: Boost.values.byName(j['boost'] as String),
+        biome: Biome.values.asNameMap()[j['biome']],
       );
 }
 
@@ -103,12 +112,34 @@ class CardPool {
     return Rarity.commune;
   }
 
-  GameCard draw(Random rng, {double luck = 0}) {
+  /// Tire une carte : d'abord la rareté, puis l'espèce dans cette rareté.
+  /// [biome] : biome où la carte est obtenue ; ses espèces y sont plus fréquentes
+  /// (poids [GameConfig.biomeSpeciesBias] contre 1). PROVISOIRE (question à Clem).
+  /// La rareté n'en dépend jamais : le biome change l'espèce, pas les chances de rareté.
+  GameCard draw(Random rng, {double luck = 0, Biome? biome}) {
     var rarity = drawRarity(rng, luck: luck);
     while (_byRarity[rarity]!.isEmpty && rarity.index > 0) {
       rarity = Rarity.values[rarity.index - 1];
     }
     final list = _byRarity[rarity]!;
-    return list[rng.nextInt(list.length)];
+    if (biome == null) return list[rng.nextInt(list.length)];
+    double weight(GameCard c) => c.biome == biome ? GameConfig.biomeSpeciesBias : 1.0;
+    final total = list.fold<double>(0, (s, c) => s + weight(c));
+    var roll = rng.nextDouble() * total;
+    for (final c in list) {
+      roll -= weight(c);
+      if (roll < 0) return c;
+    }
+    return list.last;
+  }
+
+  /// Part des espèces de [biome] parmi les cartes tirées dans ce biome, pour une rareté donnée (0..1).
+  /// Sert au Guide et aux tests.
+  double biomeShare(Rarity rarity, Biome biome) {
+    final list = _byRarity[rarity]!;
+    if (list.isEmpty) return 0;
+    final inBiome = list.where((c) => c.biome == biome).length;
+    final total = inBiome * GameConfig.biomeSpeciesBias + (list.length - inBiome);
+    return inBiome * GameConfig.biomeSpeciesBias / total;
   }
 }
