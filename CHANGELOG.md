@@ -1,5 +1,15 @@
 # Journal des versions
 
+## 0.30.0 – 05/11/2026 (soir) – chaque biome a ses espèces
+- Comme prévu par le GDD (diapo 11 : « chaque biome a ses espèces », maquette « Biome forêt ») : chacune des 300
+  cartes a maintenant un **biome d'origine**, choisi selon son nom (`tool/assign_biomes.py`) : ≈ 100 par biome,
+  4 Légendaires chacun.
+- Une carte gagnée dans un biome est plus souvent une espèce de ce biome (poids ×3, ≈ 60 % des cartes) ; la rareté
+  ne change pas et toutes les cartes restent trouvables partout. Lieux : biome du lieu ; 10 ennemis : biome du joueur.
+- Fiche d'une carte : nouvelle étiquette « Biome Prairie / Forêt / Rocailles ». Guide : ligne « Biomes » complétée.
+- PROVISOIRE (question posée à Clem) : poids ×3 dans `lib/core/config.dart` (`biomeSpeciesBias`), biome pas encore
+  dans le classeur xlsx. Rien à faire côté serveur.
+
 ## 0.29.0 – 05/11/2026 – biomes
 - Comme prévu par le GDD (diapo 5 : « bruit pour les biomes » ; diapo 8 : « densité selon le biome ») : le monde
   de chaque run se découpe en 3 **biomes**, en grandes zones (≈ 40 cases) indépendantes des étages. On en

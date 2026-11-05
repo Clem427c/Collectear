@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../app_data.dart';
-import '../core/biomes.dart';
 import '../core/cards.dart';
 import '../core/variants.dart';
 import '../online.dart';

@@ -50,6 +50,8 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
   la plus rare gardée ; taux validé par Clem (03/11)
 - [x] Biomes (GDD diapos 5 et 8) (P) : prairie, forêt, rocailles en grandes zones ; teinte du sol, mélange des décors,
   nombre d'ennemis et part de tireurs selon le biome ; annonce « Tu entres dans… » en run ; ligne dans le Guide (05/11)
+- [x] Espèces des biomes (GDD diapo 11) (P) : chaque carte a un biome d'origine (selon son nom), 3 fois plus
+  fréquente quand on la gagne dans ce biome (≈ 60 % des cartes) ; étiquette « Biome forêt » sur la fiche (05/11)
 - [x] **Clem** : sols 1, 2, 3 régénérés avec les prompts doux (28/10) ; teinte de chaque étage ajustée en CI
 
 ## Étape 3 – En ligne (Supabase) — en cours
@@ -119,7 +121,7 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
   skins, cadres, gros mots, records) ; sinon synchro en ligne des pièces, skins et cadres (si Clem dit oui).
   Records d'exploration (31/10), partage des trouvailles, décors solides et brouillon de fiche Google Play
   (01/11), nom affiché, AAB signé, icône, suppression du compte et captures Play (02/11), écran « À propos »
-  et variantes plus rares loin du départ (03/11), variantes rares et lieux sur le profil d'un ami, ajout d'un ami par pseudo (04/11), biomes (05/11) faits. Presque tout ce qui reste attend une réponse de Clem (voir « Questions pour Clem »).
+  et variantes plus rares loin du départ (03/11), variantes rares et lieux sur le profil d'un ami, ajout d'un ami par pseudo (04/11), biomes et leurs espèces (05/11) faits. Presque tout ce qui reste attend une réponse de Clem (voir « Questions pour Clem »).
 
 ## Étape 4 – Monétisation
 - [x] Vidéos récompensées (P) : run bonus quand il n'en reste plus (3/jour), résurrection à la mort
@@ -359,10 +361,15 @@ Priorité basse (à toi de juger) :
   d'ennemis en moins ; forêt : ≈ 25 % en plus, 75 % au corps à corps ; rocailles : 65 % de tireurs. Le sol reçoit un
   léger voile de couleur (pas de nouvelles textures). Ça te va ? Faut-il d'autres biomes (marais, désert, neige…) ?
   Je peux préparer les prompts ComfyUI de sols et décors propres à chaque biome.
-- Le GDD dit « chaque biome a ses espèces ». **Question** : je répartis les 300 cartes entre les biomes (selon leur nom :
-  « Galetiot » dans les rocailles, « Firmin le Cueilleur » en forêt…), avec plus de chances de trouver une espèce dans
-  son biome ? Ou les cartes restent communes à tout le monde ? Et faut-il afficher le biome sur la carte (« Biome
-  forêt », comme la maquette de la diapo 11) ?
+- Espèces des biomes (05/11, soir) : PROVISOIRE, fait en attendant ta réponse (facile à défaire). Chaque carte a un
+  biome d'origine choisi selon son nom (`tool/assign_biomes.py`) : pierres, cristaux, glace, feu, forgerons et mages
+  → rocailles ; arbres, bêtes des bois, bûcherons, druides, rôdeurs → forêt ; eau, insectes, oiseaux, bergers,
+  pêcheurs, marchands → prairie. ≈ 100 cartes par biome, 4 Légendaires chacun. Dans un biome, ses espèces pèsent
+  3 fois plus (≈ 60 % des cartes gagnées), la rareté ne change pas, et toutes les cartes restent trouvables partout.
+  La fiche d'une carte affiche « Biome forêt » (maquette de la diapo 11). **Questions** : ce poids (×3) te va, ou
+  plus marqué (espèces seulement dans leur biome) ? Des cartes mal placées ? (le biome n'est que dans
+  `cards.json` pour l'instant ; je l'ajoute au classeur xlsx quand tu valides). Les lieux comptent le biome où ils
+  sont ; les cartes des 10 ennemis, le biome où se trouve le joueur.
 
 ### Captures Google Play (02/11)
 - Faites par la CI dans le jeu web (collection de démonstration de 160 cartes, pseudo « Aventurière »).
