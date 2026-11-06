@@ -6,6 +6,7 @@ import 'package:flame/components.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
 
 import '../app_data.dart' show Illustrations;
+import '../core/cards.dart';
 import '../core/companion.dart';
 import '../core/variants.dart';
 import '../ui/widgets.dart' show variantMatrix;
