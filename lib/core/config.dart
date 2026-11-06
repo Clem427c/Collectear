@@ -47,6 +47,18 @@ class GameConfig {
   static const int playerHitsToDieBoosted = 4; // boost résistance : +1 vie
   static const int killsPerLifeRegen = 3; // 1 vie rendue tous les 3 kills (si une vie a été perdue)
 
+  // --- Compagnon dessiné en run (GDD diapo 9 : « il l'accompagne ») ---
+  /// PROVISOIRE : le compagnon suit l'explorateur à un peu plus d'une case derrière lui, traverse tout,
+  /// ne se bat pas (son seul effet reste le boost) et réapparaît à côté du joueur s'il est distancé.
+  static const double companionFollowDistance = 1.1 * tileSize;
+  static const double companionArriveDistance = 4;
+  static const double companionMinSpeed = 60; // unités / s
+  static const double companionCatchUp = 4; // vitesse = distance × 4 par seconde
+  static const double companionTeleportDistance = 7 * tileSize;
+  static const double companionHeight = 28; // espèce Commune (l'explorateur fait 40)
+  static const double companionHeightPerRarity = 2; // +2 par rang de rareté (Légendaire : 36)
+  static const double companionCheerDuration = 0.6; // saut de joie quand une carte est gagnée
+
   // --- Joueur ---
   static const double playerSpeed = 120; // unités / s
   static const double speedBoostMultiplier = 1.35;

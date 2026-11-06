@@ -54,6 +54,8 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
   fréquente quand on la gagne dans ce biome (≈ 60 % des cartes) ; étiquette « Biome forêt » sur la fiche (05/11)
 - [x] Taille des exemplaires (GDD diapo 13) (P) : ±10 % par rapport à l'espèce, illustration de la fiche à l'échelle,
   étiquette « Taille : grand (+8 %) » ; purement visuelle, exemplaires existants inchangés (06/11)
+- [x] Compagnon dessiné en run (GDD diapo 9) (P) : il suit l'explorateur en sautillant, avec l'apparence et la taille
+  de son plus bel exemplaire, saut de joie à chaque carte ; purement visuel (06/11, soir)
 - [x] **Clem** : sols 1, 2, 3 régénérés avec les prompts doux (28/10) ; teinte de chaque étage ajustée en CI
 
 ## Étape 3 – En ligne (Supabase) — en cours
@@ -123,7 +125,7 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
   skins, cadres, gros mots, records) ; sinon synchro en ligne des pièces, skins et cadres (si Clem dit oui).
   Records d'exploration (31/10), partage des trouvailles, décors solides et brouillon de fiche Google Play
   (01/11), nom affiché, AAB signé, icône, suppression du compte et captures Play (02/11), écran « À propos »
-  et variantes plus rares loin du départ (03/11), variantes rares et lieux sur le profil d'un ami, ajout d'un ami par pseudo (04/11), biomes et leurs espèces (05/11), taille des exemplaires (06/11) faits. Presque tout ce qui reste attend une réponse de Clem (voir « Questions pour Clem »).
+  et variantes plus rares loin du départ (03/11), variantes rares et lieux sur le profil d'un ami, ajout d'un ami par pseudo (04/11), biomes et leurs espèces (05/11), taille des exemplaires et compagnon dessiné en run (06/11) faits. Presque tout ce qui reste attend une réponse de Clem (voir « Questions pour Clem »).
 
 ## Étape 4 – Monétisation
 - [x] Vidéos récompensées (P) : run bonus quand il n'en reste plus (3/jour), résurrection à la mort
@@ -378,6 +380,11 @@ Priorité basse (à toi de juger) :
   à +10 % de son espèce (« petit » sous −5 %, « grand » dès +5 %). C'est seulement visuel (fiche de la carte) : ni stats,
   ni étoiles. **Questions** : l'écart te va (plus marqué, par ex. ±20 %, ou des « géants » très rares) ? Faut-il que
   la taille compte dans les étoiles, ou que le compagnon apparaisse à sa taille en run (il n'est pas encore dessiné) ?
+
+### Compagnon en run (06/11, soir)
+- PROVISOIRE : le compagnon est dessiné et suit le joueur, mais reste **purement visuel** (le boost est son seul effet).
+  **Questions** : doit-il aider au combat (par ex. un petit coup de temps en temps), ou rester décoratif ? Il prend
+  automatiquement ton plus bel exemplaire de l'espèce : faut-il pouvoir choisir l'exemplaire (par ex. ton préféré ★) ?
 
 ### Captures Google Play (02/11)
 - Faites par la CI dans le jeu web (collection de démonstration de 160 cartes, pseudo « Aventurière »).

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import '../ads/ads.dart';
 import '../core/cards.dart';
 import '../core/collection.dart' show RunRecords;
+import '../core/companion.dart';
 import '../core/config.dart';
 import '../core/run_state.dart';
 import '../game/collectear_game.dart';
@@ -45,6 +46,9 @@ class _RunScreenState extends State<RunScreen> {
       onReviveOffer: _offerRevive,
       skin: widget.data.collection.equippedSkin,
       solidDecor: widget.data.settings.solidDecor,
+      companion: widget.companion == null
+          ? null
+          : companionInstance(widget.companion!, widget.data.collection.variants[widget.companion!.id]),
     );
     unawaited(_onlineRun);
   }

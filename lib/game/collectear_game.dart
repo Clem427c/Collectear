@@ -18,6 +18,7 @@ import '../core/run_state.dart';
 import '../core/terrain.dart';
 import '../core/variants.dart';
 import 'coin.dart';
+import 'companion_component.dart';
 import 'decor_art.dart';
 import 'effects.dart';
 import 'sfx.dart';
@@ -56,6 +57,7 @@ class CollectearGame extends FlameGame with KeyboardEvents {
     required this.onRunEnd,
     this.onReviveOffer,
     this.solidDecor = GameConfig.solidDecorDefault,
+    this.companion,
     Skin? skin,
   })  : skin = skin ?? Skins.byId(Skins.defaultId),
         terrain = Terrain(seed),
@@ -64,6 +66,10 @@ class CollectearGame extends FlameGame with KeyboardEvents {
         _rng = math.Random(seed ^ 0x5bd1e995);
 
   final CardPool pool;
+
+  /// Exemplaire qui accompagne le joueur (dessiné à côté de lui), null sans compagnon.
+  final CardInstance? companion;
+  CompanionComponent? _companionComponent;
 
   /// Skin d'explorateur porté pendant la run (cosmétique).
   final Skin skin;
@@ -140,6 +146,11 @@ class CollectearGame extends FlameGame with KeyboardEvents {
     world.add(TerrainComponent());
     player = Player()..position = _start.clone();
     world.add(player);
+    final buddy = companion;
+    if (buddy != null) {
+      _companionComponent = CompanionComponent(buddy, _start + Vector2(-GameConfig.companionFollowDistance, 12));
+      world.add(_companionComponent!);
+    }
     spawner = Spawner();
     world.add(spawner);
     camera.follow(player);
@@ -334,6 +345,7 @@ class CollectearGame extends FlameGame with KeyboardEvents {
     final card = CardInstance(pool.draw(_rng, luck: luck, biome: biome), Variant.drawSeed(_rng, luck: luck));
     run.addCard(card);
     cardEvent.value = card;
+    _companionComponent?.celebrate();
     Sfx.play('card');
     Sfx.haptic(HapticStrength.heavy);
   }

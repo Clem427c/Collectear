@@ -1,5 +1,17 @@
 # Journal des versions
 
+## 0.32.0 – 06/11/2026 (soir) – le compagnon te suit en run
+- Comme prévu par le GDD (diapo 9 : « il l'accompagne et lui donne un boost ») : le compagnon choisi n'est plus
+  seulement un nom dans le HUD, il est **dessiné dans le monde** et suit l'explorateur en sautillant, un peu derrière
+  lui (du côté opposé à son regard). Il flotte doucement quand on s'arrête, se retourne selon sa direction, fait un
+  **saut de joie** à chaque carte gagnée, et réapparaît à côté du joueur s'il a été distancé.
+- Il a l'apparence de ton **plus bel exemplaire** de l'espèce (teinte et finition de la variante, étincelles pour un
+  exemplaire 3 ★ ou plus) et sa taille (±10 %) ; un peu plus grand selon la rareté (Commune 28, Légendaire 36,
+  l'explorateur en fait 40).
+- Onglet Jouer : « Il te suit pendant la run, avec l'apparence de ton plus bel exemplaire. »
+- PROVISOIRE (question posée à Clem) : purement visuel, il ne se bat pas, traverse les décors et les étages ;
+  réglages dans `lib/core/config.dart` (`companion…`). Logique testée (`test/companion_test.dart`). Rien à faire côté serveur.
+
 ## 0.31.0 – 06/11/2026 – taille des exemplaires
 - Comme prévu par le GDD (diapo 13 : « taille et stats légèrement modifiées ») : chaque exemplaire a maintenant
   une **taille**, jusqu'à 10 % plus petit ou plus grand que son espèce. Sur la fiche d'une carte, l'illustration
