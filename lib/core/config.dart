@@ -33,6 +33,13 @@ class GameConfig {
   /// garde la plus rare (Shiny ≈ 2,5 % → ≈ 7,3 % ; finition ≈ 2,3 % → ≈ 6,8 %). Les stats ne sont pas favorisées.
   static const int variantLuckExtraDraws = 2;
 
+  // --- Taille des variantes (GDD diapo 13 : « taille et stats légèrement modifiées ») ---
+  /// PROVISOIRE (question à Clem) : chaque exemplaire est jusqu'à 10 % plus petit ou plus grand que son espèce.
+  /// Purement visuel : la taille ne change ni les stats, ni les étoiles, ni le tirage.
+  static const double variantSizeSpread = 0.10;
+  /// Au-delà de cet écart (en %), l'exemplaire est dit « petit » ou « grand » (sinon « moyen »).
+  static const int variantSizeLabelThreshold = 5;
+
   // --- Combat ---
   static const int enemyHitsToKill = 3;
   static const int enemyHitsToKillBoosted = 2;

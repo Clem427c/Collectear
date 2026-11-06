@@ -1,5 +1,15 @@
 # Journal des versions
 
+## 0.31.0 – 06/11/2026 – taille des exemplaires
+- Comme prévu par le GDD (diapo 13 : « taille et stats légèrement modifiées ») : chaque exemplaire a maintenant
+  une **taille**, jusqu'à 10 % plus petit ou plus grand que son espèce. Sur la fiche d'une carte, l'illustration
+  de l'exemplaire est dessinée à sa taille, et une étiquette l'indique (« Taille : grand (+8 %) » ; petit en dessous
+  de −5 %, grand à partir de +5 %, moyen entre les deux). Guide : ligne « Chaque carte est unique » complétée.
+- La taille est purement visuelle : elle ne change ni les stats, ni les étoiles, ni les chances de tirage.
+  Les exemplaires déjà possédés gardent la même apparence et les mêmes stats (la taille est tirée après le reste,
+  vérifié par un test). Rien à faire côté serveur.
+- PROVISOIRE (question posée à Clem) : écart de ±10 % dans `lib/core/config.dart` (`variantSizeSpread`).
+
 ## 0.30.0 – 05/11/2026 (soir) – chaque biome a ses espèces
 - Comme prévu par le GDD (diapo 11 : « chaque biome a ses espèces », maquette « Biome forêt ») : chacune des 300
   cartes a maintenant un **biome d'origine**, choisi selon son nom (`tool/assign_biomes.py`) : ≈ 100 par biome,

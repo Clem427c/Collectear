@@ -29,6 +29,7 @@ class Variant {
     required this.hpMult,
     required this.atkMult,
     required this.defMult,
+    required this.sizeMult,
   });
 
   /// Probabilités (sur 1).
@@ -64,15 +65,20 @@ class Variant {
                 ? VariantFinish.shadow
                 : VariantFinish.normal;
     double mult() => 1 + (rng.nextDouble() * 2 - 1) * statSpread;
+    final hpMult = mult(), atkMult = mult(), defMult = mult();
+    // La taille est tirée EN DERNIER : les exemplaires déjà possédés gardent exactement la même
+    // apparence et les mêmes stats qu'avant (ajouté le 06/11, version 0.31.0).
+    final sizeMult = 1 + (rng.nextDouble() * 2 - 1) * GameConfig.variantSizeSpread;
     return Variant._(
       seed: seed,
       hue: hue,
       pattern: pattern,
       shiny: shiny,
       finish: finish,
-      hpMult: mult(),
-      atkMult: mult(),
-      defMult: mult(),
+      hpMult: hpMult,
+      atkMult: atkMult,
+      defMult: defMult,
+      sizeMult: sizeMult,
     );
   }
 
@@ -108,6 +114,26 @@ class Variant {
   final double hpMult;
   final double atkMult;
   final double defMult;
+
+  /// Taille de l'exemplaire par rapport à son espèce (0,90 à 1,10). Purement visuelle.
+  final double sizeMult;
+
+  /// Écart de taille en pourcentage arrondi (−10 à +10).
+  int get sizePercent => deltaPercent(sizeMult);
+
+  /// « petit », « moyen » ou « grand » selon l'écart de taille.
+  String get sizeLabel => sizePercent <= -GameConfig.variantSizeLabelThreshold
+      ? 'petit'
+      : sizePercent >= GameConfig.variantSizeLabelThreshold
+          ? 'grand'
+          : 'moyen';
+
+  /// Texte court pour la fiche, ex. « Taille : grand (+8 %) », « Taille : moyen (±0 %) ».
+  String get sizeText {
+    final p = sizePercent;
+    final sign = p > 0 ? '+' : p < 0 ? '−' : '±';
+    return 'Taille : $sizeLabel ($sign${p.abs()} %)';
+  }
 
   /// Plus la variante est spéciale, plus elle est recherchée (0 = ordinaire).
   int get prestige => (shiny ? 2 : 0) + (finish != VariantFinish.normal ? 3 : 0);

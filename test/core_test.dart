@@ -589,6 +589,53 @@ void main() {
       }
     });
 
+    test('taille : tirée en dernier, les exemplaires existants ne changent pas', () {
+      for (var seed = 0; seed < 3000; seed++) {
+        final v = Variant.fromSeed(seed);
+        // Même suite de tirages qu'avant l'ajout de la taille (teinte, motif, shiny, finition, 3 stats).
+        final rng = Random(seed);
+        expect(v.hue, rng.nextDouble() * 360);
+        for (var i = 0; i < 3; i++) {
+          rng.nextDouble();
+        }
+        double mult() => 1 + (rng.nextDouble() * 2 - 1) * Variant.statSpread;
+        expect(v.hpMult, mult());
+        expect(v.atkMult, mult());
+        expect(v.defMult, mult());
+        expect(v.sizeMult, 1 + (rng.nextDouble() * 2 - 1) * GameConfig.variantSizeSpread);
+      }
+    });
+
+    test('taille : ±10 % au plus, petits, moyens et grands, sans effet sur les étoiles', () {
+      final labels = <String, int>{};
+      for (var seed = 0; seed < 5000; seed++) {
+        final v = Variant.fromSeed(seed);
+        expect(v.sizeMult, inInclusiveRange(1 - GameConfig.variantSizeSpread, 1 + GameConfig.variantSizeSpread));
+        expect(v.sizePercent, inInclusiveRange(-10, 10));
+        labels[v.sizeLabel] = (labels[v.sizeLabel] ?? 0) + 1;
+        expect(v.sizeText, startsWith('Taille : ${v.sizeLabel} ('));
+      }
+      expect(labels.keys.toSet(), {'petit', 'moyen', 'grand'});
+      // Chaque catégorie est courante (≈ un quart, la moitié, un quart).
+      for (final n in labels.values) {
+        expect(n, greaterThan(800));
+      }
+    });
+
+    test('taille : textes', () {
+      String text(int percent) {
+        for (var seed = 0;; seed++) {
+          final v = Variant.fromSeed(seed);
+          if (v.sizePercent == percent) return v.sizeText;
+        }
+      }
+      expect(text(8), 'Taille : grand (+8 %)');
+      expect(text(-6), 'Taille : petit (−6 %)');
+      expect(text(0), 'Taille : moyen (±0 %)');
+      expect(text(4), 'Taille : moyen (+4 %)');
+      expect(text(5), 'Taille : grand (+5 %)');
+    });
+
     test('chaque motif a un nom', () {
       expect(VariantPattern.values.map((p) => p.label).toSet().length, VariantPattern.values.length);
     });

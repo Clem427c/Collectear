@@ -362,7 +362,11 @@ class _CardDetailScreenState extends State<CardDetailScreen> with TickerProvider
     final hasArt = Illustrations.available.contains(card.id);
     Widget art;
     if (inst != null) {
-      art = VariantEmblem(card: card, variant: inst.variant, size: 260);
+      // Taille de l'exemplaire (GDD diapo 13) : ±10 % au plus, PROVISOIRE.
+      art = Transform.scale(
+        scale: inst.variant.sizeMult,
+        child: VariantEmblem(card: card, variant: inst.variant, size: 260),
+      );
     } else {
       art = Container(
         width: 260,
@@ -577,6 +581,7 @@ class _VariantPanel extends StatelessWidget {
                     : AppColors.night,
           ),
           _Tag(text: 'Motif : ${variant.pattern.label}', color: AppColors.night),
+          _Tag(text: variant.sizeText, color: AppColors.night),
           if (variant.finish != VariantFinish.normal) _Tag(text: variant.finish.label, color: AppColors.gold, dark: true),
           if (variant.shiny) const _Tag(text: '✦ Shiny', color: AppColors.violet),
         ]),

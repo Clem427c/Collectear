@@ -139,8 +139,8 @@ class GuideScreen extends StatelessWidget {
             art: _IconArt(Icons.style),
             title: 'Chaque carte est unique',
             text: 'Deux exemplaires d\'une même carte ne sont jamais identiques : couleur, motif (uni, rayures, '
-                'taches, anneaux, étoiles), parfois un éclat Shiny ou une finition spéciale, et des stats '
-                'légèrement différentes. Touche une carte du bestiaire pour voir et faire défiler tes exemplaires.',
+                'taches, anneaux, étoiles), parfois un éclat Shiny ou une finition spéciale, une taille '
+                '(petit, moyen, grand) et des stats légèrement différentes. Touche une carte du bestiaire pour voir et faire défiler tes exemplaires.',
           ),
           _Entry(
             art: _StarsArt(),
