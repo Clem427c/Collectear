@@ -23,3 +23,33 @@ bool playerAttackHits({
   if (dist > range + enemyRadius) return false;
   return (dx * facingX + dy * facingY) / dist >= GameConfig.attackArcCos;
 }
+
+/// Bulle « ! » d'un ennemi qui repère le joueur (GDD diapo 8, état « Détection »). Logique pure, testée.
+class DetectionAlert {
+  /// Temps restant d'affichage du « ! » (0 = rien d'affiché).
+  double remaining = 0;
+
+  /// Temps écoulé depuis la dernière fois que l'ennemi a perdu le joueur de vue.
+  double _sinceLost = double.infinity;
+
+  /// Le « ! » est-il affiché ?
+  bool get visible => remaining > 0;
+
+  /// Avancement de l'animation, de 0 (apparition) à 1 (disparition).
+  double get progress => visible ? 1 - remaining / GameConfig.detectAlertDuration : 1;
+
+  /// L'ennemi vient de repérer le joueur. Renvoie vrai si le « ! » s'affiche.
+  bool spotted() {
+    if (_sinceLost < GameConfig.detectAlertCooldown) return false;
+    remaining = GameConfig.detectAlertDuration;
+    return true;
+  }
+
+  /// L'ennemi vient de perdre le joueur de vue.
+  void lost() => _sinceLost = 0;
+
+  void update(double dt) {
+    remaining = math.max(0, remaining - dt);
+    if (_sinceLost.isFinite) _sinceLost += dt;
+  }
+}

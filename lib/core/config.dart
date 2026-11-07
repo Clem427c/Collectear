@@ -92,6 +92,13 @@ class GameConfig {
   static const double meleeSpeed = 70;
   static const double rangedSpeed = 60;
   static const double detectRadius = 5 * tileSize;
+
+  /// Détection (GDD diapo 8 : patrouille → détection → poursuite) : un « ! » apparaît au-dessus de
+  /// l'ennemi qui vient de repérer le joueur, pendant [detectAlertDuration] secondes. Purement visuel.
+  /// Un ennemi qui perd le joueur de vue puis le retrouve dans les [detectAlertCooldown] secondes
+  /// ne le refait pas (pas de clignotement au bord du rayon de détection).
+  static const double detectAlertDuration = 0.7;
+  static const double detectAlertCooldown = 3;
   static const double meleeRange = 30;
   static const double meleeTelegraph = 0.5;
   static const double rangedPreferredDistance = 4.5 * tileSize;

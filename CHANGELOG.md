@@ -6,6 +6,11 @@
   (« Forêt 12/100 », coche verte quand le biome est complet). Toucher une pastille n'affiche que les espèces de ce
   biome ; elle se combine avec la rareté, la recherche et les autres filtres. Guide : ligne « Biomes » complétée.
 - Logique testée (`test/biomes_test.dart`). Rien à faire côté serveur.
+- Ennemis (GDD diapo 8 : « patrouille → détection → poursuite ») : un ennemi qui te **repère** affiche un « ! » jaune
+  au-dessus de sa tête (il jaillit avec un petit rebond puis s'efface), avant de te poursuivre. S'il te perd de vue
+  et te retrouve dans les 3 s, pas de nouveau « ! » (rien ne clignote au bord de sa zone de détection). Purement
+  visuel : vitesse, portée de détection et attaques inchangées. Réglages `detectAlert…` dans `lib/core/config.dart`,
+  logique testée (`test/core_test.dart`). Guide : ligne « Gobelin » complétée.
 
 ## 0.33.0 – 07/11/2026 – des accessoires pour le compagnon
 - Comme prévu par le GDD (diapo 15 : « cadres de fiches, effets visuels, accessoires de créatures ») : nouvelle

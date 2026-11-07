@@ -1553,4 +1553,29 @@ void main() {
       expect(FriendCollection(const [], pool, const {}).rareVariants, 0);
     });
   });
+
+  group('Détection des ennemis (« ! »)', () {
+    test('apparaît quand l\'ennemi repère le joueur, puis disparaît', () {
+      final a = DetectionAlert();
+      expect(a.visible, isFalse);
+      expect(a.spotted(), isTrue);
+      expect(a.visible, isTrue);
+      expect(a.progress, closeTo(0, 1e-9));
+      a.update(GameConfig.detectAlertDuration / 2);
+      expect(a.progress, closeTo(0.5, 1e-9));
+      a.update(GameConfig.detectAlertDuration);
+      expect(a.visible, isFalse);
+    });
+
+    test('pas de nouveau « ! » si le joueur est retrouvé aussitôt', () {
+      final a = DetectionAlert()..spotted();
+      a.update(1);
+      a.lost();
+      a.update(GameConfig.detectAlertCooldown / 2);
+      expect(a.spotted(), isFalse);
+      a.lost();
+      a.update(GameConfig.detectAlertCooldown + 0.1);
+      expect(a.spotted(), isTrue);
+    });
+  });
 }

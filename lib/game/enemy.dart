@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 
+import '../core/combat.dart';
 import '../core/config.dart';
 import '../core/terrain.dart';
 import 'collectear_game.dart';
@@ -57,6 +58,7 @@ class Enemy extends PositionComponent with HasGameReference<CollectearGame> {
   final Vector2 _wander = Vector2.zero();
   final Vector2 _knock = Vector2.zero();
   final Vector2 _aim = Vector2.zero();
+  final DetectionAlert _alert = DetectionAlert();
 
   double get radius => 11;
 
@@ -93,6 +95,7 @@ class Enemy extends PositionComponent with HasGameReference<CollectearGame> {
     super.update(dt);
     if (!game.active) return;
     _flash = math.max(0, _flash - dt);
+    _alert.update(dt);
 
     if (_knock.length2 > 1) {
       _move(_knock * dt);
@@ -125,12 +128,14 @@ class Enemy extends PositionComponent with HasGameReference<CollectearGame> {
         _move(_wander * (_speed * 0.4) * dt);
         if (sees) {
           _state = _State.chase;
+          _alert.spotted();
           // Laisse au joueur le temps de réagir avant le premier tir.
           _timer = GameConfig.rangedCooldown * 0.75;
         }
       case _State.chase:
         if (!sees) {
           _state = _State.patrol;
+          _alert.lost();
           break;
         }
         if (kind == EnemyKind.melee) {
@@ -286,5 +291,32 @@ class Enemy extends PositionComponent with HasGameReference<CollectearGame> {
     for (var i = 0; i < maxHp; i++) {
       canvas.drawCircle(Offset(c.dx - (maxHp - 1) * 4 + i * 8, c.dy - 17 + lift), 2.5, i < hp ? _pip : _pipEmpty);
     }
+    if (_alert.visible) _renderAlert(canvas, Offset(c.dx, c.dy - 30 + lift));
+  }
+
+  static final _alertBubble = Paint()..color = const Color(0xFFFFD23F);
+  static final _alertInk = Paint()..color = const Color(0xFF2B1A1A);
+  static final _alertBorder = Paint()
+    ..color = const Color(0xFF2B1A1A)
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 1.5;
+
+  /// « ! » de détection : jaillit (léger rebond), monte un peu, puis s'efface.
+  void _renderAlert(Canvas canvas, Offset at) {
+    final p = _alert.progress;
+    final scale = p < 0.15 ? 1.25 * p / 0.15 : (p < 0.3 ? 1.25 - (p - 0.15) / 0.15 * 0.25 : 1.0);
+    final fade = p > 0.75 ? (1 - p) / 0.25 : 1.0;
+    canvas.save();
+    canvas.translate(at.dx, at.dy - 4 * p);
+    canvas.scale(scale);
+    canvas.saveLayer(null, Paint()..color = Color.fromRGBO(0, 0, 0, fade.clamp(0.0, 1.0)));
+    final bubble = RRect.fromRectAndRadius(Rect.fromCenter(center: Offset.zero, width: 12, height: 16), const Radius.circular(6));
+    canvas.drawRRect(bubble, _alertBubble);
+    canvas.drawRRect(bubble, _alertBorder);
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(Rect.fromLTWH(-1.5, -6, 3, 7.5), const Radius.circular(1.5)), _alertInk);
+    canvas.drawCircle(const Offset(0, 4.5), 1.7, _alertInk);
+    canvas.restore();
+    canvas.restore();
   }
 }
