@@ -1,6 +1,7 @@
 /// Recherche de cartes par nom (bestiaire, échanges, profil d'un ami) et filtre par rareté.
 library;
 
+import 'biomes.dart';
 import 'cards.dart';
 
 const Map<String, String> _accents = {
@@ -41,11 +42,37 @@ bool cardMatchesQuery(GameCard card, String query) {
   return q.split(' ').every(name.contains);
 }
 
-/// Cartes qui correspondent à la recherche [query] et, si elle est donnée, à la rareté [rarity].
-/// L'ordre d'origine est conservé.
-List<GameCard> filterCards(Iterable<GameCard> cards, {String query = '', Rarity? rarity}) => [
+/// Cartes qui correspondent à la recherche [query] et, s'ils sont donnés, à la rareté [rarity]
+/// et au biome d'origine [biome]. L'ordre d'origine est conservé.
+List<GameCard> filterCards(Iterable<GameCard> cards, {String query = '', Rarity? rarity, Biome? biome}) => [
       for (final c in cards)
-        if ((rarity == null || c.rarity == rarity) && cardMatchesQuery(c, query)) c,
+        if ((rarity == null || c.rarity == rarity) && (biome == null || c.biome == biome) && cardMatchesQuery(c, query))
+          c,
+    ];
+
+/// Progression du bestiaire dans un biome (GDD diapo 11 : « chaque biome a ses espèces »).
+class BiomeProgress {
+  const BiomeProgress(this.biome, this.owned, this.total);
+  final Biome biome;
+
+  /// Espèces de ce biome déjà obtenues.
+  final int owned;
+
+  /// Espèces de ce biome dans le bestiaire.
+  final int total;
+
+  bool get complete => total > 0 && owned >= total;
+}
+
+/// Espèces obtenues / espèces existantes pour chaque biome, dans l'ordre de [Biome.values].
+/// [ownedIds] : numéros des cartes possédées. Les cartes sans biome ne comptent nulle part.
+List<BiomeProgress> biomeProgress(Iterable<GameCard> cards, Set<int> ownedIds) => [
+      for (final b in Biome.values)
+        BiomeProgress(
+          b,
+          cards.where((c) => c.biome == b && ownedIds.contains(c.id)).length,
+          cards.where((c) => c.biome == b).length,
+        ),
     ];
 
 /// Bestiaire : une carte pas encore obtenue s'affiche « ??? ». PROVISOIRE : la recherche par nom

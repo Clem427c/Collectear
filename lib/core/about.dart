@@ -4,7 +4,7 @@ library;
 
 /// Version affichée du jeu. Doit rester égale à la version de `pubspec.yaml` (vérifié par les tests)
 /// et au dernier numéro de `CHANGELOG.md`.
-const String kGameVersion = '0.33.0';
+const String kGameVersion = '0.34.0';
 
 /// Numéro du build CI (`--dart-define=BUILD_NUMBER=<n° du run>`), vide en local.
 const String kBuildNumber = String.fromEnvironment('BUILD_NUMBER');

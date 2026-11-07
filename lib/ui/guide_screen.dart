@@ -98,7 +98,8 @@ class GuideScreen extends StatelessWidget {
           _Entry(
             art: _Art(_ArtKind.melee),
             title: 'Gobelin (corps à corps)',
-            text: 'Te fonce dessus. Quand un cercle blanc se resserre autour de lui, il va frapper : esquive !',
+            text: 'Te fonce dessus. Un « ! » jaune au-dessus de sa tête : il vient de te repérer. Quand un cercle '
+                'blanc se resserre autour de lui, il va frapper : esquive !',
           ),
           _Entry(
             art: _Art(_ArtKind.ranged),
@@ -133,7 +134,7 @@ class GuideScreen extends StatelessWidget {
                 'arbres serrés et davantage d\'ennemis, surtout au corps à corps. Rocailles : sol ocre, rochers '
                 'et cristaux, et surtout des tireurs. Un message t\'annonce chaque nouveau biome. Chaque espèce a '
                 'son biome (indiqué sur sa fiche) : on l\'y trouve plus souvent, mais toutes les cartes restent '
-                'trouvables partout.',
+                'trouvables partout. Dans le bestiaire, touche un biome pour ne voir que ses espèces.',
           ),
           SectionTitle('Tes cartes'),
           _Entry(

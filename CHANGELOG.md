@@ -1,5 +1,12 @@
 # Journal des versions
 
+## 0.34.0 – 07/11/2026 (soir) – bestiaire par biome
+- Comme prévu par le GDD (diapo 11 : « chaque biome a ses espèces ») : dans le **Bestiaire**, après Toutes / Possédées /
+  Créatures / Héros, trois pastilles **Prairie, Forêt, Rocailles** montrent combien d'espèces de chaque biome tu as
+  (« Forêt 12/100 », coche verte quand le biome est complet). Toucher une pastille n'affiche que les espèces de ce
+  biome ; elle se combine avec la rareté, la recherche et les autres filtres. Guide : ligne « Biomes » complétée.
+- Logique testée (`test/biomes_test.dart`). Rien à faire côté serveur.
+
 ## 0.33.0 – 07/11/2026 – des accessoires pour le compagnon
 - Comme prévu par le GDD (diapo 15 : « cadres de fiches, effets visuels, accessoires de créatures ») : nouvelle
   section **Accessoires du compagnon** dans la Boutique, payés avec les pièces : Petite pousse et Nœud rouge (200),

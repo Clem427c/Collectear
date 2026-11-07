@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app_data.dart';
+import '../../core/biomes.dart';
 import '../../core/card_search.dart';
 import '../../core/cards.dart';
 import '../../core/variants.dart';
@@ -23,6 +24,7 @@ class BestiaryTab extends StatefulWidget {
 class _BestiaryTabState extends State<BestiaryTab> {
   _Filter _filter = _Filter.all;
   Rarity? _rarity;
+  Biome? _biome;
   String _query = '';
 
   @override
@@ -31,6 +33,7 @@ class _BestiaryTabState extends State<BestiaryTab> {
     final owned = data.collection.owned;
     final cards = data.pool.cards.where((c) {
       if (_rarity != null && c.rarity != _rarity) return false;
+      if (_biome != null && c.biome != _biome) return false;
       if (!bestiaryMatches(c, _query, owned: owned.containsKey(c.id))) return false;
       return switch (_filter) {
         _Filter.all => true,
@@ -75,6 +78,25 @@ class _BestiaryTabState extends State<BestiaryTab> {
                     label: Text(const ['Toutes', 'Possédées', 'Créatures', 'Héros'][f.index]),
                     selected: _filter == f,
                     onSelected: (_) => setState(() => _filter = f),
+                  ),
+                ),
+              // Espèces de chaque biome (GDD diapo 11) : toucher pour ne voir que ce biome.
+              const VerticalDivider(color: Colors.white24, indent: 10, endIndent: 10, width: 16),
+              for (final p in biomeProgress(data.pool.cards, owned.keys.toSet()))
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: FilterChip(
+                    avatar: Icon(
+                      p.complete ? Icons.check_circle : Icons.landscape,
+                      size: 16,
+                      color: Color(p.biome.pillColor),
+                    ),
+                    label: Text('${p.biome.label} ${p.owned}/${p.total}'),
+                    selected: _biome == p.biome,
+                    showCheckmark: false,
+                    selectedColor: Color(p.biome.pillColor).withValues(alpha: 0.45),
+                    side: BorderSide(color: Color(p.biome.pillColor)),
+                    onSelected: (_) => setState(() => _biome = _biome == p.biome ? null : p.biome),
                   ),
                 ),
             ],

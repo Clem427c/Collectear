@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:collectear/core/biomes.dart';
+import 'package:collectear/core/card_search.dart';
 import 'package:collectear/core/cards.dart';
 import 'package:collectear/core/config.dart';
 import 'package:collectear/core/decor.dart';
@@ -208,6 +209,39 @@ void main() {
         expect(pool.biomeShare(Rarity.commune, b), inInclusiveRange(0.45, 0.75), reason: b.label);
       }
       expect(GameConfig.biomeSpeciesBias, greaterThan(1));
+    });
+  });
+
+  group('Bestiaire par biome', () {
+    final pool = CardPool.fromJsonString(File('assets/data/cards.json').readAsStringSync());
+
+    test('filtre par biome, combiné à la rareté et à la recherche', () {
+      final foret = filterCards(pool.cards, biome: Biome.foret);
+      expect(foret, isNotEmpty);
+      expect(foret.every((c) => c.biome == Biome.foret), isTrue);
+      final total = Biome.values.map((b) => filterCards(pool.cards, biome: b).length).reduce((a, b) => a + b);
+      expect(total, pool.cards.length);
+      final legForet = filterCards(pool.cards, biome: Biome.foret, rarity: Rarity.legendaire);
+      expect(legForet.every((c) => c.biome == Biome.foret && c.rarity == Rarity.legendaire), isTrue);
+      expect(filterCards(pool.cards, query: 'Galetiot', biome: Biome.foret), isEmpty);
+      expect(filterCards(pool.cards, query: 'Galetiot', biome: Biome.rocailles), hasLength(1));
+      // Sans biome : comme avant.
+      expect(filterCards(pool.cards), hasLength(pool.cards.length));
+    });
+
+    test('progression par biome', () {
+      final ids = pool.cards.where((c) => c.biome == Biome.prairie).take(5).map((c) => c.id).toSet()
+        ..add(pool.cards.firstWhere((c) => c.biome == Biome.rocailles).id);
+      final p = biomeProgress(pool.cards, ids);
+      expect(p.map((e) => e.biome), Biome.values);
+      final byBiome = {for (final e in p) e.biome: e};
+      expect(byBiome[Biome.prairie]!.owned, 5);
+      expect(byBiome[Biome.rocailles]!.owned, 1);
+      expect(byBiome[Biome.foret]!.owned, 0);
+      expect(p.map((e) => e.total).reduce((a, b) => a + b), pool.cards.length);
+      expect(byBiome[Biome.foret]!.complete, isFalse);
+      final all = biomeProgress(pool.cards, pool.cards.map((c) => c.id).toSet());
+      expect(all.every((e) => e.complete), isTrue);
     });
   });
 }
