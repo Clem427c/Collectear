@@ -35,6 +35,8 @@ class Collection {
   static const _kSkin = 'equipped_skin';
   static const _kFrames = 'owned_frames';
   static const _kFrame = 'equipped_frame';
+  static const _kAccessories = 'owned_accessories';
+  static const _kAccessory = 'equipped_accessory';
 
   static const _kVariants = 'owned_variants'; // "id:seed1,seed2,…"
 
@@ -240,6 +242,32 @@ class Collection {
   Future<bool> equipFrame(CardFrame frame) async {
     if (!ownedFrames.contains(frame.id)) return false;
     await _prefs.setString(_kFrame, frame.id);
+    return true;
+  }
+
+  /// Accessoires du compagnon achetés (« aucun » est toujours possédé).
+  Set<String> get ownedAccessories => {Accessories.defaultId, ...?_prefs.getStringList(_kAccessories)};
+
+  /// Accessoire porté par le compagnon en run (« aucun » si l'enregistré n'est pas possédé).
+  Accessory get equippedAccessory {
+    final id = _prefs.getString(_kAccessory);
+    return ownedAccessories.contains(id) ? Accessories.byId(id) : Accessories.byId(Accessories.defaultId);
+  }
+
+  /// Achète un accessoire avec des pièces et le fait porter aussitôt. Renvoie false si c'est impossible.
+  Future<bool> buyAccessory(Accessory acc) async {
+    if (Accessories.whyNotBuy(acc, owned: ownedAccessories, coins: coins) != null) return false;
+    await _prefs.setInt(_kCoins, coins - acc.price);
+    await _prefs.setStringList(
+        _kAccessories, [...ownedAccessories.where((id) => id != Accessories.defaultId), acc.id]);
+    await _prefs.setString(_kAccessory, acc.id);
+    return true;
+  }
+
+  /// Fait porter un accessoire déjà possédé (ou « aucun »).
+  Future<bool> equipAccessory(Accessory acc) async {
+    if (!ownedAccessories.contains(acc.id)) return false;
+    await _prefs.setString(_kAccessory, acc.id);
     return true;
   }
 

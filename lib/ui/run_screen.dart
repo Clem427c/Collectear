@@ -45,6 +45,7 @@ class _RunScreenState extends State<RunScreen> {
       onRunEnd: _onRunEnd,
       onReviveOffer: _offerRevive,
       skin: widget.data.collection.equippedSkin,
+      accessory: widget.data.collection.equippedAccessory,
       solidDecor: widget.data.settings.solidDecor,
       companion: widget.companion == null
           ? null

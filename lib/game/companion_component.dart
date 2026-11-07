@@ -8,7 +8,9 @@ import 'package:flutter/foundation.dart' show debugPrint;
 import '../app_data.dart' show Illustrations;
 import '../core/cards.dart';
 import '../core/companion.dart';
+import '../core/cosmetics.dart';
 import '../core/variants.dart';
+import '../ui/accessory_painter.dart';
 import '../ui/widgets.dart' show variantMatrix;
 import 'collectear_game.dart';
 
@@ -16,12 +18,18 @@ import 'collectear_game.dart';
 /// plus bel exemplaire (teinte et finition de la variante), qui suit l'explorateur en sautillant.
 /// PROVISOIRE : purement visuel, il ne se bat pas et traverse tout (le boost reste son seul effet).
 class CompanionComponent extends PositionComponent with HasGameReference<CollectearGame> {
-  CompanionComponent(this.inst, Vector2 start)
+  CompanionComponent(this.inst, Vector2 start, {this.accessory})
       : follower = CompanionFollower(start.x, start.y),
         super(position: start.clone(), size: Vector2.all(24), anchor: Anchor.center, priority: 99);
 
   final CardInstance inst;
   final CompanionFollower follower;
+
+  /// Accessoire acheté en Boutique (cosmétique), null ou « aucun » sans accessoire.
+  final Accessory? accessory;
+
+  /// Haut du dessin de l'illustration, où se pose l'accessoire.
+  HeadAnchor _head = HeadAnchor.fallback;
   late final double _height = companionHeight(inst);
   Image? _art;
   double _t = 0;
@@ -45,6 +53,12 @@ class CompanionComponent extends PositionComponent with HasGameReference<Collect
     if (!Illustrations.available.contains(inst.card.id)) return;
     try {
       _art = await _cards.load(Illustrations.path(inst.card.id).replaceFirst('assets/', ''));
+      final acc = accessory;
+      if (acc != null && !acc.isDefault && !acc.floats) {
+        final img = _art!;
+        final bytes = await img.toByteData(format: ImageByteFormat.rawRgba);
+        if (bytes != null) _head = findHeadAnchor(bytes.buffer.asUint8List(), img.width, img.height);
+      }
     } catch (e) {
       debugPrint('Compagnon : illustration ${inst.card.id} introuvable ($e)');
     }
@@ -72,10 +86,12 @@ class CompanionComponent extends PositionComponent with HasGameReference<Collect
     final h = _height;
     canvas.drawOval(Rect.fromCenter(center: foot, width: h * 0.55 - lift * 0.3, height: h * 0.18), _shadow);
     final img = _art;
+    final acc = accessory;
     if (img == null) {
       final c = foot - Offset(0, h * 0.4 + lift);
       canvas.drawCircle(c, h * 0.3, _fallback);
       canvas.drawCircle(c, h * 0.3, _outline);
+      if (acc != null) paintAccessory(canvas, acc, c - Offset(0, h * 0.3), h, _t, center: c);
       return;
     }
     // L'illustration est un carré dont le dessin tient dans le cercle inscrit : on la pose un peu
@@ -87,11 +103,13 @@ class CompanionComponent extends PositionComponent with HasGameReference<Collect
       canvas.save();
       canvas.translate(foot.dx * 2, 0);
       canvas.scale(-1, 1);
-      canvas.drawImageRect(img, src, dst, _artPaint);
-      canvas.restore();
-    } else {
-      canvas.drawImageRect(img, src, dst, _artPaint);
     }
+    canvas.drawImageRect(img, src, dst, _artPaint);
+    if (acc != null) {
+      paintAccessory(canvas, acc, Offset(dst.left + _head.x * h, dst.top + _head.top * h), h, _t,
+          center: dst.center);
+    }
+    if (follower.facingLeft) canvas.restore();
     // Exemplaire rare (3 ★ ou plus) : petites étincelles qui scintillent autour de lui.
     if (inst.variant.stars >= 3) {
       for (var i = 0; i < 3; i++) {

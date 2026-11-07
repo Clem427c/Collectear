@@ -58,6 +58,7 @@ class CollectearGame extends FlameGame with KeyboardEvents {
     this.onReviveOffer,
     this.solidDecor = GameConfig.solidDecorDefault,
     this.companion,
+    this.accessory,
     Skin? skin,
   })  : skin = skin ?? Skins.byId(Skins.defaultId),
         terrain = Terrain(seed),
@@ -70,6 +71,9 @@ class CollectearGame extends FlameGame with KeyboardEvents {
   /// Exemplaire qui accompagne le joueur (dessiné à côté de lui), null sans compagnon.
   final CardInstance? companion;
   CompanionComponent? _companionComponent;
+
+  /// Accessoire porté par le compagnon (cosmétique).
+  final Accessory? accessory;
 
   /// Skin d'explorateur porté pendant la run (cosmétique).
   final Skin skin;
@@ -148,7 +152,8 @@ class CollectearGame extends FlameGame with KeyboardEvents {
     world.add(player);
     final buddy = companion;
     if (buddy != null) {
-      _companionComponent = CompanionComponent(buddy, _start + Vector2(-GameConfig.companionFollowDistance, 12));
+      _companionComponent = CompanionComponent(buddy, _start + Vector2(-GameConfig.companionFollowDistance, 12),
+          accessory: accessory);
       world.add(_companionComponent!);
     }
     spawner = Spawner();

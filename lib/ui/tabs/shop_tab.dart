@@ -4,6 +4,7 @@ import '../../app_data.dart';
 import '../../core/collection.dart';
 import '../../core/cosmetics.dart';
 import '../../core/economy.dart';
+import '../accessory_painter.dart';
 import '../theme.dart';
 import '../widgets.dart';
 
@@ -128,6 +129,46 @@ class ShopTab extends StatelessWidget {
     if (context.mounted) showPrototypeSnack(context, msg);
   }
 
+  Future<void> _onAccessory(BuildContext context, Accessory acc) async {
+    final col = data.collection;
+    final String msg;
+    if (col.ownedAccessories.contains(acc.id)) {
+      if (col.equippedAccessory.id == acc.id) return;
+      await col.equipAccessory(acc);
+      msg = acc.isDefault ? 'Ton compagnon part sans accessoire.' : '${acc.name} : ton compagnon le portera dès ta prochaine run !';
+    } else {
+      final why = Accessories.whyNotBuy(acc, owned: col.ownedAccessories, coins: col.coins);
+      if (why != null) {
+        msg = '$why (tu en as ${col.coins}).';
+      } else {
+        if (!context.mounted) return;
+        final ok = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: AppColors.night,
+            title: Text('Acheter ${acc.name} ?', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+            content: Row(children: [
+              AccessoryPreview(accessory: acc, size: 72),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text('${acc.price} pièces (tu en as ${col.coins}). Ton compagnon le portera pendant tes runs.',
+                    style: const TextStyle(color: Colors.white70)),
+              ),
+            ]),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Non', style: TextStyle(color: Colors.white70))),
+              TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Acheter', style: TextStyle(color: AppColors.gold))),
+            ],
+          ),
+        );
+        if (ok != true) return;
+        msg = await col.buyAccessory(acc) ? '${acc.name} est à toi : ton compagnon le portera dès ta prochaine run !' : 'Achat impossible.';
+      }
+    }
+    onChanged();
+    if (context.mounted) showPrototypeSnack(context, msg);
+  }
+
   void _buy(BuildContext context, String what) =>
       showPrototypeSnack(context, 'Prototype : les achats arriveront avec l\'étape Monétisation ($what).');
 
@@ -175,6 +216,27 @@ class ShopTab extends StatelessWidget {
         const Padding(
           padding: EdgeInsets.only(top: 6),
           child: Text('Payés avec les pièces. Le cadre porté entoure toutes les cartes de ta collection (bestiaire, compagnon, récapitulatif).',
+              style: TextStyle(color: Colors.white54, fontSize: 12)),
+        ),
+        const SectionTitle('Accessoires du compagnon'),
+        _CosmeticGrid(
+          count: Accessories.all.length,
+          cellBuilder: (i) {
+            final a = Accessories.all[i];
+            return _CosmeticCell(
+              preview: AccessoryPreview(accessory: a),
+              name: a.name,
+              price: a.price,
+              tag: a.tag,
+              owned: data.collection.ownedAccessories.contains(a.id),
+              worn: data.collection.equippedAccessory.id == a.id,
+              onTap: () => _onAccessory(context, a),
+            );
+          },
+        ),
+        const Padding(
+          padding: EdgeInsets.only(top: 6),
+          child: Text('Payés avec les pièces. Ton compagnon porte l\'accessoire pendant tes runs, quelle que soit la carte choisie.',
               style: TextStyle(color: Colors.white54, fontSize: 12)),
         ),
         const SectionTitle('Confort'),
@@ -619,4 +681,81 @@ class _WideOffer extends StatelessWidget {
       ]),
     );
   }
+}
+
+/// Aperçu d'un accessoire : une petite créature ronde (inventée) qui le porte.
+class AccessoryPreview extends StatefulWidget {
+  const AccessoryPreview({super.key, required this.accessory, this.size = 58});
+  final Accessory accessory;
+  final double size;
+
+  @override
+  State<AccessoryPreview> createState() => _AccessoryPreviewState();
+}
+
+class _AccessoryPreviewState extends State<AccessoryPreview> with SingleTickerProviderStateMixin {
+  // Animation lente (lucioles, auréole, reflet de la couronne) ; seulement si l'accessoire bouge.
+  late final AnimationController _anim =
+      AnimationController(vsync: this, duration: const Duration(seconds: 60));
+
+  bool get _animated => const {AccessoryStyle.leaf, AccessoryStyle.halo, AccessoryStyle.fireflies, AccessoryStyle.crown}
+      .contains(widget.accessory.style);
+
+  @override
+  void initState() {
+    super.initState();
+    if (_animated) _anim.repeat();
+  }
+
+  @override
+  void dispose() {
+    _anim.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: widget.size * 1.2,
+      height: widget.size * 1.2,
+      child: AnimatedBuilder(
+        animation: _anim,
+        builder: (_, __) => CustomPaint(painter: _BuddyPainter(widget.accessory, _anim.value * 60)),
+      ),
+    );
+  }
+}
+
+class _BuddyPainter extends CustomPainter {
+  _BuddyPainter(this.accessory, this.t);
+  final Accessory accessory;
+  final double t;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = size.shortestSide * 0.8;
+    final c = Offset(size.width / 2, size.height * 0.62);
+    final r = s * 0.36;
+    canvas.drawOval(Rect.fromCenter(center: c + Offset(0, r * 0.95), width: r * 1.6, height: r * 0.35),
+        Paint()..color = const Color(0x44000000));
+    final body = Rect.fromCenter(center: c, width: r * 2.1, height: r * 1.9);
+    canvas.drawOval(body, Paint()
+      ..shader = const LinearGradient(
+              colors: [Color(0xFFB79CFF), Color(0xFF7B5CFF)], begin: Alignment.topLeft, end: Alignment.bottomRight)
+          .createShader(body));
+    canvas.drawOval(body, Paint()
+      ..color = AppColors.ink
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = s * 0.035);
+    for (final side in const [-1.0, 1.0]) {
+      final e = c + Offset(side * r * 0.38, -r * 0.1);
+      canvas.drawCircle(e, r * 0.17, Paint()..color = Colors.white);
+      canvas.drawCircle(e + Offset(0, r * 0.03), r * 0.1, Paint()..color = AppColors.ink);
+      canvas.drawCircle(c + Offset(side * r * 0.62, r * 0.22), r * 0.12, Paint()..color = const Color(0x66FF6B8A));
+    }
+    paintAccessory(canvas, accessory, Offset(c.dx, body.top), s, t, center: c);
+  }
+
+  @override
+  bool shouldRepaint(_BuddyPainter old) => old.t != t || old.accessory.id != accessory.id;
 }

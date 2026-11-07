@@ -58,6 +58,9 @@ class GameConfig {
   static const double companionHeight = 28; // espèce Commune (l'explorateur fait 40)
   static const double companionHeightPerRarity = 2; // +2 par rang de rareté (Légendaire : 36)
   static const double companionCheerDuration = 0.6; // saut de joie quand une carte est gagnée
+  // Accessoire du compagnon (PROVISOIRE) : posé sur le haut du dessin, dont le milieu est cherché
+  // dans une bande de 8 % de la hauteur de l'illustration.
+  static const double accessoryHeadBand = 0.08;
 
   // --- Joueur ---
   static const double playerSpeed = 120; // unités / s

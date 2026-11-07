@@ -1,11 +1,15 @@
 import 'dart:io';
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:collectear/core/cards.dart';
 import 'package:collectear/core/companion.dart';
+import 'package:collectear/core/collection.dart';
 import 'package:collectear/core/config.dart';
+import 'package:collectear/core/cosmetics.dart';
 import 'package:collectear/core/variants.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 CardPool _pool() => CardPool.fromJsonString(File('assets/data/cards.json').readAsStringSync());
 
@@ -93,6 +97,87 @@ void main() {
       c.update(GameConfig.companionCheerDuration, 0, 0, -1, 0);
       expect(c.cheer, 0);
       expect(c.hop(1), lessThan(5));
+    });
+  });
+
+  group('Accessoires du compagnon (PROVISOIRE)', () {
+    test('catalogue : identifiants uniques, « aucun » offert et en premier, prix positifs', () {
+      expect(Accessories.all.map((a) => a.id).toSet().length, Accessories.all.length);
+      expect(Accessories.all.where((a) => a.isDefault).length, 1);
+      expect(Accessories.all.first.id, Accessories.defaultId);
+      expect(Accessories.all.first.style, AccessoryStyle.none);
+      expect(Accessories.byId('inconnu').id, Accessories.defaultId);
+      for (final a in Accessories.all.skip(1)) {
+        expect(a.price, greaterThan(0), reason: a.id);
+        expect(a.style, isNot(AccessoryStyle.none), reason: a.id);
+        expect(a.color >> 24, 0xFF, reason: a.id);
+      }
+      expect(Accessories.byId('aureole').floats, isTrue);
+      expect(Accessories.byId('chapeau').floats, isFalse);
+    });
+
+    test('achat avec les pièces, porté aussitôt, puis « aucun »', () async {
+      SharedPreferences.setMockInitialValues({});
+      final col = await Collection.load();
+      final crown = Accessories.byId('couronne');
+      expect(col.equippedAccessory.id, Accessories.defaultId);
+      expect(await col.buyAccessory(crown), isFalse); // pas assez de pièces
+      expect(Accessories.whyNotBuy(crown, owned: col.ownedAccessories, coins: col.coins), contains('manque'));
+      await col.addCoins(crown.price + 7);
+      expect(await col.buyAccessory(crown), isTrue);
+      expect(col.coins, 7);
+      expect(col.ownedAccessories, {Accessories.defaultId, 'couronne'});
+      expect(col.equippedAccessory.id, 'couronne');
+      expect(await col.buyAccessory(crown), isFalse); // déjà possédé : pas débité deux fois
+      expect(col.coins, 7);
+      expect(await col.equipAccessory(Accessories.byId('lucioles')), isFalse); // pas possédé
+      expect(await col.equipAccessory(Accessories.byId(Accessories.defaultId)), isTrue);
+      expect(col.equippedAccessory.isDefault, isTrue);
+      // Skins et cadres ne sont pas touchés.
+      expect(col.ownedSkins, {Skins.defaultId});
+      expect(col.ownedFrames, {CardFrames.defaultId});
+    });
+
+    test('accessoire enregistré mais pas possédé : aucun', () async {
+      SharedPreferences.setMockInitialValues({'equipped_accessory': 'couronne'});
+      final col = await Collection.load();
+      expect(col.equippedAccessory.id, Accessories.defaultId);
+    });
+
+    Uint8List blank(int w, int h) => Uint8List(w * h * 4);
+    void dot(Uint8List px, int w, int x, int y) => px[(y * w + x) * 4 + 3] = 255;
+
+    test('haut du dessin : première ligne dessinée et milieu de la tête', () {
+      const w = 100, h = 100;
+      final px = blank(w, h);
+      // Une « tête » (disque) centrée en x = 60, dont le haut est à y = 20, sur un corps plus large.
+      for (var y = 0; y < h; y++) {
+        for (var x = 0; x < w; x++) {
+          final head = (x - 60) * (x - 60) + (y - 32) * (y - 32) <= 12 * 12;
+          final body = y >= 44 && y < 90 && x >= 30 && x < 90;
+          if (head || body) dot(px, w, x, y);
+        }
+      }
+      final a = findHeadAnchor(px, w, h);
+      expect(a.top, closeTo(0.20, 0.02));
+      expect(a.x, closeTo(0.60, 0.02));
+    });
+
+    test('poussière isolée ignorée, image vide ou mal formée : repli', () {
+      const w = 200, h = 200;
+      final px = blank(w, h);
+      dot(px, w, 5, 3); // un pixel perdu en haut à gauche
+      for (var y = 80; y < 150; y++) {
+        for (var x = 90; x < 110; x++) {
+          dot(px, w, x, y);
+        }
+      }
+      final a = findHeadAnchor(px, w, h);
+      expect(a.top, closeTo(0.40, 0.01));
+      expect(a.x, closeTo(0.5, 0.01));
+      expect(findHeadAnchor(blank(w, h), w, h), same(HeadAnchor.fallback));
+      expect(findHeadAnchor(Uint8List(10), w, h), same(HeadAnchor.fallback));
+      expect(findHeadAnchor(px, 0, 0), same(HeadAnchor.fallback));
     });
   });
 }

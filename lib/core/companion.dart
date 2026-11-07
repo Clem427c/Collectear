@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'config.dart';
 import 'sharing.dart' show findScore;
@@ -98,4 +99,43 @@ class CompanionFollower {
     if (moving) return math.sin(t * 14).abs() * 4;
     return (math.sin(t * 2.5) + 1) * 1.2; // flotte doucement sur place
   }
+}
+
+/// Haut du dessin d'une illustration (là où se pose l'accessoire du compagnon), en fractions de
+/// l'image : [top] = première ligne vraiment dessinée (0 = haut), [x] = milieu du dessin juste
+/// en dessous (médiane des pixels opaques sur [GameConfig.accessoryHeadBand] de la hauteur).
+class HeadAnchor {
+  const HeadAnchor(this.x, this.top);
+  final double x;
+  final double top;
+
+  /// Pour une illustration absente (rond de couleur) : haut du rond.
+  static const fallback = HeadAnchor(0.5, 0.2);
+}
+
+/// Cherche le haut du dessin dans des pixels RGBA ([w] × [h], 4 octets par pixel, fond transparent).
+/// Une ligne compte quand au moins 1 % de ses pixels sont opaques (ignore les poussières isolées).
+/// Renvoie [HeadAnchor.fallback] si l'image est vide ou mal formée.
+HeadAnchor findHeadAnchor(Uint8List rgba, int w, int h, {int alphaMin = 128}) {
+  if (w <= 0 || h <= 0 || rgba.length < w * h * 4) return HeadAnchor.fallback;
+  final minCount = math.max(2, (w * 0.01).floor());
+  int? top;
+  for (var y = 0; y < h && top == null; y++) {
+    var n = 0;
+    for (var x = 0; x < w; x++) {
+      if (rgba[(y * w + x) * 4 + 3] >= alphaMin) n++;
+    }
+    if (n >= minCount) top = y;
+  }
+  if (top == null) return HeadAnchor.fallback;
+  final band = math.max(1, (h * GameConfig.accessoryHeadBand).round());
+  final xs = <int>[];
+  for (var y = top; y < math.min(h, top + band); y++) {
+    for (var x = 0; x < w; x++) {
+      if (rgba[(y * w + x) * 4 + 3] >= alphaMin) xs.add(x);
+    }
+  }
+  xs.sort();
+  final mx = xs[xs.length ~/ 2];
+  return HeadAnchor((mx + 0.5) / w, top / h);
 }

@@ -116,8 +116,11 @@ class PlayTab extends StatelessWidget {
                   if (companion != null) ...[
                     _BoostChip(boost: companion.boost),
                     const SizedBox(height: 6),
-                    const Text('Il te suit pendant la run, avec l\'apparence de ton plus bel exemplaire.',
-                        textAlign: TextAlign.center, style: TextStyle(color: Colors.white54, fontSize: 12)),
+                    Text(
+                        'Il te suit pendant la run, avec l\'apparence de ton plus bel exemplaire'
+                        '${col.equippedAccessory.isDefault ? '' : ' et son accessoire (${col.equippedAccessory.name})'}.',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.white54, fontSize: 12)),
                   ] else
                     const Text('Touchez pour équiper un compagnon', style: TextStyle(color: Colors.white54)),
                   const SizedBox(height: 24),

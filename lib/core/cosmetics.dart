@@ -103,3 +103,58 @@ class CardFrames {
     return null;
   }
 }
+
+/// Style de dessin d'un accessoire (dessiné par le code, sans image).
+enum AccessoryStyle { none, leaf, bow, hat, halo, fireflies, crown }
+
+/// Accessoires du compagnon (GDD diapo 15 : « accessoires de créatures ») : purement cosmétiques,
+/// portés par le compagnon qui suit l'explorateur en run.
+///
+/// PROVISOIRE (à valider par Clem) : payés en pièces comme les skins et les cadres (200 à 800) ;
+/// un seul accessoire porté à la fois, par tous les compagnons ; posé sur le haut du dessin
+/// (détecté automatiquement sur l'illustration), donc parfois sur une oreille, une arme ou des bois.
+class Accessory {
+  const Accessory(this.id, this.name, this.price, this.style, this.color, {this.tag});
+
+  final String id;
+  final String name;
+
+  /// Prix en pièces (0 = « aucun accessoire », offert).
+  final int price;
+  final AccessoryStyle style;
+
+  /// Couleur principale ARGB.
+  final int color;
+  final String? tag;
+
+  bool get isDefault => price == 0;
+
+  /// L'accessoire flotte au-dessus de la tête (auréole) ou autour du compagnon (lucioles)
+  /// au lieu d'être posé dessus.
+  bool get floats => style == AccessoryStyle.halo || style == AccessoryStyle.fireflies;
+}
+
+class Accessories {
+  Accessories._();
+
+  static const defaultId = 'aucun';
+
+  static const all = <Accessory>[
+    Accessory(defaultId, 'Aucun', 0, AccessoryStyle.none, 0xFFFFFFFF),
+    Accessory('pousse', 'Petite pousse', 200, AccessoryStyle.leaf, 0xFF5CCB5F, tag: 'Nouveau'),
+    Accessory('noeud', 'Nœud rouge', 200, AccessoryStyle.bow, 0xFFFF4E6A),
+    Accessory('chapeau', 'Chapeau d\'explorateur', 300, AccessoryStyle.hat, 0xFFA0703C),
+    Accessory('aureole', 'Auréole', 500, AccessoryStyle.halo, 0xFFFFE680, tag: 'Rare'),
+    Accessory('lucioles', 'Lucioles', 500, AccessoryStyle.fireflies, 0xFFFFF27A, tag: 'Rare'),
+    Accessory('couronne', 'Couronne', 800, AccessoryStyle.crown, 0xFFFFC233, tag: 'Épique'),
+  ];
+
+  static Accessory byId(String? id) => all.firstWhere((a) => a.id == id, orElse: () => all.first);
+
+  /// Pourquoi un achat est impossible (null si on peut acheter).
+  static String? whyNotBuy(Accessory acc, {required Set<String> owned, required int coins}) {
+    if (acc.isDefault || owned.contains(acc.id)) return 'Déjà à toi';
+    if (coins < acc.price) return 'Il te manque ${acc.price - coins} pièces';
+    return null;
+  }
+}
