@@ -56,6 +56,8 @@ Légende : [x] fait · [ ] à faire · (P) provisoire
   étiquette « Taille : grand (+8 %) » ; purement visuelle, exemplaires existants inchangés (06/11)
 - [x] Compagnon dessiné en run (GDD diapo 9) (P) : il suit l'explorateur en sautillant, avec l'apparence et la taille
   de son plus bel exemplaire, saut de joie à chaque carte ; purement visuel (06/11, soir)
+- [x] Accessoires du compagnon (GDD diapo 15) (P) : pousse, nœud, chapeau, auréole, lucioles, couronne, achetés avec
+  les pièces en Boutique, portés par le compagnon en run sur le haut de son dessin (07/11)
 - [x] **Clem** : sols 1, 2, 3 régénérés avec les prompts doux (28/10) ; teinte de chaque étage ajustée en CI
 
 ## Étape 3 – En ligne (Supabase) — en cours
@@ -125,7 +127,7 @@ Clem a créé le projet Supabase et ajouté les secrets GitHub `SUPABASE_URL` et
   skins, cadres, gros mots, records) ; sinon synchro en ligne des pièces, skins et cadres (si Clem dit oui).
   Records d'exploration (31/10), partage des trouvailles, décors solides et brouillon de fiche Google Play
   (01/11), nom affiché, AAB signé, icône, suppression du compte et captures Play (02/11), écran « À propos »
-  et variantes plus rares loin du départ (03/11), variantes rares et lieux sur le profil d'un ami, ajout d'un ami par pseudo (04/11), biomes et leurs espèces (05/11), taille des exemplaires et compagnon dessiné en run (06/11) faits. Presque tout ce qui reste attend une réponse de Clem (voir « Questions pour Clem »).
+  et variantes plus rares loin du départ (03/11), variantes rares et lieux sur le profil d'un ami, ajout d'un ami par pseudo (04/11), biomes et leurs espèces (05/11), taille des exemplaires et compagnon dessiné en run (06/11), accessoires du compagnon (07/11) faits. Presque tout ce qui reste attend une réponse de Clem (voir « Questions pour Clem »).
 
 ## Étape 4 – Monétisation
 - [x] Vidéos récompensées (P) : run bonus quand il n'en reste plus (3/jour), résurrection à la mort
@@ -385,6 +387,13 @@ Priorité basse (à toi de juger) :
 - PROVISOIRE : le compagnon est dessiné et suit le joueur, mais reste **purement visuel** (le boost est son seul effet).
   **Questions** : doit-il aider au combat (par ex. un petit coup de temps en temps), ou rester décoratif ? Il prend
   automatiquement ton plus bel exemplaire de l'espèce : faut-il pouvoir choisir l'exemplaire (par ex. ton préféré ★) ?
+
+### Accessoires du compagnon (07/11)
+- PROVISOIRE : 6 accessoires payés en pièces (200 à 800), un seul porté à la fois, par tous les compagnons. Ils sont
+  dessinés par le code et posés sur le haut du dessin de l'illustration (détecté automatiquement) : sur une créature
+  à oreilles, à bois ou un héros qui lève son arme, le chapeau peut se poser dessus. **Questions** : les prix te vont ?
+  Faut-il un accessoire par compagnon (chacun garde le sien) ? D'autres idées (lunettes, écharpe, cape) ? Je peux
+  aussi préparer des prompts ComfyUI pour des accessoires dessinés si tu préfères ce rendu.
 
 ### Captures Google Play (02/11)
 - Faites par la CI dans le jeu web (collection de démonstration de 160 cartes, pseudo « Aventurière »).

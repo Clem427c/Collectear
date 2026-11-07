@@ -1,5 +1,18 @@
 # Journal des versions
 
+## 0.33.0 – 07/11/2026 – des accessoires pour le compagnon
+- Comme prévu par le GDD (diapo 15 : « cadres de fiches, effets visuels, accessoires de créatures ») : nouvelle
+  section **Accessoires du compagnon** dans la Boutique, payés avec les pièces : Petite pousse et Nœud rouge (200),
+  Chapeau d'explorateur (300), Auréole et Lucioles (500, rares), Couronne (800, épique). « Aucun » pour les retirer.
+- En run, le compagnon **porte l'accessoire** : il est posé sur le haut de son dessin (trouvé automatiquement sur
+  l'illustration au début de la run), suit ses bonds et se retourne avec lui ; la pousse se balance, l'auréole flotte
+  et brille, les lucioles tournent autour de lui, un reflet passe sur la couronne. Dessinés par le code (pas d'image).
+- Aperçu animé dans la Boutique (une petite créature ronde qui porte l'accessoire). Onglet Jouer : « … et son
+  accessoire (Couronne) ». Guide : ligne « Pièces » complétée.
+- PROVISOIRE (questions posées à Clem) : prix, un seul accessoire pour tous les compagnons, posé sur le haut du
+  dessin (parfois une oreille, des bois ou une arme). Purement décoratif, local à l'appareil comme les skins et les
+  cadres. Logique testée (`test/companion_test.dart`). Rien à faire côté serveur.
+
 ## 0.32.0 – 06/11/2026 (soir) – le compagnon te suit en run
 - Comme prévu par le GDD (diapo 9 : « il l'accompagne et lui donne un boost ») : le compagnon choisi n'est plus
   seulement un nom dans le HUD, il est **dessiné dans le monde** et suit l'explorateur en sautillant, un peu derrière
